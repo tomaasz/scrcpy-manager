@@ -24,6 +24,7 @@ $env:SCRCPY_ADB_PIN = "1234"
   - Claude (`com.anthropic.claude`)
   - ConneckBot (`org.connectbot`)
   - Gmail (Wszystkie) (`com.google.android.gm`)
+  - Messenger (`com.facebook.orca`)
   - TurboTel (`ellipi.messenger`)
   - Ustawienia (`com.android.settings`)
   - Vivaldi (`com.vivaldi.browser`)

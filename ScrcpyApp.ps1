@@ -353,6 +353,7 @@
         @{ Text = "Claude";              Package = "com.anthropic.claude";                  Flags = @() },
         @{ Text = "ConneckBot";          Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
         @{ Text = "Gmail (Wszystkie)";   Package = "com.google.android.gm";                 Flags = @() },
+        @{ Text = "Messenger";           Package = "com.facebook.orca";                     Flags = @() },
         @{ Text = "TurboTel";            Package = "ellipi.messenger";                      Flags = @() },
         @{ Text = "Ustawienia";          Package = "com.android.settings";                  Flags = @() },
         @{ Text = "Vivaldi";             Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
