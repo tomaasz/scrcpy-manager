@@ -32,6 +32,8 @@ $env:SCRCPY_ADB_PIN = "1234"
   - Wiadomości (Google) (`com.google.android.apps.messaging`)
   - Windows App (`com.microsoft.rdc.androidx`)
 - **Brak wygaszania ekranu**: telefon nie blokuje się tak długo, jak aktywny jest panel lub okna scrcpy.
+- **Pełna obsługa polskich znaków (AltGr) i schowka**: wszystkie aplikacje uruchamiane są w trybie sprzętowej klawiatury UHID (`-K`), dzięki czemu kombinacje z prawym Alt (`AltGr + a/e/c/s/l/z/x/o/n`) działają natywnie w aplikacjach Androida.
+- **Przycisk „Klawiatura (Polski)”**: jedno kliknięcie otwiera konfigurację klawiatury fizycznej na telefonie (`HARD_KEYBOARD_SETTINGS`), aby sprawdzić lub wybrać układ *Polski (programisty)*.
 - **Optymalizacja schowka dla 3 maszyn**: sprzętowy tryb klawiatury (`-K`) i pełne przekazywanie kliknięć myszy (`--mouse-bind=++++`).
 
 ---

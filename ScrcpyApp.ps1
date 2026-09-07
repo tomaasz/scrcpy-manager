@@ -157,13 +157,9 @@
             "--start-app=$PackageName",
             "--no-vd-system-decorations",
             "-x",
-            "-w"
+            "-w",
+            "-K"
         )
-
-        # Włącz tryb sprzętowej klawiatury UHID dla Windows App lub na żądanie
-        if ($UseUhidKeyboard -or $PackageName -eq "com.microsoft.rdc.androidx") {
-            $argListItems += "-K"
-        }
 
         # Włącz pełne przekazywanie kliknięć myszy (prawy przycisk myszy = menu kontekstowe/wklejanie, a nie 'Wstecz')
         if ($ForwardAllClicks -or $PackageName -eq "com.microsoft.rdc.androidx") {
@@ -298,10 +294,10 @@
     # Przycisk 4: Napraw schowek (3 maszyny)
     $btnClipFix = New-Object System.Windows.Forms.Button
     $btnClipFix.Location = New-Object System.Drawing.Point(18, 169)
-    $btnClipFix.Size = New-Object System.Drawing.Size(335, 32)
-    $btnClipFix.Text = "Napraw schowek (3 maszyny)"
+    $btnClipFix.Size = New-Object System.Drawing.Size(163, 32)
+    $btnClipFix.Text = "Napraw schowek"
     $btnClipFix.BackColor = [System.Drawing.Color]::LightSkyBlue
-    $btnClipFix.Font = New-Object System.Drawing.Font("Arial", [float]8.5, [System.Drawing.FontStyle]::Bold)
+    $btnClipFix.Font = New-Object System.Drawing.Font("Arial", [float]8.2, [System.Drawing.FontStyle]::Bold)
     $btnClipFix.Add_Click({
         if (Test-AdbDeviceSilent) {
             Optimize-RdcClipboard
@@ -331,6 +327,31 @@
         )
     })
     $form.Controls.Add($btnClipFix)
+
+    # Przycisk 5: Klawiatura fizyczna (Polski)
+    $btnKeyFix = New-Object System.Windows.Forms.Button
+    $btnKeyFix.Location = New-Object System.Drawing.Point(190, 169)
+    $btnKeyFix.Size = New-Object System.Drawing.Size(163, 32)
+    $btnKeyFix.Text = "Klawiatura (Polski)"
+    $btnKeyFix.BackColor = [System.Drawing.Color]::LightSkyBlue
+    $btnKeyFix.Font = New-Object System.Drawing.Font("Arial", [float]8.2, [System.Drawing.FontStyle]::Bold)
+    $btnKeyFix.Add_Click({
+        if (Test-AdbDeviceSilent) {
+            adb shell am start -a android.settings.HARD_KEYBOARD_SETTINGS 2>$null | Out-Null
+        }
+        [System.Windows.Forms.MessageBox]::Show(
+            "Otwarto ustawienia klawiatury fizycznej na telefonie.`n`n" +
+            "Jeśli polskie znaki (AltGr + a, e, c, s, l, z, x, o, n) nie działają:`n" +
+            "1. Kliknij na liście widoczną klawiaturę fizyczną ('scrcpy').`n" +
+            "2. Wybierz 'Skonfiguruj układy klawiatury'.`n" +
+            "3. Zaznacz 'Polski (programisty)'.`n`n" +
+            "Wszystkie aplikacje w panelu uruchamiają się ze sprzętową obsługą klawiatury (-K).",
+            "Ustawienia klawiatury fizycznej",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    })
+    $form.Controls.Add($btnKeyFix)
 
     # Przełącznik automatycznego włączania Taskbara
     $chkAutoTaskbar = New-Object System.Windows.Forms.CheckBox
