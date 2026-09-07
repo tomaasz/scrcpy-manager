@@ -18,3 +18,27 @@ $env:SCRCPY_ADB_PIN = "1234"
 ```
 
 Przycisk ConneckBot uruchamia pakiet `org.connectbot`.
+
+---
+
+## Przekazywanie schowka między 3 maszynami (PC lokalny <-> Telefon <-> PC zdalny)
+
+Gdy łączysz się przez `Windows App` (Microsoft Remote Desktop) w scrcpy:
+
+1. **Ustawienia profilu w Windows App (telefon)**:
+   - W aplikacji Remote Desktop na telefonie kliknij menu `...` przy nazwie komputera zdalnego $\rightarrow$ **Edit**.
+   - Przewiń do sekcji **Devices & Audio Redirection**.
+   - Upewnij się, że opcja **Clipboard** (Schowek) jest włączona.
+
+2. **Skróty klawiszowe w oknie Windows App**:
+   - `Alt + V` – natychmiastowe wymuszenie przesłania schowka z komputera lokalnego do telefonu/RDP i wklejenie.
+   - `Alt + C` – pobranie schowka z telefonu/RDP do komputera lokalnego.
+   - Standardowe `Ctrl + C` i `Ctrl + V` działają bezpośrednio na zdalnym pulpicie dzięki emulacji sprzętowej klawiatury (`--keyboard=uhid`).
+   - Prawy przycisk myszy wywołuje menu kontekstowe na zdalnym PC (dzięki `--mouse-bind=++++`).
+
+3. **Gdy schowek zawiesi się na zdalnym komputerze Windows**:
+   - Na zdalnym komputerze (w Win+R lub wierszu poleceń) zrestartuj proces schowka RDP:
+     ```cmd
+     taskkill /f /im rdpclip.exe & start rdpclip.exe
+     ```
+   - Przycisk **„📋 Napraw schowek (3 maszyny)”** w panelu automatycznie kopiuje to polecenie do Twojego schowka i odświeża uprawnienia ADB.
