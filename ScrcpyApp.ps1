@@ -187,7 +187,7 @@
     # Główne okno aplikacji
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "Scrcpy Manager"
-    $form.Size = New-Object System.Drawing.Size(380, 650)
+    $form.Size = New-Object System.Drawing.Size(380, 715)
     $form.StartPosition = "CenterScreen"
     $form.FormBorderStyle = "FixedDialog"
     $form.MaximizeBox = $false
@@ -361,11 +361,38 @@
     $chkAutoTaskbar.Location = New-Object System.Drawing.Point(20, 206)
     $form.Controls.Add($chkAutoTaskbar)
 
+    # Profil rozdzielczości dla Windows App (RDP)
+    $resProfiles = @{
+        "2K QHD (2560x1440 / DPI 140) - Duża przestrzeń" = "2560x1440/140"
+        "Full HD Kompakt (1920x1080 / DPI 120)"         = "1920x1080/120"
+        "Full HD Standard (1920x1080 / DPI 160)"        = "1920x1080/160"
+        "4K UHD (3840x2160 / DPI 200)"                  = "3840x2160/200"
+        "Domyślna telefonu (1080x2200)"                 = "1080x2200"
+    }
+
+    $lblRes = New-Object System.Windows.Forms.Label
+    $lblRes.Text = "Rozdzielczość dla Windows App (RDP):"
+    $lblRes.Location = New-Object System.Drawing.Point(18, 230)
+    $lblRes.AutoSize = $true
+    $form.Controls.Add($lblRes)
+
+    $cmbRes = New-Object System.Windows.Forms.ComboBox
+    $cmbRes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+    $cmbRes.Location = New-Object System.Drawing.Point(18, 248)
+    $cmbRes.Size = New-Object System.Drawing.Size(335, 24)
+    $cmbRes.Items.Add("2K QHD (2560x1440 / DPI 140) - Duża przestrzeń") | Out-Null
+    $cmbRes.Items.Add("Full HD Kompakt (1920x1080 / DPI 120)") | Out-Null
+    $cmbRes.Items.Add("Full HD Standard (1920x1080 / DPI 160)") | Out-Null
+    $cmbRes.Items.Add("4K UHD (3840x2160 / DPI 200)") | Out-Null
+    $cmbRes.Items.Add("Domyślna telefonu (1080x2200)") | Out-Null
+    $cmbRes.SelectedIndex = 0
+    $form.Controls.Add($cmbRes)
+
     # --- Sekcja: uruchamianie konkretnych aplikacji w osobnym oknie (2 KOLUMNY, ALFABETYCZNIE) ---
 
     $groupApps = New-Object System.Windows.Forms.GroupBox
     $groupApps.Text = "Uruchom aplikację w osobnym oknie"
-    $groupApps.Location = New-Object System.Drawing.Point(18, 230)
+    $groupApps.Location = New-Object System.Drawing.Point(18, 280)
     $groupApps.Size = New-Object System.Drawing.Size(335, 335)
     $form.Controls.Add($groupApps)
 
@@ -411,7 +438,17 @@
 
         $btn.Add_Click({
             if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-            Start-ScrcpyApp -PackageName $pkg -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks
+            $disp = $appDisplaySize
+            if ($pkg -eq "com.microsoft.rdc.androidx") {
+                $sel = $cmbRes.SelectedItem.ToString()
+                if ($resProfiles.ContainsKey($sel)) {
+                    $disp = $resProfiles[$sel]
+                }
+                else {
+                    $disp = "2560x1440/140"
+                }
+            }
+            Start-ScrcpyApp -PackageName $pkg -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
         }.GetNewClosure())
 
         $groupApps.Controls.Add($btn)
@@ -440,14 +477,19 @@
             return
         }
         if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-        Start-ScrcpyApp -PackageName $pkg
+        $disp = $appDisplaySize
+        if ($pkg -eq "com.microsoft.rdc.androidx") {
+            $sel = $cmbRes.SelectedItem.ToString()
+            if ($resProfiles.ContainsKey($sel)) { $disp = $resProfiles[$sel] }
+        }
+        Start-ScrcpyApp -PackageName $pkg -DisplaySize $disp
     })
     $groupApps.Controls.Add($btnCustom)
 
     # Etykieta informacyjna o stanie blokady ekranu
     $lblStatus = New-Object System.Windows.Forms.Label
     $lblStatus.Text = "Blokada ekranu: wyłączona (czuwanie aktywne)"
-    $lblStatus.Location = New-Object System.Drawing.Point(18, 574)
+    $lblStatus.Location = New-Object System.Drawing.Point(18, 626)
     $lblStatus.Size = New-Object System.Drawing.Size(335, 25)
     $lblStatus.ForeColor = [System.Drawing.Color]::DarkGreen
     $lblStatus.Font = New-Object System.Drawing.Font("Arial", [float]8, [System.Drawing.FontStyle]::Italic)

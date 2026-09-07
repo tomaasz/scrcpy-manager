@@ -35,6 +35,7 @@ $env:SCRCPY_ADB_PIN = "1234"
 - **Pełna obsługa polskich znaków (AltGr) i schowka**: wszystkie aplikacje uruchamiane są w trybie sprzętowej klawiatury UHID (`-K`), dzięki czemu kombinacje z prawym Alt (`AltGr + a/e/c/s/l/z/x/o/n`) działają natywnie w aplikacjach Androida.
 - **Przycisk „Klawiatura (Polski)”**: jedno kliknięcie otwiera konfigurację klawiatury fizycznej na telefonie (`HARD_KEYBOARD_SETTINGS`), aby sprawdzić lub wybrać układ *Polski (programisty)*.
 - **Optymalizacja schowka dla 3 maszyn**: sprzętowy tryb klawiatury (`-K`) i pełne przekazywanie kliknięć myszy (`--mouse-bind=++++`).
+- **Profile rozdzielczości i zagęszczenia (DPI) dla Windows App (RDP)**: menu wyboru rozdzielczości w panelu: *2K QHD (2560x1440 / DPI 140)*, *Full HD Kompakt (1920x1080 / DPI 120)*, *Full HD Standard (1920x1080 / DPI 160)*, *4K UHD (3840x2160)*. Umożliwia uzyskanie ogromnej, ostrej przestrzeni roboczej w sesjach zdalnego pulpitu.
 
 ---
 
