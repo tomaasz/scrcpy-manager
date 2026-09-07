@@ -17,7 +17,21 @@ $env:SCRCPY_ADB_PIN = "1234"
 & .\ScrcpyApp.ps1
 ```
 
-Przycisk ConneckBot uruchamia pakiet `org.connectbot`.
+## Funkcje panelu
+
+- **Automatyczny Taskbar**: Panel automatycznie włącza pasek zadań Taskbar i tryb okienkowy na telefonie (możliwość włączenia/wyłączenia przełącznikiem w oknie).
+- **Aplikacje w 2 kolumnach (alfabetycznie)**:
+  - Claude (`com.anthropic.claude`)
+  - ConneckBot (`org.connectbot`)
+  - Gmail (Wszystkie) (`com.google.android.gm`)
+  - TurboTel (`ellipi.messenger`)
+  - Ustawienia (`com.android.settings`)
+  - Vivaldi (`com.vivaldi.browser`)
+  - WhatsApp (`com.whatsapp`)
+  - Wiadomości (Google) (`com.google.android.apps.messaging`)
+  - Windows App (`com.microsoft.rdc.androidx`)
+- **Brak wygaszania ekranu**: telefon nie blokuje się tak długo, jak aktywny jest panel lub okna scrcpy.
+- **Optymalizacja schowka dla 3 maszyn**: sprzętowy tryb klawiatury (`-K`) i pełne przekazywanie kliknięć myszy (`--mouse-bind=++++`).
 
 ---
 

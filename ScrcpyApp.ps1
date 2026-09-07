@@ -100,6 +100,15 @@ function Restore-ScreenLockSettings {
     }
 }
 
+function Start-Taskbar {
+    if (-not (Test-AdbDeviceSilent)) { return }
+    # Włączenie freeform i skalowalnych okien
+    adb shell settings put global enable_freeform_support 1 2>$null
+    adb shell settings put secure force_resizable_activities 1 2>$null
+    # Uruchomienie Taskbara
+    adb shell monkey -p com.farmerbb.taskbar 1 2>$null | Out-Null
+}
+
 function Optimize-RdcClipboard {
     if (-not (Test-AdbDeviceSilent)) { return }
     # Zezwolenie na odczyt schowka w tle oraz okna systemowe dla Windows App (Remote Desktop)
@@ -174,10 +183,10 @@ function Start-ScrcpyApp {
 
 # --- INTERFEJS GRAFICZNY ---
 
-# Główne okno aplikacji
+# Główne okno aplikacji (zoptymalizowane pod układ 2-kolumnowy)
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Scrcpy Manager"
-$form.Size = New-Object System.Drawing.Size(320, 705)
+$form.Size = New-Object System.Drawing.Size(380, 645)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
@@ -185,14 +194,14 @@ $form.MaximizeBox = $false
 # Etykieta
 $label = New-Object System.Windows.Forms.Label
 $label.Text = "Zarządzanie ekranem (Pixel):"
-$label.Location = New-Object System.Drawing.Point(20, 15)
+$label.Location = New-Object System.Drawing.Point(18, 12)
 $label.AutoSize = $true
 $form.Controls.Add($label)
 
 # Przycisk 1: Tryb Desktop
 $btnDesktop = New-Object System.Windows.Forms.Button
-$btnDesktop.Location = New-Object System.Drawing.Point(20, 40)
-$btnDesktop.Size = New-Object System.Drawing.Size(260, 40)
+$btnDesktop.Location = New-Object System.Drawing.Point(18, 32)
+$btnDesktop.Size = New-Object System.Drawing.Size(335, 38)
 $btnDesktop.Text = "1. Włącz Tryb Desktop (Małe DPI)"
 $btnDesktop.Add_Click({
     if (-not (Test-AdbDevice)) { return }
@@ -204,13 +213,7 @@ $btnDesktop.Add_Click({
     adb shell settings put global transition_animation_scale 0.5
     adb shell settings put global animator_duration_scale 0.5
 
-    # Ustawienia wymagane, żeby okna freeform w Taskbarze miały ramkę
-    # i dało się je przeciągać/skalować (bez tego bywają "gołe").
-    adb shell settings put global enable_freeform_support 1
-    adb shell settings put secure force_resizable_activities 1
-
-    # Automatyczne uruchomienie Taskbara
-    adb shell monkey -p com.farmerbb.taskbar 1 | Out-Null
+    Start-Taskbar
 
     [System.Windows.Forms.MessageBox]::Show(
         "Zastosowano małe DPI, przyspieszono animacje, włączono freeform i uruchomiono Taskbar.`n`nJeśli okna aplikacji w Taskbarze nadal nie mają ramki do przeciągania/zmiany rozmiaru - zrestartuj telefon.",
@@ -221,8 +224,8 @@ $form.Controls.Add($btnDesktop)
 
 # Przycisk 2: Uruchom scrcpy (z automatycznym obracaniem i logowaniem)
 $btnScrcpy = New-Object System.Windows.Forms.Button
-$btnScrcpy.Location = New-Object System.Drawing.Point(20, 90)
-$btnScrcpy.Size = New-Object System.Drawing.Size(260, 50)
+$btnScrcpy.Location = New-Object System.Drawing.Point(18, 75)
+$btnScrcpy.Size = New-Object System.Drawing.Size(335, 48)
 $btnScrcpy.Text = "2. URUCHOM SCRCPY"
 $btnScrcpy.BackColor = [System.Drawing.Color]::LightGreen
 $btnScrcpy.Font = New-Object System.Drawing.Font("Arial", 9, [System.Drawing.FontStyle]::Bold)
@@ -230,6 +233,10 @@ $btnScrcpy.Add_Click({
     if (-not (Test-AdbDevice)) { return }
 
     Enable-ScreenLockPrevention
+
+    if ($chkAutoTaskbar.Checked) {
+        Start-Taskbar
+    }
 
     # 1. Wymuszenie orientacji poziomej
     adb shell settings put system accelerometer_rotation 0
@@ -256,8 +263,8 @@ $form.Controls.Add($btnScrcpy)
 
 # Przycisk 3: Tryb Normalny (Reset)
 $btnNormal = New-Object System.Windows.Forms.Button
-$btnNormal.Location = New-Object System.Drawing.Point(20, 150)
-$btnNormal.Size = New-Object System.Drawing.Size(260, 40)
+$btnNormal.Location = New-Object System.Drawing.Point(18, 128)
+$btnNormal.Size = New-Object System.Drawing.Size(335, 36)
 $btnNormal.Text = "3. Przywróć Tryb Normalny (Reset)"
 $btnNormal.Add_Click({
     if (-not (Test-AdbDevice)) { return }
@@ -276,7 +283,7 @@ $btnNormal.Add_Click({
     Restore-ScreenLockSettings
 
     # Wymuszone zamknięcie Taskbara i powrót na domyślny ekran główny
-    adb shell am force-stop com.farmerbb.taskbar
+    adb shell am force-stop com.farmerbb.taskbar 2>$null
     adb shell input keyevent 3
 
     [System.Windows.Forms.MessageBox]::Show("Przywrócono domyślne ustawienia telefonu (w tym wygaszanie ekranu) i zamknięto Taskbar.", "Gotowe")
@@ -285,8 +292,8 @@ $form.Controls.Add($btnNormal)
 
 # Przycisk 4: Napraw schowek (3 maszyny)
 $btnClipFix = New-Object System.Windows.Forms.Button
-$btnClipFix.Location = New-Object System.Drawing.Point(20, 198)
-$btnClipFix.Size = New-Object System.Drawing.Size(260, 36)
+$btnClipFix.Location = New-Object System.Drawing.Point(18, 169)
+$btnClipFix.Size = New-Object System.Drawing.Size(335, 32)
 $btnClipFix.Text = "📋 Napraw schowek (3 maszyny)"
 $btnClipFix.BackColor = [System.Drawing.Color]::LightSkyBlue
 $btnClipFix.Font = New-Object System.Drawing.Font("Arial", 8.5, [System.Drawing.FontStyle]::Bold)
@@ -320,77 +327,81 @@ $btnClipFix.Add_Click({
 })
 $form.Controls.Add($btnClipFix)
 
-# --- Sekcja: uruchamianie konkretnych aplikacji w osobnym oknie ---
+# Przełącznik automatycznego włączania Taskbara
+$chkAutoTaskbar = New-Object System.Windows.Forms.CheckBox
+$chkAutoTaskbar.Text = "Automatycznie włączaj Taskbar (pasek zadań)"
+$chkAutoTaskbar.Checked = $true
+$chkAutoTaskbar.AutoSize = $true
+$chkAutoTaskbar.Location = New-Object System.Drawing.Point(20, 206)
+$form.Controls.Add($chkAutoTaskbar)
+
+# --- Sekcja: uruchamianie konkretnych aplikacji w osobnym oknie (2 KOLUMNY, ALFABETYCZNIE) ---
 
 $groupApps = New-Object System.Windows.Forms.GroupBox
 $groupApps.Text = "Uruchom aplikację w osobnym oknie"
-$groupApps.Location = New-Object System.Drawing.Point(20, 242)
-$groupApps.Size = New-Object System.Drawing.Size(260, 370)
+$groupApps.Location = New-Object System.Drawing.Point(18, 230)
+$groupApps.Size = New-Object System.Drawing.Size(335, 335)
 $form.Controls.Add($groupApps)
 
-# Przycisk: WhatsApp
-$btnWhatsApp = New-Object System.Windows.Forms.Button
-$btnWhatsApp.Location = New-Object System.Drawing.Point(15, 25)
-$btnWhatsApp.Size = New-Object System.Drawing.Size(230, 35)
-$btnWhatsApp.Text = "WhatsApp"
-$btnWhatsApp.Add_Click({ Start-ScrcpyApp -PackageName "com.whatsapp" })
-$groupApps.Controls.Add($btnWhatsApp)
+# Lista aplikacji posortowana alfabetycznie
+$appButtons = @(
+    @{ Text = "Claude";              Package = "com.anthropic.claude";                  Flags = @() },
+    @{ Text = "ConneckBot";          Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
+    @{ Text = "Gmail (Wszystkie)";   Package = "com.google.android.gm";                 Flags = @() },
+    @{ Text = "TurboTel";            Package = "ellipi.messenger";                      Flags = @() },
+    @{ Text = "Ustawienia";          Package = "com.android.settings";                  Flags = @() },
+    @{ Text = "Vivaldi";             Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
+    @{ Text = "WhatsApp";            Package = "com.whatsapp";                          Flags = @() },
+    @{ Text = "Wiadomości (Google)"; Package = "com.google.android.apps.messaging";     Flags = @() },
+    @{ Text = "Windows App";         Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
+)
 
-# Przycisk: Vivaldi
-$btnVivaldi = New-Object System.Windows.Forms.Button
-$btnVivaldi.Location = New-Object System.Drawing.Point(15, 65)
-$btnVivaldi.Size = New-Object System.Drawing.Size(230, 35)
-$btnVivaldi.Text = "Vivaldi"
-$btnVivaldi.Add_Click({ Start-ScrcpyApp -PackageName "com.vivaldi.browser" -ForwardAllClicks })
-$groupApps.Controls.Add($btnVivaldi)
+# Generowanie przycisków w 2 kolumnach
+$colWidth = 148
+$btnHeight = 35
+$rowPitch = 41
+$colPitch = 157
+$startX = 15
+$startY = 24
 
-# Przycisk: TurboTel (mod Telegrama)
-$btnTurboTel = New-Object System.Windows.Forms.Button
-$btnTurboTel.Location = New-Object System.Drawing.Point(15, 105)
-$btnTurboTel.Size = New-Object System.Drawing.Size(230, 35)
-$btnTurboTel.Text = "TurboTel"
-$btnTurboTel.Add_Click({ Start-ScrcpyApp -PackageName "ellipi.messenger" })
-$groupApps.Controls.Add($btnTurboTel)
+for ($i = 0; $i -lt $appButtons.Count; $i++) {
+    $app = $appButtons[$i]
+    $row = [math]::Floor($i / 2)
+    $col = $i % 2
 
-# Przycisk: Wiadomości (Google Messages)
-$btnMessages = New-Object System.Windows.Forms.Button
-$btnMessages.Location = New-Object System.Drawing.Point(15, 145)
-$btnMessages.Size = New-Object System.Drawing.Size(230, 35)
-$btnMessages.Text = "Wiadomości (Google)"
-$btnMessages.Add_Click({ Start-ScrcpyApp -PackageName "com.google.android.apps.messaging" })
-$groupApps.Controls.Add($btnMessages)
+    $btn = New-Object System.Windows.Forms.Button
+    $btn.Text = $app.Text
+    $btn.Font = New-Object System.Drawing.Font("Arial", 8.5)
+    $btn.Location = New-Object System.Drawing.Point(($startX + $col * $colPitch), ($startY + $row * $rowPitch))
+    $btn.Size = New-Object System.Drawing.Size($colWidth, $btnHeight)
 
-# Przycisk: Windows App (Microsoft Remote Desktop)
-$btnWindowsApp = New-Object System.Windows.Forms.Button
-$btnWindowsApp.Location = New-Object System.Drawing.Point(15, 185)
-$btnWindowsApp.Size = New-Object System.Drawing.Size(230, 35)
-$btnWindowsApp.Text = "Windows App (RDP + Schowek)"
-$btnWindowsApp.Add_Click({ Start-ScrcpyApp -PackageName "com.microsoft.rdc.androidx" -UseUhidKeyboard -ForwardAllClicks })
-$groupApps.Controls.Add($btnWindowsApp)
+    $pkg = $app.Package
+    $useUhid = $app.Flags -contains "-UseUhidKeyboard"
+    $forwardClicks = $app.Flags -contains "-ForwardAllClicks"
 
-# Przycisk: ConneckBot (ConnectBot)
-$btnConneckBot = New-Object System.Windows.Forms.Button
-$btnConneckBot.Location = New-Object System.Drawing.Point(15, 225)
-$btnConneckBot.Size = New-Object System.Drawing.Size(230, 35)
-$btnConneckBot.Text = "ConneckBot"
-$btnConneckBot.Add_Click({ Start-ScrcpyApp -PackageName "org.connectbot" -UseUhidKeyboard })
-$groupApps.Controls.Add($btnConneckBot)
+    $btn.Add_Click({
+        if ($chkAutoTaskbar.Checked) { Start-Taskbar }
+        Start-ScrcpyApp -PackageName $pkg -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks
+    }.GetNewClosure())
+
+    $groupApps.Controls.Add($btn)
+}
 
 # Dowolny inny pakiet - pole tekstowe + przycisk
 $lblCustom = New-Object System.Windows.Forms.Label
 $lblCustom.Text = "Inny pakiet (np. com.spotify.music):"
-$lblCustom.Location = New-Object System.Drawing.Point(15, 270)
+$lblCustom.Location = New-Object System.Drawing.Point(15, 233)
 $lblCustom.AutoSize = $true
 $groupApps.Controls.Add($lblCustom)
 
 $txtCustom = New-Object System.Windows.Forms.TextBox
-$txtCustom.Location = New-Object System.Drawing.Point(15, 290)
-$txtCustom.Size = New-Object System.Drawing.Size(230, 20)
+$txtCustom.Location = New-Object System.Drawing.Point(15, 253)
+$txtCustom.Size = New-Object System.Drawing.Size(305, 20)
 $groupApps.Controls.Add($txtCustom)
 
 $btnCustom = New-Object System.Windows.Forms.Button
-$btnCustom.Location = New-Object System.Drawing.Point(15, 315)
-$btnCustom.Size = New-Object System.Drawing.Size(230, 35)
+$btnCustom.Location = New-Object System.Drawing.Point(15, 278)
+$btnCustom.Size = New-Object System.Drawing.Size(305, 32)
 $btnCustom.Text = "Uruchom"
 $btnCustom.Add_Click({
     $pkg = $txtCustom.Text.Trim()
@@ -398,6 +409,7 @@ $btnCustom.Add_Click({
         [System.Windows.Forms.MessageBox]::Show("Wpisz nazwę pakietu aplikacji.", "Brak pakietu")
         return
     }
+    if ($chkAutoTaskbar.Checked) { Start-Taskbar }
     Start-ScrcpyApp -PackageName $pkg
 })
 $groupApps.Controls.Add($btnCustom)
@@ -405,8 +417,8 @@ $groupApps.Controls.Add($btnCustom)
 # Etykieta informacyjna o stanie blokady ekranu
 $lblStatus = New-Object System.Windows.Forms.Label
 $lblStatus.Text = "Blokada ekranu: wyłączona (czuwanie aktywne)"
-$lblStatus.Location = New-Object System.Drawing.Point(20, 622)
-$lblStatus.Size = New-Object System.Drawing.Size(260, 30)
+$lblStatus.Location = New-Object System.Drawing.Point(18, 574)
+$lblStatus.Size = New-Object System.Drawing.Size(335, 25)
 $lblStatus.ForeColor = [System.Drawing.Color]::DarkGreen
 $lblStatus.Font = New-Object System.Drawing.Font("Arial", 8, [System.Drawing.FontStyle]::Italic)
 $lblStatus.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
@@ -436,6 +448,9 @@ $form.Add_Load({
     Initialize-ScreenTimeoutSettings
     Enable-ScreenLockPrevention
     Optimize-RdcClipboard
+    if ($chkAutoTaskbar.Checked) {
+        Start-Taskbar
+    }
     $keepAwakeTimer.Start()
 })
 
