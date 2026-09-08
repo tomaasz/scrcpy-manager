@@ -1,7 +1,7 @@
-# Scrcpy Manager 📱🖥️
+# scrcpy Manager 📱🖥️
 
 > **Universal PowerShell desktop companion for `scrcpy` and Android power users.**  
-> Launch Android apps in dedicated floating windows, manage virtual displays, switch seamlessly to Wireless ADB, prevent screen sleep, and streamline Remote Desktop workflows.
+> Launch Android apps in dedicated floating windows, manage virtual displays, switch seamlessly to Wireless ADB (Wi‑Fi), prevent screen sleep, and streamline Remote Desktop workflows.
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue.svg)](https://microsoft.com/PowerShell)
 [![scrcpy](https://img.shields.io/badge/scrcpy-2.0%2B-brightgreen.svg)](https://github.com/Genymobile/scrcpy)
@@ -15,7 +15,7 @@
 ### Key Features
 
 * 🚀 **Multi-Window App Launcher**: Launch any installed Android app in an independent virtual display window (`--new-display`).
-* 📶 **One-Click Wireless ADB (Wi-Fi)**: Automatically detect your phone's Wi-Fi IP and switch from USB cable to wireless debugging in one click.
+* 📶 **One-Click Wireless ADB (Wi‑Fi)**: Automatically detect your phone's Wi‑Fi IP and switch from USB cable to wireless debugging in one click.
 * 🔊 **Audio Passthrough Control**: Toggle real-time audio forwarding from your Android device to PC speakers/headphones.
 * ⌨️ **Hardware Keyboard (UHID) & Diacritics**: Full native support for special characters and diacritics (e.g., Polish `AltGr + a/e/c/s/l/z/x/o/n`) with direct hardware keyboard simulation (`-K`).
 * 🖥️ **High-Resolution RDP Profiles (Windows App)**: Optimized presets for Microsoft Remote Desktop / Windows App:
@@ -23,10 +23,10 @@
   * `2K QHD (2560x1440 / DPI 160)` – +77% expanded desktop workspace.
   * `4K UHD (3840x2160 / DPI 200)` – Ultra-high workspace.
   * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
-* 🌓 **Dark & Light Mode**: Seamless 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with custom OwnerDraw dropdowns.
+* 🌓 **Dark & Light Mode**: Seamless 1-click theme switcher (`☀ Light` / `☾ Dark`) with custom OwnerDraw dropdowns.
 * 🌐 **Bilingual Interface**: Instant on-the-fly toggling between Polish (PL) and English (EN) with preference persistence (`preferences.json`).
-* 🔋 **Battery & Device Monitor**: Real-time battery percentage, charging state, device model, and connection mode.
-* 🎨 **Refined Action Layout**: Hero launch button, side-by-side mode controls, and 3-column utility pills.
+* 🔋 **Real-Time Status Card**: Top-level device card with connection indicator dot (`●`), device model (e.g. `Pixel 8 Pro — connected via USB`), battery level with charging state, and keep-awake status.
+* 📱 **Safe Device Operations**: Easily switch between Desktop mode and default view, plus a dedicated phone restart button with safety confirmation dialog.
 * ⚙️ **Configurable App Grid (`apps.json`)**: Add, remove, or customize your favorite apps simply by editing a JSON file.
 * 🔒 **Zero Hardcoded Secrets**: Secure PIN handling via environment variables; no credentials or sensitive tokens stored in git.
 
@@ -80,7 +80,7 @@ You can edit `apps.json` to configure the buttons shown in the manager:
     "flags": []
   },
   {
-    "name": "Windows App",
+    "name": "Windows App (RDP)",
     "package": "com.microsoft.rdc.androidx",
     "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
   }
@@ -94,7 +94,7 @@ You can edit `apps.json` to configure the buttons shown in the manager:
 ### Najważniejsze funkcje
 
 * **Aplikacje w osobnych oknach**: Uruchamianie aplikacji Androida w niezależnych, pływających oknach (`--new-display`).
-* **Bezprzewodowe ADB jednym kliknięciem**: Automatyczne wykrycie IP telefonu w sieci domowej/biurowej i przełączenie na tryb Wi-Fi (`adb connect <IP>:5555`).
+* **Bezprzewodowe ADB jednym kliknięciem**: Automatyczne wykrycie IP telefonu w sieci domowej/biurowej i przełączenie na tryb Wi‑Fi (`adb connect <IP>:5555`).
 * **Przełącznik przesyłania dźwięku**: Opcja włączenia lub wyciszenia dźwięku (`--no-audio`) z poziomu panelu.
 * **Pełna obsługa polskich znaków i klawiatury fizycznej**: Wszystkie aplikacje uruchamiają się z obsługą sprzętowej klawiatury UHID (`-K`), dzięki czemu prawy Alt (`AltGr + a, e, c, s, l, z, x, o, n`) działa natywnie.
 * **Optymalizacje dla Windows App (RDP)**:
@@ -102,9 +102,10 @@ You can edit `apps.json` to configure the buttons shown in the manager:
   * Wyłączone wymuszone skalowanie w dół i podniesiony bitrate do 16 Mbps dla ostrych czcionek.
   * Przycisk szybkiej naprawy schowka między 3 maszynami (PC lokalny $\leftrightarrow$ Telefon $\leftrightarrow$ PC zdalny).
 * **Automatyczne czuwanie i odblokowywanie**: Telefon nie blokuje się podczas pracy z panelem lub oknami scrcpy, a po zakończeniu przywracany jest pierwotny limit wygaszania.
+* **Górna karta statusu i baterii**: Wyraźny wskaźnik stanu (`●`), model urządzenia (np. `Pixel 8 Pro — połączono przez USB`), poziom naładowania baterii ze stanem ładowania oraz status czuwania.
+* **Bezpieczne operacje na telefonie**: Szybkie przełączanie między Trybem pulpitu a widokiem standardowym oraz przycisk restartu telefonu z oknem potwierdzenia.
 * **Tryb Ciemny i Jasny (Dark / Light Mode)**: Przełączanie motywu jednym kliknięciem z dedykowaną obsługą rysowania list rozwijanych (brak białych pól w trybie ciemnym).
 * **Pełna dwujęzyczność (PL / EN)**: Błyskawiczna zmiana języka interfejsu w locie z zapamiętywaniem w `preferences.json`.
-* **Przejrzysty układ przycisków**: Przycisk akcji głównej (Hero), czytelne przyciski trybów obok siebie oraz 3-kolumnowe pigułki narzędziowe (Schowek, Klawiatura, Wi-Fi).
 * **Konfiguracja przez `apps.json`**: Łatwe dodawanie i usuwanie programów bez modyfikacji kodu skryptu.
 
 ---

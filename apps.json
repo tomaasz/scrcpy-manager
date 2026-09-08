@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "name": "Claude",
     "package": "com.anthropic.claude",
@@ -45,7 +45,7 @@
     "flags": []
   },
   {
-    "name": "Windows App",
+    "name": "Windows App (RDP)",
     "package": "com.microsoft.rdc.androidx",
     "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
   }

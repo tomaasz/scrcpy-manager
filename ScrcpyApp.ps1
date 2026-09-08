@@ -50,37 +50,50 @@
 
     $i18n = @{
         PL = @{
-            HeaderPrefix    = "Zarządzanie:"
-            NoDevice        = "Brak urządzenia"
-            LaunchHero      = "▶  URUCHOM SCRCPY (Pełny Ekran)"
-            DesktopMode     = "🖥️ Tryb Desktop"
-            ResetPhone      = "🔄 Reset telefonu"
-            ClipBtn         = "📋 Schowek"
-            KeyBtn          = "⌨️ Klawiatura"
-            WifiBtn         = "📶 Wi-Fi"
-            AutoTaskbar     = "Włączaj Taskbar na telefonie"
-            AudioPass       = "Przesyłaj dźwięk do PC"
-            ResLabel        = "Rozdzielczość Windows App (RDP):"
-            AppsGroup       = "Aplikacje w osobnym oknie"
-            CustomLabel     = "Inny pakiet (np. com.spotify.music):"
-            CustomBtn       = "Uruchom wpisany pakiet"
-            StatusDevice    = "Urządzenie:"
-            StatusBattery   = "Bateria:"
-            StatusActive    = "Czuwanie aktywne"
-            StatusNoPhone   = "Brak połączenia z telefonem (sprawdź kabel/Wi-Fi)"
-            ChargingStr     = " (Ładowanie)"
-            ThemeDark       = "☀️ Jasny"
-            ThemeLight      = "🌙 Ciemny"
-            LangSwitch      = "EN"
-            MsgNoDevice     = "Nie wykryto podłączonego telefonu.`nSprawdź kabel USB, debugowanie USB w telefonie lub połączenie Wi-Fi."
-            MsgDesktopOn    = "Zastosowano małe DPI, przyspieszono animacje i włączono tryb okienkowy na telefonie."
-            MsgResetDone    = "Przywrócono domyślne ustawienia telefonu, zresetowano DPI i zamknięto Taskbar."
-            MsgClipDone     = "Zastosowano optymalizacje schowka dla telefonu.`nPolecenie naprawcze dla zdalnego PC skopiowano do Twojego schowka:`n{0}`n`nSkróty w oknie:`n• Alt + V : Wklej schowek PC do sesji`n• Alt + C : Pobierz schowek sesji do PC"
-            MsgKeyDone      = "Otwarto ustawienia klawiatury fizycznej w telefonie.`nUpewnij się, że układ klawiatury fizycznej 'scrcpy' ma zaznaczone 'Polski (programisty)'."
-            MsgWifiNoIp     = "Nie udało się automatycznie wykryć adresu IP telefonu w sieci Wi-Fi.`nUpewnij się, że telefon jest połączony z tą samą siecią Wi-Fi co komputer."
-            MsgWifiDone     = "Połączono bezprzewodowo z telefonem:`n{0}:5555`n`nMożesz teraz odłączyć kabel USB!"
-            MsgPkgEmpty     = "Wpisz poprawną nazwę pakietu Androida."
-            ResNames        = @(
+            StatusConnectedUsb  = "połączono przez USB"
+            StatusConnectedWifi = "połączono przez Wi‑Fi"
+            StatusNoPhone       = "Brak połączenia z telefonem"
+            StatusCheckConn     = "Podłącz kabel USB lub sprawdź sieć Wi‑Fi"
+            BatteryLabel        = "Bateria:"
+            ChargingStr         = " (ładowanie)"
+            StatusActive        = "Czuwanie aktywne"
+            ThemeDark           = "☀ Jasny"
+            ThemeLight          = "☾ Ciemny"
+            LangSwitch          = "EN"
+
+            LaunchHero          = "▶  Uruchom scrcpy"
+            FullScreenOpt       = "Uruchamiaj w trybie pełnoekranowym (-f)"
+
+            SectionOptions      = "OBRAZ, DŹWIĘK I STEROWANIE"
+            ResLabel            = "Rozdzielczość wirtualnego ekranu (RDP):"
+            AudioPass           = "Przesyłaj dźwięk do PC"
+            AutoTaskbar         = "Uruchamiaj Taskbar"
+            WifiBtn             = "Połącz przez Wi‑Fi"
+            KeyBtn              = "Klawiatura fizyczna"
+            ClipBtn             = "Naprawa schowka"
+
+            SectionApps         = "APLIKACJE W OKNACH"
+            AppsSubtitle        = "Uruchom wybraną aplikację w oddzielnym oknie scrcpy"
+            CustomLabel         = "Inny pakiet Androida (np. com.spotify.music):"
+            CustomBtn           = "Uruchom"
+
+            SectionDevice       = "OPERACJE NA URZĄDZENIU"
+            DesktopMode         = "Włącz tryb pulpitu"
+            RestoreDefault      = "Przywróć standardowy widok"
+            RebootBtn           = "⚠  Uruchom telefon ponownie"
+
+            TitleRestartConfirm = "Potwierdzenie restartu"
+            MsgRestartConfirm   = "Czy na pewno chcesz uruchomić telefon ponownie?"
+            MsgRestartSent      = "Polecenie restartu zostało wysłane do telefonu."
+            MsgNoDevice         = "Nie wykryto podłączonego telefonu.`nSprawdź kabel USB, debugowanie USB w telefonie lub połączenie Wi‑Fi."
+            MsgDesktopOn        = "Zastosowano niski DPI (250), przyspieszono animacje i włączono tryb okienkowy na telefonie."
+            MsgResetDone        = "Przywrócono domyślne DPI telefonu, zresetowano animacje i zamknięto Taskbar."
+            MsgClipDone         = "Zastosowano optymalizacje schowka dla telefonu.`nPolecenie naprawcze dla zdalnego PC skopiowano do schowka:`n{0}`n`nSkróty w oknie:`n• Alt + V : Wklej schowek PC do sesji`n• Alt + C : Pobierz schowek sesji do PC"
+            MsgKeyDone          = "Otwarto ustawienia klawiatury fizycznej w telefonie.`nUpewnij się, że układ klawiatury fizycznej 'scrcpy' ma zaznaczone 'Polski (programisty)'."
+            MsgWifiNoIp         = "Nie udało się automatycznie wykryć adresu IP telefonu w sieci Wi‑Fi.`nUpewnij się, że telefon jest połączony z tą samą siecią Wi‑Fi co komputer."
+            MsgWifiDone         = "Połączono bezprzewodowo z telefonem:`n{0}:5555`n`nMożesz teraz odłączyć kabel USB!"
+            MsgPkgEmpty         = "Wpisz poprawną nazwę pakietu Androida."
+            ResNames            = @(
                 "Full HD 1080p (Natywna 1:1)",
                 "2K QHD (2560x1440)",
                 "2K QHD Kompakt (DPI 140)",
@@ -89,37 +102,50 @@
             )
         }
         EN = @{
-            HeaderPrefix    = "Managing:"
-            NoDevice        = "No device found"
-            LaunchHero      = "▶  LAUNCH SCRCPY (Full Screen)"
-            DesktopMode     = "🖥️ Desktop Mode"
-            ResetPhone      = "🔄 Reset Phone"
-            ClipBtn         = "📋 Clipboard"
-            KeyBtn          = "⌨️ Keyboard"
-            WifiBtn         = "📶 Wi-Fi"
-            AutoTaskbar     = "Auto-start Taskbar on phone"
-            AudioPass       = "Forward audio to PC"
-            ResLabel        = "Windows App Resolution (RDP):"
-            AppsGroup       = "Launch App in Window"
-            CustomLabel     = "Custom package (e.g. com.spotify.music):"
-            CustomBtn       = "Launch custom package"
-            StatusDevice    = "Device:"
-            StatusBattery   = "Battery:"
-            StatusActive    = "Keep-awake active"
-            StatusNoPhone   = "No phone connected (check USB/Wi-Fi)"
-            ChargingStr     = " (Charging)"
-            ThemeDark       = "☀️ Light"
-            ThemeLight      = "🌙 Dark"
-            LangSwitch      = "PL"
-            MsgNoDevice     = "No Android device detected.`nPlease check USB cable, USB debugging, or Wi-Fi connection."
-            MsgDesktopOn    = "Low DPI applied, animations accelerated, and freeform mode enabled on phone."
-            MsgResetDone    = "Phone restored to default settings, DPI reset, and Taskbar closed."
-            MsgClipDone     = "Clipboard optimizations applied.`nRemote PC repair command copied to your clipboard:`n{0}`n`nWindow Shortcuts:`n• Alt + V : Paste PC clipboard to session`n• Alt + C : Copy session clipboard to PC"
-            MsgKeyDone      = "Physical keyboard settings opened on phone.`nEnsure 'scrcpy' hardware keyboard layout is set to your preferred layout."
-            MsgWifiNoIp     = "Could not automatically detect phone IP on Wi-Fi.`nEnsure your phone is connected to the same Wi-Fi network as this PC."
-            MsgWifiDone     = "Connected wirelessly to phone:`n{0}:5555`n`nYou can now disconnect the USB cable!"
-            MsgPkgEmpty     = "Please enter a valid Android package name."
-            ResNames        = @(
+            StatusConnectedUsb  = "connected via USB"
+            StatusConnectedWifi = "connected via Wi‑Fi"
+            StatusNoPhone       = "No phone connected"
+            StatusCheckConn     = "Connect USB cable or check Wi‑Fi network"
+            BatteryLabel        = "Battery:"
+            ChargingStr         = " (charging)"
+            StatusActive        = "Keep-awake active"
+            ThemeDark           = "☀ Light"
+            ThemeLight          = "☾ Dark"
+            LangSwitch          = "PL"
+
+            LaunchHero          = "▶  Launch scrcpy"
+            FullScreenOpt       = "Launch in full screen mode (-f)"
+
+            SectionOptions      = "DISPLAY, AUDIO & CONTROL"
+            ResLabel            = "Virtual display resolution (RDP):"
+            AudioPass           = "Forward audio to PC"
+            AutoTaskbar         = "Start Taskbar"
+            WifiBtn             = "Connect via Wi‑Fi"
+            KeyBtn              = "Hardware keyboard"
+            ClipBtn             = "Fix clipboard"
+
+            SectionApps         = "WINDOWED APPLICATIONS"
+            AppsSubtitle        = "Launch selected app in a dedicated scrcpy window"
+            CustomLabel         = "Custom Android package (e.g. com.spotify.music):"
+            CustomBtn           = "Launch"
+
+            SectionDevice       = "DEVICE OPERATIONS"
+            DesktopMode         = "Enable desktop mode"
+            RestoreDefault      = "Restore default view"
+            RebootBtn           = "⚠  Restart phone"
+
+            TitleRestartConfirm = "Confirm Restart"
+            MsgRestartConfirm   = "Are you sure you want to restart the phone?"
+            MsgRestartSent      = "Restart command has been sent to the phone."
+            MsgNoDevice         = "No Android device detected.`nPlease check USB cable, USB debugging, or Wi‑Fi connection."
+            MsgDesktopOn        = "Low DPI (250) applied, animations accelerated, and freeform mode enabled on phone."
+            MsgResetDone        = "Default DPI restored, animations reset, and Taskbar closed."
+            MsgClipDone         = "Clipboard optimizations applied.`nRemote PC repair command copied to clipboard:`n{0}`n`nWindow Shortcuts:`n• Alt + V : Paste PC clipboard to session`n• Alt + C : Copy session clipboard to PC"
+            MsgKeyDone          = "Physical keyboard settings opened on phone.`nEnsure 'scrcpy' hardware keyboard layout is set to your preferred layout."
+            MsgWifiNoIp         = "Could not automatically detect phone IP on Wi‑Fi.`nEnsure your phone is connected to the same Wi‑Fi network as this PC."
+            MsgWifiDone         = "Connected wirelessly to phone:`n{0}:5555`n`nYou can now disconnect the USB cable!"
+            MsgPkgEmpty         = "Please enter a valid Android package name."
+            ResNames            = @(
                 "Full HD 1080p (Native 1:1)",
                 "2K QHD (2560x1440)",
                 "2K QHD Compact (DPI 140)",
@@ -150,7 +176,7 @@
             $t = $i18n[$script:currentLang]
             [System.Windows.Forms.MessageBox]::Show(
                 $t.MsgNoDevice,
-                $t.NoDevice,
+                $t.StatusNoPhone,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             )
@@ -161,7 +187,7 @@
 
     function Update-DeviceInfo {
         if (-not (Test-AdbDeviceSilent)) {
-            $script:deviceModel = $i18n[$script:currentLang].NoDevice
+            $script:deviceModel = ""
             return
         }
 
@@ -315,7 +341,7 @@
         if (-not $ip) {
             [System.Windows.Forms.MessageBox]::Show(
                 $t.MsgWifiNoIp,
-                "Wi-Fi",
+                "Wi‑Fi",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             )
@@ -330,7 +356,7 @@
             $script:isWifiConnected = $true
             [System.Windows.Forms.MessageBox]::Show(
                 ($t.MsgWifiDone -f $ip),
-                "Wi-Fi",
+                "Wi‑Fi",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Information
             )
@@ -338,9 +364,29 @@
         else {
             [System.Windows.Forms.MessageBox]::Show(
                 "Result: $connectRes",
-                "Wi-Fi",
+                "Wi‑Fi",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
+            )
+        }
+    }
+
+    function Restart-DeviceWithConfirmation {
+        if (-not (Test-AdbDevice)) { return }
+        $t = $i18n[$script:currentLang]
+        $res = [System.Windows.Forms.MessageBox]::Show(
+            $t.MsgRestartConfirm,
+            $t.TitleRestartConfirm,
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        )
+        if ($res -eq [System.Windows.Forms.DialogResult]::Yes) {
+            adb reboot 2>$null | Out-Null
+            [System.Windows.Forms.MessageBox]::Show(
+                $t.MsgRestartSent,
+                $t.TitleRestartConfirm,
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Information
             )
         }
     }
@@ -428,16 +474,16 @@
 
     if ($appButtons.Count -eq 0) {
         $appButtons = @(
-            @{ Text = "Claude";              Package = "com.anthropic.claude";                  Flags = @() },
-            @{ Text = "ConneckBot";          Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
-            @{ Text = "Gmail (Wszystkie)";   Package = "com.google.android.gm";                 Flags = @() },
-            @{ Text = "Messenger";           Package = "com.facebook.orca";                     Flags = @() },
-            @{ Text = "TurboTel";            Package = "ellipi.messenger";                      Flags = @() },
-            @{ Text = "Ustawienia";          Package = "com.android.settings";                  Flags = @() },
-            @{ Text = "Vivaldi";             Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
-            @{ Text = "WhatsApp";            Package = "com.whatsapp";                          Flags = @() },
-            @{ Text = "Wiadomości (Google)"; Package = "com.google.android.apps.messaging";     Flags = @() },
-            @{ Text = "Windows App";         Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
+            @{ Text = "Claude";                  Package = "com.anthropic.claude";                  Flags = @() },
+            @{ Text = "ConneckBot";              Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
+            @{ Text = "Gmail (Wszystkie)";       Package = "com.google.android.gm";                 Flags = @() },
+            @{ Text = "Messenger";               Package = "com.facebook.orca";                     Flags = @() },
+            @{ Text = "TurboTel";                Package = "ellipi.messenger";                      Flags = @() },
+            @{ Text = "Ustawienia";              Package = "com.android.settings";                  Flags = @() },
+            @{ Text = "Vivaldi";                 Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
+            @{ Text = "WhatsApp";                Package = "com.whatsapp";                          Flags = @() },
+            @{ Text = "Wiadomości (Google)";     Package = "com.google.android.apps.messaging";     Flags = @() },
+            @{ Text = "Windows App (RDP)";       Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
         )
     }
 
@@ -447,97 +493,135 @@
 
     $themeColors = @{
         Dark = @{
-            Bg          = [System.Drawing.Color]::FromArgb(24, 25, 32)
-            Card        = [System.Drawing.Color]::FromArgb(33, 35, 45)
-            CardBorder  = [System.Drawing.Color]::FromArgb(52, 56, 70)
-            Text        = [System.Drawing.Color]::FromArgb(240, 242, 248)
-            TextMuted   = [System.Drawing.Color]::FromArgb(150, 155, 175)
-            BtnHero     = [System.Drawing.Color]::FromArgb(35, 145, 75)
-            BtnHeroText = [System.Drawing.Color]::White
-            BtnMode     = [System.Drawing.Color]::FromArgb(44, 48, 62)
-            BtnModeText = [System.Drawing.Color]::FromArgb(230, 235, 245)
-            BtnReset    = [System.Drawing.Color]::FromArgb(55, 35, 42)
-            BtnResetText= [System.Drawing.Color]::FromArgb(255, 130, 130)
-            BtnTool     = [System.Drawing.Color]::FromArgb(35, 75, 135)
-            BtnToolText = [System.Drawing.Color]::White
-            BtnWifi     = [System.Drawing.Color]::FromArgb(95, 60, 155)
-            BtnApp      = [System.Drawing.Color]::FromArgb(45, 48, 60)
-            BtnAppText  = [System.Drawing.Color]::FromArgb(235, 238, 248)
-            InputBg     = [System.Drawing.Color]::FromArgb(28, 30, 38)
-            InputText   = [System.Drawing.Color]::FromArgb(240, 242, 248)
-            ToggleBg    = [System.Drawing.Color]::FromArgb(44, 48, 62)
-            ToggleText  = [System.Drawing.Color]::FromArgb(230, 235, 245)
+            Bg               = [System.Drawing.Color]::FromArgb(24, 25, 32)
+            Card             = [System.Drawing.Color]::FromArgb(33, 35, 45)
+            CardBorder       = [System.Drawing.Color]::FromArgb(52, 56, 70)
+            Text             = [System.Drawing.Color]::FromArgb(240, 242, 248)
+            TextMuted        = [System.Drawing.Color]::FromArgb(150, 155, 175)
+            StatusDotOnline  = [System.Drawing.Color]::FromArgb(46, 204, 113)
+            StatusDotOffline = [System.Drawing.Color]::FromArgb(127, 140, 141)
+            BtnHero          = [System.Drawing.Color]::FromArgb(35, 145, 75)
+            BtnHeroText      = [System.Drawing.Color]::White
+            BtnMode          = [System.Drawing.Color]::FromArgb(44, 48, 62)
+            BtnModeText      = [System.Drawing.Color]::FromArgb(230, 235, 245)
+            BtnModeBorder    = [System.Drawing.Color]::FromArgb(66, 71, 92)
+            BtnReboot        = [System.Drawing.Color]::FromArgb(62, 35, 40)
+            BtnRebootText    = [System.Drawing.Color]::FromArgb(255, 138, 138)
+            BtnRebootBorder  = [System.Drawing.Color]::FromArgb(110, 46, 53)
+            BtnTool          = [System.Drawing.Color]::FromArgb(39, 58, 94)
+            BtnToolText      = [System.Drawing.Color]::FromArgb(214, 228, 255)
+            BtnToolBorder    = [System.Drawing.Color]::FromArgb(58, 80, 126)
+            BtnApp           = [System.Drawing.Color]::FromArgb(37, 40, 52)
+            BtnAppText       = [System.Drawing.Color]::FromArgb(235, 240, 250)
+            BtnAppBorder     = [System.Drawing.Color]::FromArgb(56, 61, 80)
+            InputBg          = [System.Drawing.Color]::FromArgb(28, 30, 38)
+            InputText        = [System.Drawing.Color]::FromArgb(240, 242, 248)
+            ToggleBg         = [System.Drawing.Color]::FromArgb(44, 48, 62)
+            ToggleText       = [System.Drawing.Color]::FromArgb(230, 235, 245)
         }
         Light = @{
-            Bg          = [System.Drawing.Color]::FromArgb(245, 246, 250)
-            Card        = [System.Drawing.Color]::FromArgb(255, 255, 255)
-            CardBorder  = [System.Drawing.Color]::FromArgb(215, 220, 232)
-            Text        = [System.Drawing.Color]::FromArgb(25, 28, 36)
-            TextMuted   = [System.Drawing.Color]::FromArgb(105, 110, 125)
-            BtnHero     = [System.Drawing.Color]::FromArgb(28, 135, 68)
-            BtnHeroText = [System.Drawing.Color]::White
-            BtnMode     = [System.Drawing.Color]::FromArgb(238, 241, 248)
-            BtnModeText = [System.Drawing.Color]::FromArgb(35, 40, 55)
-            BtnReset    = [System.Drawing.Color]::FromArgb(254, 238, 238)
-            BtnResetText= [System.Drawing.Color]::FromArgb(195, 40, 40)
-            BtnTool     = [System.Drawing.Color]::FromArgb(38, 105, 195)
-            BtnToolText = [System.Drawing.Color]::White
-            BtnWifi     = [System.Drawing.Color]::FromArgb(120, 75, 190)
-            BtnApp      = [System.Drawing.Color]::FromArgb(246, 248, 253)
-            BtnAppText  = [System.Drawing.Color]::FromArgb(30, 35, 48)
-            InputBg     = [System.Drawing.Color]::White
-            InputText   = [System.Drawing.Color]::FromArgb(25, 28, 36)
-            ToggleBg    = [System.Drawing.Color]::FromArgb(232, 235, 245)
-            ToggleText  = [System.Drawing.Color]::FromArgb(35, 40, 55)
+            Bg               = [System.Drawing.Color]::FromArgb(245, 246, 250)
+            Card             = [System.Drawing.Color]::FromArgb(255, 255, 255)
+            CardBorder       = [System.Drawing.Color]::FromArgb(216, 220, 230)
+            Text             = [System.Drawing.Color]::FromArgb(25, 28, 36)
+            TextMuted        = [System.Drawing.Color]::FromArgb(100, 105, 121)
+            StatusDotOnline  = [System.Drawing.Color]::FromArgb(39, 174, 96)
+            StatusDotOffline = [System.Drawing.Color]::FromArgb(189, 195, 199)
+            BtnHero          = [System.Drawing.Color]::FromArgb(27, 138, 70)
+            BtnHeroText      = [System.Drawing.Color]::White
+            BtnMode          = [System.Drawing.Color]::FromArgb(240, 242, 248)
+            BtnModeText      = [System.Drawing.Color]::FromArgb(36, 40, 56)
+            BtnModeBorder    = [System.Drawing.Color]::FromArgb(212, 216, 230)
+            BtnReboot        = [System.Drawing.Color]::FromArgb(253, 238, 239)
+            BtnRebootText    = [System.Drawing.Color]::FromArgb(192, 34, 47)
+            BtnRebootBorder  = [System.Drawing.Color]::FromArgb(246, 193, 197)
+            BtnTool          = [System.Drawing.Color]::FromArgb(238, 243, 252)
+            BtnToolText      = [System.Drawing.Color]::FromArgb(27, 79, 155)
+            BtnToolBorder    = [System.Drawing.Color]::FromArgb(202, 217, 244)
+            BtnApp           = [System.Drawing.Color]::FromArgb(255, 255, 255)
+            BtnAppText       = [System.Drawing.Color]::FromArgb(33, 36, 48)
+            BtnAppBorder     = [System.Drawing.Color]::FromArgb(216, 220, 230)
+            InputBg          = [System.Drawing.Color]::White
+            InputText        = [System.Drawing.Color]::FromArgb(25, 28, 36)
+            ToggleBg         = [System.Drawing.Color]::FromArgb(232, 235, 245)
+            ToggleText       = [System.Drawing.Color]::FromArgb(35, 40, 55)
         }
     }
 
     # Fonty
-    $fontRegular = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Regular)
-    $fontBold    = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Bold)
-    $fontHero    = New-Object System.Drawing.Font("Segoe UI", [float]10, [System.Drawing.FontStyle]::Bold)
-    $fontTitle   = New-Object System.Drawing.Font("Segoe UI", [float]9.5, [System.Drawing.FontStyle]::Bold)
-    $fontSmall   = New-Object System.Drawing.Font("Segoe UI", [float]8.2, [System.Drawing.FontStyle]::Regular)
+    $fontRegular   = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Regular)
+    $fontBold      = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Bold)
+    $fontHero      = New-Object System.Drawing.Font("Segoe UI", [float]10.5, [System.Drawing.FontStyle]::Bold)
+    $fontTitle     = New-Object System.Drawing.Font("Segoe UI", [float]9.5, [System.Drawing.FontStyle]::Bold)
+    $fontSection   = New-Object System.Drawing.Font("Segoe UI", [float]8.2, [System.Drawing.FontStyle]::Bold)
+    $fontSmall     = New-Object System.Drawing.Font("Segoe UI", [float]8.2, [System.Drawing.FontStyle]::Regular)
+    $fontDot       = New-Object System.Drawing.Font("Segoe UI", [float]11, [System.Drawing.FontStyle]::Bold)
 
     # --- OKNO FORMULARZA ---
 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = "Scrcpy Manager"
-    $form.Size = New-Object System.Drawing.Size(385, 755)
+    $form.Text = "scrcpy Manager"
+    $form.ClientSize = New-Object System.Drawing.Size(404, 668)
     $form.StartPosition = "CenterScreen"
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
 
-    # Nagłówek: Nazwa urządzenia (po lewej)
-    $lblHeader = New-Object System.Windows.Forms.Label
-    $lblHeader.Text = "Zarządzanie: Inicjalizacja..."
-    $lblHeader.Location = New-Object System.Drawing.Point(18, 13)
-    $lblHeader.Size = New-Object System.Drawing.Size(205, 22)
-    $lblHeader.Font = $fontTitle
-    $form.Controls.Add($lblHeader)
+    # 1. KARTA STATUSU I URZĄDZENIA (NA GÓRZE)
+    $pnlStatus = New-Object System.Windows.Forms.Panel
+    $pnlStatus.Location = New-Object System.Drawing.Point(16, 12)
+    $pnlStatus.Size = New-Object System.Drawing.Size(372, 60)
+    $form.Controls.Add($pnlStatus)
 
-    # Przycisk Przełączania Motywu (Jasny / Ciemny)
+    $pnlStatus.Add_Paint({
+        param($s, $e)
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+        $pen = New-Object System.Drawing.Pen($c.CardBorder, 1)
+        $e.Graphics.DrawRectangle($pen, 0, 0, $s.Width - 1, $s.Height - 1)
+        $pen.Dispose()
+    })
+
+    $lblStatusDot = New-Object System.Windows.Forms.Label
+    $lblStatusDot.Text = "●"
+    $lblStatusDot.Font = $fontDot
+    $lblStatusDot.Location = New-Object System.Drawing.Point(10, 8)
+    $lblStatusDot.Size = New-Object System.Drawing.Size(18, 22)
+    $pnlStatus.Controls.Add($lblStatusDot)
+
+    $lblDeviceTitle = New-Object System.Windows.Forms.Label
+    $lblDeviceTitle.Text = "Wyszukiwanie urządzenia..."
+    $lblDeviceTitle.Font = $fontTitle
+    $lblDeviceTitle.Location = New-Object System.Drawing.Point(28, 9)
+    $lblDeviceTitle.Size = New-Object System.Drawing.Size(225, 20)
+    $pnlStatus.Controls.Add($lblDeviceTitle)
+
+    $lblStatusDetail = New-Object System.Windows.Forms.Label
+    $lblStatusDetail.Text = "Inicjalizacja..."
+    $lblStatusDetail.Font = $fontSmall
+    $lblStatusDetail.Location = New-Object System.Drawing.Point(28, 32)
+    $lblStatusDetail.Size = New-Object System.Drawing.Size(225, 20)
+    $pnlStatus.Controls.Add($lblStatusDetail)
+
+    # Przełączniki motywu i języka w karcie nagłówka
     $btnTheme = New-Object System.Windows.Forms.Button
-    $btnTheme.Location = New-Object System.Drawing.Point(232, 10)
-    $btnTheme.Size = New-Object System.Drawing.Size(74, 26)
+    $btnTheme.Location = New-Object System.Drawing.Point(260, 8)
+    $btnTheme.Size = New-Object System.Drawing.Size(62, 24)
     $btnTheme.Font = $fontSmall
     $btnTheme.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnTheme.FlatAppearance.BorderSize = 1
-    $form.Controls.Add($btnTheme)
+    $pnlStatus.Controls.Add($btnTheme)
 
-    # Przycisk Przełączania Języka (PL / EN)
     $btnLang = New-Object System.Windows.Forms.Button
-    $btnLang.Location = New-Object System.Drawing.Point(310, 10)
-    $btnLang.Size = New-Object System.Drawing.Size(43, 26)
+    $btnLang.Location = New-Object System.Drawing.Point(326, 8)
+    $btnLang.Size = New-Object System.Drawing.Size(38, 24)
     $btnLang.Font = $fontSmall
     $btnLang.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnLang.FlatAppearance.BorderSize = 1
-    $form.Controls.Add($btnLang)
+    $pnlStatus.Controls.Add($btnLang)
 
-    # Główny przycisk HERO: Uruchom Scrcpy (Pełny ekran)
+    # 2. GŁÓWNA AKCJA: URUCHOM SCRCPY
     $btnScrcpy = New-Object System.Windows.Forms.Button
-    $btnScrcpy.Location = New-Object System.Drawing.Point(18, 44)
-    $btnScrcpy.Size = New-Object System.Drawing.Size(335, 42)
+    $btnScrcpy.Location = New-Object System.Drawing.Point(16, 82)
+    $btnScrcpy.Size = New-Object System.Drawing.Size(372, 40)
     $btnScrcpy.Font = $fontHero
     $btnScrcpy.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnScrcpy.FlatAppearance.BorderSize = 0
@@ -554,11 +638,17 @@
         adb shell settings put system user_rotation 1 2>$null
         Invoke-AdbUnlock
 
-        $title = if ($script:deviceModel) { "$($script:deviceModel) (Scrcpy)" } else { "Android (Scrcpy)" }
+        $title = if ($script:deviceModel) { "$($script:deviceModel) (scrcpy)" } else { "Android (scrcpy)" }
         $audioArg = if ($chkAudio.Checked) { "" } else { "--no-audio" }
+        $fsArg = if ($chkFullScreen.Checked) { "-f" } else { "" }
+
+        $argsToRun = "-S -w -K -M"
+        if ($fsArg) { $argsToRun += " $fsArg" }
+        if ($audioArg) { $argsToRun += " $audioArg" }
+        $argsToRun += " --window-title=`"$title`""
 
         try {
-            $proc = Start-Process "scrcpy" -ArgumentList "-S -w -K -M --window-title=`"$title`" $audioArg" -PassThru -ErrorAction Stop
+            $proc = Start-Process "scrcpy" -ArgumentList $argsToRun -PassThru -ErrorAction Stop
             Register-ScrcpyProcess -Process $proc
         }
         catch {
@@ -572,151 +662,38 @@
     })
     $form.Controls.Add($btnScrcpy)
 
-    # Rząd trybów: Tryb Desktop (lewo) + Reset telefonu (prawo)
-    $btnDesktop = New-Object System.Windows.Forms.Button
-    $btnDesktop.Location = New-Object System.Drawing.Point(18, 92)
-    $btnDesktop.Size = New-Object System.Drawing.Size(163, 34)
-    $btnDesktop.Font = $fontBold
-    $btnDesktop.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnDesktop.FlatAppearance.BorderSize = 1
-    $btnDesktop.Add_Click({
-        if (-not (Test-AdbDevice)) { return }
+    $chkFullScreen = New-Object System.Windows.Forms.CheckBox
+    $chkFullScreen.Checked = $false
+    $chkFullScreen.AutoSize = $true
+    $chkFullScreen.Font = $fontSmall
+    $chkFullScreen.Location = New-Object System.Drawing.Point(18, 126)
+    $form.Controls.Add($chkFullScreen)
 
-        adb shell wm density 250 2>$null
-        adb shell settings put global window_animation_scale 0.5 2>$null
-        adb shell settings put global transition_animation_scale 0.5 2>$null
-        adb shell settings put global animator_duration_scale 0.5 2>$null
-        adb shell settings put global enable_freeform_support 1 2>$null
-        adb shell settings put secure force_resizable_activities 1 2>$null
+    # 3. OBRAZ, DŹWIĘK I STEROWANIE
+    $lblSectionOptions = New-Object System.Windows.Forms.Label
+    $lblSectionOptions.Location = New-Object System.Drawing.Point(16, 150)
+    $lblSectionOptions.Size = New-Object System.Drawing.Size(372, 16)
+    $lblSectionOptions.Font = $fontSection
+    $form.Controls.Add($lblSectionOptions)
 
-        Start-Taskbar
-
-        $t = $i18n[$script:currentLang]
-        [System.Windows.Forms.MessageBox]::Show(
-            $t.MsgDesktopOn,
-            $t.DesktopMode,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
-    })
-    $form.Controls.Add($btnDesktop)
-
-    $btnNormal = New-Object System.Windows.Forms.Button
-    $btnNormal.Location = New-Object System.Drawing.Point(190, 92)
-    $btnNormal.Size = New-Object System.Drawing.Size(163, 34)
-    $btnNormal.Font = $fontBold
-    $btnNormal.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnNormal.FlatAppearance.BorderSize = 1
-    $btnNormal.Add_Click({
-        if (-not (Test-AdbDevice)) { return }
-
-        adb shell wm density reset 2>$null
-        adb shell settings put global window_animation_scale 1.0 2>$null
-        adb shell settings put global transition_animation_scale 1.0 2>$null
-        adb shell settings put global animator_duration_scale 1.0 2>$null
-        adb shell settings put system user_rotation 0 2>$null
-        adb shell settings put system accelerometer_rotation 1 2>$null
-
-        Restore-ScreenLockSettings
-        Stop-Taskbar
-
-        $t = $i18n[$script:currentLang]
-        [System.Windows.Forms.MessageBox]::Show(
-            $t.MsgResetDone,
-            $t.ResetPhone,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
-    })
-    $form.Controls.Add($btnNormal)
-
-    # Rząd narzędzi: Schowek, Klawiatura, Wi-Fi (3 równe kolumny)
-    $btnClipFix = New-Object System.Windows.Forms.Button
-    $btnClipFix.Location = New-Object System.Drawing.Point(18, 132)
-    $btnClipFix.Size = New-Object System.Drawing.Size(106, 29)
-    $btnClipFix.Font = $fontSmall
-    $btnClipFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnClipFix.FlatAppearance.BorderSize = 0
-    $btnClipFix.Add_Click({
-        if (Test-AdbDeviceSilent) { Optimize-RdcClipboard }
-        $remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe"
-        try { [System.Windows.Forms.Clipboard]::SetText($remoteFixCmd) } catch {}
-
-        $t = $i18n[$script:currentLang]
-        [System.Windows.Forms.MessageBox]::Show(
-            ($t.MsgClipDone -f $remoteFixCmd),
-            $t.ClipBtn,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
-    })
-    $form.Controls.Add($btnClipFix)
-
-    $btnKeyFix = New-Object System.Windows.Forms.Button
-    $btnKeyFix.Location = New-Object System.Drawing.Point(130, 132)
-    $btnKeyFix.Size = New-Object System.Drawing.Size(112, 29)
-    $btnKeyFix.Font = $fontSmall
-    $btnKeyFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnKeyFix.FlatAppearance.BorderSize = 0
-    $btnKeyFix.Add_Click({
-        if (Test-AdbDeviceSilent) {
-            adb shell am start -a android.settings.HARD_KEYBOARD_SETTINGS 2>$null | Out-Null
-        }
-        $t = $i18n[$script:currentLang]
-        [System.Windows.Forms.MessageBox]::Show(
-            $t.MsgKeyDone,
-            $t.KeyBtn,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
-        )
-    })
-    $form.Controls.Add($btnKeyFix)
-
-    $btnWifi = New-Object System.Windows.Forms.Button
-    $btnWifi.Location = New-Object System.Drawing.Point(248, 132)
-    $btnWifi.Size = New-Object System.Drawing.Size(105, 29)
-    $btnWifi.Font = $fontSmall
-    $btnWifi.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-    $btnWifi.FlatAppearance.BorderSize = 0
-    $btnWifi.Add_Click({ Switch-ToWirelessAdb })
-    $form.Controls.Add($btnWifi)
-
-    # Opcje: Taskbar i Audio
-    $chkAutoTaskbar = New-Object System.Windows.Forms.CheckBox
-    $chkAutoTaskbar.Checked = $true
-    $chkAutoTaskbar.AutoSize = $true
-    $chkAutoTaskbar.Font = $fontRegular
-    $chkAutoTaskbar.Location = New-Object System.Drawing.Point(20, 168)
-    $form.Controls.Add($chkAutoTaskbar)
-
-    $chkAudio = New-Object System.Windows.Forms.CheckBox
-    $chkAudio.Checked = $true
-    $chkAudio.AutoSize = $true
-    $chkAudio.Font = $fontRegular
-    $chkAudio.Location = New-Object System.Drawing.Point(20, 190)
-    $form.Controls.Add($chkAudio)
-
-    # Rozdzielczość dla Windows App (RDP)
     $lblRes = New-Object System.Windows.Forms.Label
-    $lblRes.Location = New-Object System.Drawing.Point(18, 214)
+    $lblRes.Location = New-Object System.Drawing.Point(16, 170)
     $lblRes.AutoSize = $true
-    $lblRes.Font = $fontRegular
+    $lblRes.Font = $fontSmall
     $form.Controls.Add($lblRes)
 
     $cmbRes = New-Object System.Windows.Forms.ComboBox
     $cmbRes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $cmbRes.DrawMode = [System.Windows.Forms.DrawMode]::OwnerDrawFixed
     $cmbRes.ItemHeight = 22
-    $cmbRes.Location = New-Object System.Drawing.Point(18, 234)
-    $cmbRes.Size = New-Object System.Drawing.Size(335, 26)
+    $cmbRes.Location = New-Object System.Drawing.Point(16, 188)
+    $cmbRes.Size = New-Object System.Drawing.Size(372, 26)
     $cmbRes.Font = $fontRegular
 
-    # Wypełnienie początkowe
     $initialNames = $i18n[$script:currentLang].ResNames
     foreach ($rn in $initialNames) { $cmbRes.Items.Add($rn) | Out-Null }
     $cmbRes.SelectedIndex = 0
 
-    # Własne rysowanie (OwnerDraw) — idealny dark/light mode bez białych plam
     $cmbRes.Add_DrawItem({
         param($s, $e)
         if ($e.Index -lt 0) { return }
@@ -750,20 +727,90 @@
     })
     $form.Controls.Add($cmbRes)
 
-    # --- GRUPA APLIKACJI (2 KOLUMNY, ALFABETYCZNIE) ---
+    $chkAudio = New-Object System.Windows.Forms.CheckBox
+    $chkAudio.Checked = $true
+    $chkAudio.AutoSize = $true
+    $chkAudio.Font = $fontSmall
+    $chkAudio.Location = New-Object System.Drawing.Point(18, 220)
+    $form.Controls.Add($chkAudio)
 
-    $groupApps = New-Object System.Windows.Forms.GroupBox
-    $groupApps.Location = New-Object System.Drawing.Point(18, 268)
-    $groupApps.Size = New-Object System.Drawing.Size(335, 395)
-    $groupApps.Font = $fontBold
-    $form.Controls.Add($groupApps)
+    $chkAutoTaskbar = New-Object System.Windows.Forms.CheckBox
+    $chkAutoTaskbar.Checked = $true
+    $chkAutoTaskbar.AutoSize = $true
+    $chkAutoTaskbar.Font = $fontSmall
+    $chkAutoTaskbar.Location = New-Object System.Drawing.Point(205, 220)
+    $form.Controls.Add($chkAutoTaskbar)
 
-    $colWidth = 146
-    $btnHeight = 34
-    $rowPitch = 40
-    $colPitch = 156
-    $startX = 15
-    $startY = 24
+    # 3 pigułki narzędziowe
+    $btnWifi = New-Object System.Windows.Forms.Button
+    $btnWifi.Location = New-Object System.Drawing.Point(16, 244)
+    $btnWifi.Size = New-Object System.Drawing.Size(118, 28)
+    $btnWifi.Font = $fontSmall
+    $btnWifi.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnWifi.FlatAppearance.BorderSize = 1
+    $btnWifi.Add_Click({ Switch-ToWirelessAdb })
+    $form.Controls.Add($btnWifi)
+
+    $btnKeyFix = New-Object System.Windows.Forms.Button
+    $btnKeyFix.Location = New-Object System.Drawing.Point(143, 244)
+    $btnKeyFix.Size = New-Object System.Drawing.Size(118, 28)
+    $btnKeyFix.Font = $fontSmall
+    $btnKeyFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnKeyFix.FlatAppearance.BorderSize = 1
+    $btnKeyFix.Add_Click({
+        if (Test-AdbDeviceSilent) {
+            adb shell am start -a android.settings.HARD_KEYBOARD_SETTINGS 2>$null | Out-Null
+        }
+        $t = $i18n[$script:currentLang]
+        [System.Windows.Forms.MessageBox]::Show(
+            $t.MsgKeyDone,
+            $t.KeyBtn,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    })
+    $form.Controls.Add($btnKeyFix)
+
+    $btnClipFix = New-Object System.Windows.Forms.Button
+    $btnClipFix.Location = New-Object System.Drawing.Point(270, 244)
+    $btnClipFix.Size = New-Object System.Drawing.Size(118, 28)
+    $btnClipFix.Font = $fontSmall
+    $btnClipFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnClipFix.FlatAppearance.BorderSize = 1
+    $btnClipFix.Add_Click({
+        if (Test-AdbDeviceSilent) { Optimize-RdcClipboard }
+        $remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe"
+        try { [System.Windows.Forms.Clipboard]::SetText($remoteFixCmd) } catch {}
+
+        $t = $i18n[$script:currentLang]
+        [System.Windows.Forms.MessageBox]::Show(
+            ($t.MsgClipDone -f $remoteFixCmd),
+            $t.ClipBtn,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    })
+    $form.Controls.Add($btnClipFix)
+
+    # 4. URUCHAMIANIE APLIKACJI W OKNACH
+    $lblSectionApps = New-Object System.Windows.Forms.Label
+    $lblSectionApps.Location = New-Object System.Drawing.Point(16, 282)
+    $lblSectionApps.Size = New-Object System.Drawing.Size(372, 16)
+    $lblSectionApps.Font = $fontSection
+    $form.Controls.Add($lblSectionApps)
+
+    $lblAppsSubtitle = New-Object System.Windows.Forms.Label
+    $lblAppsSubtitle.Location = New-Object System.Drawing.Point(16, 300)
+    $lblAppsSubtitle.Size = New-Object System.Drawing.Size(372, 16)
+    $lblAppsSubtitle.Font = $fontSmall
+    $form.Controls.Add($lblAppsSubtitle)
+
+    $colWidth = 180
+    $btnHeight = 30
+    $rowPitch = 36
+    $colPitch = 192
+    $startX = 16
+    $startY = 320
 
     $createdAppButtons = New-Object 'System.Collections.Generic.List[System.Windows.Forms.Button]'
 
@@ -777,7 +824,7 @@
 
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text = $app.Text
-        $btn.Font = $fontRegular
+        $btn.Font = $fontSmall
         $btn.Location = New-Object System.Drawing.Point($posX, $posY)
         $btn.Size = New-Object System.Drawing.Size($colWidth, $btnHeight)
         $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -806,48 +853,115 @@
             Start-ScrcpyApp -PackageName $pkg -WindowTitle $appName -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
         }.GetNewClosure())
 
-        $groupApps.Controls.Add($btn)
+        $form.Controls.Add($btn)
         $createdAppButtons.Add($btn)
     }
 
-    # Własny pakiet
+    # Własny pakiet (bezpośrednio pod siatką aplikacji)
     $lblCustom = New-Object System.Windows.Forms.Label
-    $lblCustom.Location = New-Object System.Drawing.Point(15, 290)
-    $lblCustom.AutoSize = $true
+    $lblCustom.Location = New-Object System.Drawing.Point(16, 502)
+    $lblCustom.Size = New-Object System.Drawing.Size(372, 16)
     $lblCustom.Font = $fontSmall
-    $groupApps.Controls.Add($lblCustom)
+    $form.Controls.Add($lblCustom)
 
     $txtCustom = New-Object System.Windows.Forms.TextBox
-    $txtCustom.Location = New-Object System.Drawing.Point(15, 310)
-    $txtCustom.Size = New-Object System.Drawing.Size(305, 23)
+    $txtCustom.Location = New-Object System.Drawing.Point(16, 520)
+    $txtCustom.Size = New-Object System.Drawing.Size(284, 25)
     $txtCustom.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
     $txtCustom.Font = $fontRegular
-    $groupApps.Controls.Add($txtCustom)
+    $form.Controls.Add($txtCustom)
 
     $btnCustom = New-Object System.Windows.Forms.Button
-    $btnCustom.Location = New-Object System.Drawing.Point(15, 342)
-    $btnCustom.Size = New-Object System.Drawing.Size(305, 32)
+    $btnCustom.Location = New-Object System.Drawing.Point(306, 519)
+    $btnCustom.Size = New-Object System.Drawing.Size(82, 26)
     $btnCustom.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnCustom.FlatAppearance.BorderSize = 1
-    $btnCustom.Font = $fontBold
+    $btnCustom.Font = $fontSection
     $btnCustom.Add_Click({
         $pkg = $txtCustom.Text.Trim()
         $t = $i18n[$script:currentLang]
         if ([string]::IsNullOrWhiteSpace($pkg)) {
-            [System.Windows.Forms.MessageBox]::Show($t.MsgPkgEmpty, "Scrcpy", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+            [System.Windows.Forms.MessageBox]::Show($t.MsgPkgEmpty, "scrcpy", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             return
         }
         if ($chkAutoTaskbar.Checked) { Start-Taskbar }
         Start-ScrcpyApp -PackageName $pkg -WindowTitle $pkg -DisplaySize $script:appDisplaySize
     })
-    $groupApps.Controls.Add($btnCustom)
+    $form.Controls.Add($btnCustom)
 
-    # Pasek stanu na dole
-    $lblStatus = New-Object System.Windows.Forms.Label
-    $lblStatus.Location = New-Object System.Drawing.Point(18, 672)
-    $lblStatus.Size = New-Object System.Drawing.Size(335, 38)
-    $lblStatus.Font = $fontSmall
-    $form.Controls.Add($lblStatus)
+    # 5. OPERACJE NA URZĄDZENIU
+    $lblSectionDevice = New-Object System.Windows.Forms.Label
+    $lblSectionDevice.Location = New-Object System.Drawing.Point(16, 556)
+    $lblSectionDevice.Size = New-Object System.Drawing.Size(372, 16)
+    $lblSectionDevice.Font = $fontSection
+    $form.Controls.Add($lblSectionDevice)
+
+    $btnDesktop = New-Object System.Windows.Forms.Button
+    $btnDesktop.Location = New-Object System.Drawing.Point(16, 576)
+    $btnDesktop.Size = New-Object System.Drawing.Size(180, 32)
+    $btnDesktop.Font = $fontSection
+    $btnDesktop.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnDesktop.FlatAppearance.BorderSize = 1
+    $btnDesktop.Add_Click({
+        if (-not (Test-AdbDevice)) { return }
+
+        adb shell wm density 250 2>$null
+        adb shell settings put global window_animation_scale 0.5 2>$null
+        adb shell settings put global transition_animation_scale 0.5 2>$null
+        adb shell settings put global animator_duration_scale 0.5 2>$null
+        adb shell settings put global enable_freeform_support 1 2>$null
+        adb shell settings put secure force_resizable_activities 1 2>$null
+
+        Start-Taskbar
+
+        $t = $i18n[$script:currentLang]
+        [System.Windows.Forms.MessageBox]::Show(
+            $t.MsgDesktopOn,
+            $t.DesktopMode,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    })
+    $form.Controls.Add($btnDesktop)
+
+    $btnNormal = New-Object System.Windows.Forms.Button
+    $btnNormal.Location = New-Object System.Drawing.Point(208, 576)
+    $btnNormal.Size = New-Object System.Drawing.Size(180, 32)
+    $btnNormal.Font = $fontSection
+    $btnNormal.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnNormal.FlatAppearance.BorderSize = 1
+    $btnNormal.Add_Click({
+        if (-not (Test-AdbDevice)) { return }
+
+        adb shell wm density reset 2>$null
+        adb shell settings put global window_animation_scale 1.0 2>$null
+        adb shell settings put global transition_animation_scale 1.0 2>$null
+        adb shell settings put global animator_duration_scale 1.0 2>$null
+        adb shell settings put system user_rotation 0 2>$null
+        adb shell settings put system accelerometer_rotation 1 2>$null
+
+        Restore-ScreenLockSettings
+        Stop-Taskbar
+
+        $t = $i18n[$script:currentLang]
+        [System.Windows.Forms.MessageBox]::Show(
+            $t.MsgResetDone,
+            $t.RestoreDefault,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
+    })
+    $form.Controls.Add($btnNormal)
+
+    # Przycisk restartu telefonu (zabezpieczony oknem potwierdzenia)
+    $btnReboot = New-Object System.Windows.Forms.Button
+    $btnReboot.Location = New-Object System.Drawing.Point(16, 616)
+    $btnReboot.Size = New-Object System.Drawing.Size(372, 30)
+    $btnReboot.Font = $fontSection
+    $btnReboot.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnReboot.FlatAppearance.BorderSize = 1
+    $btnReboot.Add_Click({ Restart-DeviceWithConfirmation })
+    $form.Controls.Add($btnReboot)
 
     # --- FUNKCJE STYLIZACJI MOTYWU I JĘZYKA ---
 
@@ -857,7 +971,9 @@
         $form.BackColor = $c.Bg
         $form.ForeColor = $c.Text
 
-        $lblHeader.ForeColor = $c.Text
+        $pnlStatus.BackColor = $c.Card
+        $lblDeviceTitle.ForeColor = $c.Text
+        $lblStatusDetail.ForeColor = $c.TextMuted
 
         $btnTheme.BackColor = $c.ToggleBg
         $btnTheme.ForeColor = $c.ToggleText
@@ -870,37 +986,34 @@
         $btnScrcpy.BackColor = $c.BtnHero
         $btnScrcpy.ForeColor = $c.BtnHeroText
 
-        $btnDesktop.BackColor = $c.BtnMode
-        $btnDesktop.ForeColor = $c.BtnModeText
-        $btnDesktop.FlatAppearance.BorderColor = $c.CardBorder
-
-        $btnNormal.BackColor = $c.BtnReset
-        $btnNormal.ForeColor = $c.BtnResetText
-        $btnNormal.FlatAppearance.BorderColor = $c.CardBorder
-
-        $btnClipFix.BackColor = $c.BtnTool
-        $btnClipFix.ForeColor = $c.BtnToolText
-
-        $btnKeyFix.BackColor = $c.BtnTool
-        $btnKeyFix.ForeColor = $c.BtnToolText
-
-        $btnWifi.BackColor = $c.BtnWifi
-        $btnWifi.ForeColor = [System.Drawing.Color]::White
-
-        $chkAutoTaskbar.ForeColor = $c.Text
-        $chkAudio.ForeColor = $c.Text
-
+        $chkFullScreen.ForeColor = $c.TextMuted
+        $lblSectionOptions.ForeColor = $c.TextMuted
         $lblRes.ForeColor = $c.TextMuted
+        $chkAudio.ForeColor = $c.Text
+        $chkAutoTaskbar.ForeColor = $c.Text
+
         $cmbRes.BackColor = $c.Card
         $cmbRes.ForeColor = $c.Text
 
-        $groupApps.BackColor = $c.Card
-        $groupApps.ForeColor = $c.Text
+        $btnWifi.BackColor = $c.BtnTool
+        $btnWifi.ForeColor = $c.BtnToolText
+        $btnWifi.FlatAppearance.BorderColor = $c.BtnToolBorder
+
+        $btnKeyFix.BackColor = $c.BtnTool
+        $btnKeyFix.ForeColor = $c.BtnToolText
+        $btnKeyFix.FlatAppearance.BorderColor = $c.BtnToolBorder
+
+        $btnClipFix.BackColor = $c.BtnTool
+        $btnClipFix.ForeColor = $c.BtnToolText
+        $btnClipFix.FlatAppearance.BorderColor = $c.BtnToolBorder
+
+        $lblSectionApps.ForeColor = $c.TextMuted
+        $lblAppsSubtitle.ForeColor = $c.TextMuted
 
         foreach ($btn in $createdAppButtons) {
             $btn.BackColor = $c.BtnApp
             $btn.ForeColor = $c.BtnAppText
-            $btn.FlatAppearance.BorderColor = $c.CardBorder
+            $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
         }
 
         $lblCustom.ForeColor = $c.TextMuted
@@ -909,10 +1022,24 @@
 
         $btnCustom.BackColor = $c.BtnApp
         $btnCustom.ForeColor = $c.BtnAppText
-        $btnCustom.FlatAppearance.BorderColor = $c.CardBorder
+        $btnCustom.FlatAppearance.BorderColor = $c.BtnAppBorder
 
-        $lblStatus.ForeColor = $c.TextMuted
+        $lblSectionDevice.ForeColor = $c.TextMuted
 
+        $btnDesktop.BackColor = $c.BtnMode
+        $btnDesktop.ForeColor = $c.BtnModeText
+        $btnDesktop.FlatAppearance.BorderColor = $c.BtnModeBorder
+
+        $btnNormal.BackColor = $c.BtnMode
+        $btnNormal.ForeColor = $c.BtnModeText
+        $btnNormal.FlatAppearance.BorderColor = $c.BtnModeBorder
+
+        $btnReboot.BackColor = $c.BtnReboot
+        $btnReboot.ForeColor = $c.BtnRebootText
+        $btnReboot.FlatAppearance.BorderColor = $c.BtnRebootBorder
+
+        Update-StatusDisplay
+        $pnlStatus.Invalidate()
         $cmbRes.Invalidate()
         $form.Invalidate($true)
     }
@@ -920,22 +1047,31 @@
     function Apply-Language {
         $t = $i18n[$script:currentLang]
 
-        $dev = if ($script:deviceModel) { $script:deviceModel } else { $t.NoDevice }
-        $lblHeader.Text = "$($t.HeaderPrefix) $dev"
-
         $btnTheme.Text = if ($script:isDarkMode) { $t.ThemeDark } else { $t.ThemeLight }
         $btnLang.Text = $t.LangSwitch
 
         $btnScrcpy.Text = $t.LaunchHero
-        $btnDesktop.Text = $t.DesktopMode
-        $btnNormal.Text = $t.ResetPhone
-        $btnClipFix.Text = $t.ClipBtn
-        $btnKeyFix.Text = $t.KeyBtn
-        $btnWifi.Text = $t.WifiBtn
+        $chkFullScreen.Text = $t.FullScreenOpt
 
-        $chkAutoTaskbar.Text = $t.AutoTaskbar
-        $chkAudio.Text = $t.AudioPass
+        $lblSectionOptions.Text = $t.SectionOptions
         $lblRes.Text = $t.ResLabel
+        $chkAudio.Text = $t.AudioPass
+        $chkAutoTaskbar.Text = $t.AutoTaskbar
+
+        $btnWifi.Text = $t.WifiBtn
+        $btnKeyFix.Text = $t.KeyBtn
+        $btnClipFix.Text = $t.ClipBtn
+
+        $lblSectionApps.Text = $t.SectionApps
+        $lblAppsSubtitle.Text = $t.AppsSubtitle
+
+        $lblCustom.Text = $t.CustomLabel
+        $btnCustom.Text = $t.CustomBtn
+
+        $lblSectionDevice.Text = $t.SectionDevice
+        $btnDesktop.Text = $t.DesktopMode
+        $btnNormal.Text = $t.RestoreDefault
+        $btnReboot.Text = $t.RebootBtn
 
         # Odświeżenie elementów w combobox z zachowaniem wybranego indeksu
         $currIdx = $cmbRes.SelectedIndex
@@ -946,23 +1082,24 @@
         }
         $cmbRes.SelectedIndex = [math]::Min($currIdx, $cmbRes.Items.Count - 1)
 
-        $groupApps.Text = $t.AppsGroup
-        $lblCustom.Text = $t.CustomLabel
-        $btnCustom.Text = $t.CustomBtn
-
-        # Pasek stanu
         Update-StatusDisplay
     }
 
     function Update-StatusDisplay {
         $t = $i18n[$script:currentLang]
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
         if (Test-AdbDeviceSilent) {
+            $lblStatusDot.ForeColor = $c.StatusDotOnline
+            $connType = if ($script:isWifiConnected) { $t.StatusConnectedWifi } else { $t.StatusConnectedUsb }
+            $devName = if ($script:deviceModel) { $script:deviceModel } else { "Android" }
+            $lblDeviceTitle.Text = "$devName — $connType"
             $bat = Get-DeviceBatteryStatus
-            $modeStr = if ($script:isWifiConnected) { "Wi-Fi" } else { "USB" }
-            $lblStatus.Text = "$($t.StatusDevice) $($script:deviceModel) ($modeStr)`n$($t.StatusBattery) $bat | $($t.StatusActive)"
+            $lblStatusDetail.Text = "$($t.BatteryLabel) $bat  |  $($t.StatusActive)"
         }
         else {
-            $lblStatus.Text = $t.StatusNoPhone
+            $lblStatusDot.ForeColor = $c.StatusDotOffline
+            $lblDeviceTitle.Text = $t.StatusNoPhone
+            $lblStatusDetail.Text = $t.StatusCheckConn
         }
     }
 
@@ -1000,8 +1137,7 @@
             Update-StatusDisplay
         }
         else {
-            $t = $i18n[$script:currentLang]
-            $lblStatus.Text = $t.StatusNoPhone
+            Update-StatusDisplay
         }
     })
 
@@ -1062,12 +1198,12 @@ if (Test-Path '$stateFile') {
 }
 catch {
     $errLog = Join-Path $env:TEMP "scrcpy_manager_error.log"
-    $errMsg = "Wystąpił błąd podczas uruchamiania Scrcpy Manager:`n`n$($_.Exception.ToString())"
+    $errMsg = "Wystąpił błąd podczas uruchamiania scrcpy Manager:`n`n$($_.Exception.ToString())"
     Set-Content -Path $errLog -Value $errMsg -Encoding UTF8 -ErrorAction SilentlyContinue
 
     [System.Windows.Forms.MessageBox]::Show(
         $errMsg,
-        "Błąd Scrcpy Manager",
+        "Błąd scrcpy Manager",
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error
     )
