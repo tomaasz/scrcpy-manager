@@ -53,7 +53,7 @@
             if ($mfg) { $script:deviceManufacturer = $mfg.Trim() }
 
             # Odczyt fizycznej rozdzielczości ekranu
-            $wmSize = (adb shell wm size 2>$null)
+            $wmSize = ((adb shell wm size 2>$null) -join "`n")
             if ($wmSize -match "Physical size:\s*(\d+)x(\d+)") {
                 $w = $Matches[1]
                 $h = $Matches[2]
@@ -68,12 +68,12 @@
     function Get-DeviceBatteryStatus {
         if (-not (Test-AdbDeviceSilent)) { return "Odłączony" }
         try {
-            $dump = (adb shell dumpsys battery 2>$null)
+            $dump = ((adb shell dumpsys battery 2>$null) -join "`n")
             $level = 0
             $charging = $false
 
-            if ($dump -match "level:\s*(\d+)") { $level = [int]$Matches[1] }
-            if ($dump -match "status:\s*(2|5)") { $charging = $true }
+            if ($dump -match "(?m)^\s*level:\s*(\d+)") { $level = [int]$Matches[1] }
+            if ($dump -match "(?m)^\s*(USB|AC|Wireless) powered:\s*true") { $charging = $true }
 
             $chargeStr = if ($charging) { " (Ładowanie)" } else { "" }
             return "$level%$chargeStr"
@@ -185,20 +185,20 @@
 
         # Odczytanie adresu IP telefonu z interfejsu wlan0
         $ip = $null
-        $ipRoute = (adb shell ip route 2>$null)
+        $ipRoute = ((adb shell ip route 2>$null) -join "`n")
         if ($ipRoute -match "src\s+(\d+\.\d+\.\d+\.\d+)") {
             $ip = $Matches[1]
         }
         if (-not $ip) {
-            $ipAddr = (adb shell ip addr show wlan0 2>$null)
+            $ipAddr = ((adb shell ip addr show wlan0 2>$null) -join "`n")
             if ($ipAddr -match "inet\s+(\d+\.\d+\.\d+\.\d+)") {
                 $ip = $Matches[1]
             }
         }
         if (-not $ip) {
-            $ipProp = (adb shell getprop dhcp.wlan0.ipaddress 2>$null)
+            $ipProp = ((adb shell getprop dhcp.wlan0.ipaddress 2>$null) -join "`n")
             if ($ipProp -match "\d+\.\d+\.\d+\.\d+") {
-                $ip = $ipProp.Trim()
+                $ip = $Matches[0].Trim()
             }
         }
 
