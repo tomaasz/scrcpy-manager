@@ -1,3 +1,10 @@
+# Scrcpy Manager - Git Ignore
+scrcpy_manager_original_timeout.txt
+scrcpy_manager_*.log
+*.log
+*.tmp
 .env
-*.local.ps1
-*.secret.ps1
+local.env
+*.user.ps1
+.vscode/
+.idea/

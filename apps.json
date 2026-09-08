@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Claude",
+    "package": "com.anthropic.claude",
+    "flags": []
+  },
+  {
+    "name": "ConneckBot",
+    "package": "org.connectbot",
+    "flags": ["-UseUhidKeyboard"]
+  },
+  {
+    "name": "Gmail (Wszystkie)",
+    "package": "com.google.android.gm",
+    "flags": []
+  },
+  {
+    "name": "Messenger",
+    "package": "com.facebook.orca",
+    "flags": []
+  },
+  {
+    "name": "TurboTel",
+    "package": "ellipi.messenger",
+    "flags": []
+  },
+  {
+    "name": "Ustawienia",
+    "package": "com.android.settings",
+    "flags": []
+  },
+  {
+    "name": "Vivaldi",
+    "package": "com.vivaldi.browser",
+    "flags": ["-ForwardAllClicks"]
+  },
+  {
+    "name": "WhatsApp",
+    "package": "com.whatsapp",
+    "flags": []
+  },
+  {
+    "name": "Wiadomości (Google)",
+    "package": "com.google.android.apps.messaging",
+    "flags": []
+  },
+  {
+    "name": "Windows App",
+    "package": "com.microsoft.rdc.androidx",
+    "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
+  }
+]

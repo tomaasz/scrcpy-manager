@@ -1,69 +1,118 @@
-# Scrcpy Manager
+# Scrcpy Manager 📱🖥️
 
-Panel PowerShell do uruchamiania `scrcpy` i aplikacji Android w osobnych oknach.
+> **Universal PowerShell desktop companion for `scrcpy` and Android power users.**  
+> Launch Android apps in dedicated floating windows, manage virtual displays, switch seamlessly to Wireless ADB, prevent screen sleep, and streamline Remote Desktop workflows.
 
-## Wymagania
-
-- PowerShell 7+
-- `adb` i `scrcpy` dostępne w `PATH`
-- telefon z włączonym debugowaniem USB
-
-## Uruchomienie
-
-Ustaw PIN odblokowania tylko lokalnie w bieżącej sesji PowerShell:
-
-```powershell
-$env:SCRCPY_ADB_PIN = "1234"
-& .\ScrcpyApp.ps1
-```
-
-## Funkcje panelu
-
-- **Automatyczny Taskbar**: Panel automatycznie włącza pasek zadań Taskbar i tryb okienkowy na telefonie (możliwość włączenia/wyłączenia przełącznikiem w oknie).
-- **Aplikacje w 2 kolumnach (alfabetycznie)**:
-  - Claude (`com.anthropic.claude`)
-  - ConneckBot (`org.connectbot`)
-  - Gmail (Wszystkie) (`com.google.android.gm`)
-  - Messenger (`com.facebook.orca`)
-  - TurboTel (`ellipi.messenger`)
-  - Ustawienia (`com.android.settings`)
-  - Vivaldi (`com.vivaldi.browser`)
-  - WhatsApp (`com.whatsapp`)
-  - Wiadomości (Google) (`com.google.android.apps.messaging`)
-  - Windows App (`com.microsoft.rdc.androidx`)
-- **Brak wygaszania ekranu**: telefon nie blokuje się tak długo, jak aktywny jest panel lub okna scrcpy.
-- **Pełna obsługa polskich znaków (AltGr) i schowka**: wszystkie aplikacje uruchamiane są w trybie sprzętowej klawiatury UHID (`-K`), dzięki czemu kombinacje z prawym Alt (`AltGr + a/e/c/s/l/z/x/o/n`) działają natywnie w aplikacjach Androida.
-- **Przycisk „Klawiatura (Polski)”**: jedno kliknięcie otwiera konfigurację klawiatury fizycznej na telefonie (`HARD_KEYBOARD_SETTINGS`), aby sprawdzić lub wybrać układ *Polski (programisty)*.
-- **Optymalizacja schowka dla 3 maszyn**: sprzętowy tryb klawiatury (`-K`) i pełne przekazywanie kliknięć myszy (`--mouse-bind=++++`).
-- **Profile rozdzielczości i zagęszczenia (DPI) dla Windows App (RDP)**: menu wyboru rozdzielczości w panelu: *2K QHD (2560x1440 / DPI 140)*, *Full HD Kompakt (1920x1080 / DPI 120)*, *Full HD Standard (1920x1080 / DPI 160)*, *4K UHD (3840x2160)*. Umożliwia uzyskanie ogromnej, ostrej przestrzeni roboczej w sesjach zdalnego pulpitu.
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue.svg)](https://microsoft.com/PowerShell)
+[![scrcpy](https://img.shields.io/badge/scrcpy-2.0%2B-brightgreen.svg)](https://github.com/Genymobile/scrcpy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform: Android](https://img.shields.io/badge/Android-Universal-green.svg)](https://android.com)
 
 ---
 
-## Przekazywanie schowka między 3 maszynami (PC lokalny <-> Telefon <-> PC zdalny)
+## English Documentation
 
-Gdy łączysz się przez `Windows App` (Microsoft Remote Desktop) w scrcpy:
+### Key Features
 
-1. **Ustawienia profilu w Windows App (telefon)**:
-   - W aplikacji Remote Desktop na telefonie kliknij menu `...` przy nazwie komputera zdalnego $\rightarrow$ **Edit**.
-   - Przewiń do sekcji **Devices & Audio Redirection**.
-   - Upewnij się, że opcja **Clipboard** (Schowek) jest włączona.
+* 🚀 **Multi-Window App Launcher**: Launch any installed Android app in an independent virtual display window (`--new-display`).
+* 📶 **One-Click Wireless ADB (Wi-Fi)**: Automatically detect your phone's Wi-Fi IP and switch from USB cable to wireless debugging in one click.
+* 🔊 **Audio Passthrough Control**: Toggle real-time audio forwarding from your Android device to PC speakers/headphones.
+* ⌨️ **Hardware Keyboard (UHID) & Diacritics**: Full native support for special characters and diacritics (e.g., Polish `AltGr + a/e/c/s/l/z/x/o/n`) with direct hardware keyboard simulation (`-K`).
+* 🖥️ **High-Resolution RDP Profiles (Windows App)**: Optimized presets for Microsoft Remote Desktop / Windows App:
+  * `Full HD Native (1920x1080 / DPI 160)` – 1:1 pixel sharpness on 1080p monitors.
+  * `2K QHD (2560x1440 / DPI 160)` – +77% expanded desktop workspace.
+  * `4K UHD (3840x2160 / DPI 200)` – Ultra-high workspace.
+  * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
+* 🔋 **Battery & Device Monitor**: Real-time battery percentage, charging state, device model, and connection mode.
+* 🌙 **Modern Dark UI**: Clean dark theme crafted for Windows 10/11.
+* ⚙️ **Configurable App Grid (`apps.json`)**: Add, remove, or customize your favorite apps simply by editing a JSON file.
+* 🔒 **Zero Hardcoded Secrets**: Secure PIN handling via environment variables; no credentials or sensitive tokens stored in git.
 
-2. **Skróty klawiszowe w oknie Windows App**:
-   - `Alt + V` – natychmiastowe wymuszenie przesłania schowka z komputera lokalnego do telefonu/RDP i wklejenie.
-   - `Alt + C` – pobranie schowka z telefonu/RDP do komputera lokalnego.
-   - Standardowe `Ctrl + C` i `Ctrl + V` działają bezpośrednio na zdalnym pulpicie dzięki emulacji sprzętowej klawiatury (`--keyboard=uhid`).
-   - Prawy przycisk myszy wywołuje menu kontekstowe na zdalnym PC (dzięki `--mouse-bind=++++`).
+---
 
-3. **Gdy schowek zawiesi się na zdalnym komputerze Windows**:
-   - Na zdalnym komputerze (w Win+R lub wierszu poleceń) zrestartuj proces schowka RDP:
-     ```cmd
-     taskkill /f /im rdpclip.exe & start rdpclip.exe
-     ```
-   - Przycisk **„📋 Napraw schowek (3 maszyny)”** w panelu automatycznie kopiuje to polecenie do Twojego schowka i odświeża uprawnienia ADB.
+### Requirements
 
-4. **Wysoka rozdzielczość zdalnego Windows (2K / 4K)**:
-   - W panelu Scrcpy Manager wybierz żądany profil z listy (np. **2K QHD (2560x1440 / DPI 140)** lub **4K UHD**).
-   - Kliknij **Windows App**.
-   - W aplikacji Windows App na kafelku danego komputera kliknij menu `...` $\rightarrow$ **Edit** $\rightarrow$ sekcja **Display** (Ekran):
-     - Ustaw **Display resolution** na **Match this display** (Dopasuj do tego ekranu) lub wskaż `2560x1440` / `3840x2160`.
-   - Naciśnij `Alt + F`, aby włączyć tryb pełnoekranowy scrcpy na Twoim monitorze.
+1. **Windows 10 / 11** (PowerShell 5.1 or PowerShell 7+)
+2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 or newer recommended, available in `PATH`)
+3. **Android Platform Tools (`adb`)** (available in `PATH`)
+4. **Android Device** (Google Pixel, Samsung Galaxy, Xiaomi, Motorola, OnePlus, etc.) with:
+   * **USB Debugging** enabled in *Developer Options*.
+   * (Optional) **Taskbar** app (by farmerbb) for freeform window management.
+
+---
+
+### Quick Start
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/tomaasz/scrcpy-manager.git
+   cd scrcpy-manager
+   ```
+
+2. (Optional) Set your phone's unlock PIN for the current session:
+   ```powershell
+   $env:SCRCPY_ADB_PIN = "1234"
+   ```
+
+3. Launch the manager:
+   ```powershell
+   & .\ScrcpyApp.ps1
+   ```
+
+---
+
+### Customizing Apps (`apps.json`)
+
+You can edit `apps.json` to configure the buttons shown in the manager:
+
+```json
+[
+  {
+    "name": "Messenger",
+    "package": "com.facebook.orca",
+    "flags": []
+  },
+  {
+    "name": "Spotify",
+    "package": "com.spotify.music",
+    "flags": []
+  },
+  {
+    "name": "Windows App",
+    "package": "com.microsoft.rdc.androidx",
+    "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
+  }
+]
+```
+
+---
+
+## Dokumentacja po polsku (Polish)
+
+### Najważniejsze funkcje
+
+* **Aplikacje w osobnych oknach**: Uruchamianie aplikacji Androida w niezależnych, pływających oknach (`--new-display`).
+* **Bezprzewodowe ADB jednym kliknięciem**: Automatyczne wykrycie IP telefonu w sieci domowej/biurowej i przełączenie na tryb Wi-Fi (`adb connect <IP>:5555`).
+* **Przełącznik przesyłania dźwięku**: Opcja włączenia lub wyciszenia dźwięku (`--no-audio`) z poziomu panelu.
+* **Pełna obsługa polskich znaków i klawiatury fizycznej**: Wszystkie aplikacje uruchamiają się z obsługą sprzętowej klawiatury UHID (`-K`), dzięki czemu prawy Alt (`AltGr + a, e, c, s, l, z, x, o, n`) działa natywnie.
+* **Optymalizacje dla Windows App (RDP)**:
+  * Gotowe profile rozdzielczości (Full HD 1:1, 2K QHD, 4K UHD).
+  * Wyłączone wymuszone skalowanie w dół i podniesiony bitrate do 16 Mbps dla ostrych czcionek.
+  * Przycisk szybkiej naprawy schowka między 3 maszynami (PC lokalny $\leftrightarrow$ Telefon $\leftrightarrow$ PC zdalny).
+* **Automatyczne czuwanie i odblokowywanie**: Telefon nie blokuje się podczas pracy z panelem lub oknami scrcpy, a po zakończeniu przywracany jest pierwotny limit wygaszania.
+* **Nowoczesny ciemny motyw**: Estetyczny interfejs w stylu Windows 11 Dark Theme.
+* **Konfiguracja przez `apps.json`**: Łatwe dodawanie i usuwanie programów bez modyfikacji kodu skryptu.
+
+---
+
+### Bezpieczeństwo i prywatność
+
+* Skrypt **nie przechowuje ani nie wysyła** żadnych danych na zewnętrzne serwery.
+* Kod PIN telefonu podawany jest wyłącznie jako lokalna zmienna środowiskowa (`$env:SCRCPY_ADB_PIN`) i nie jest zapisywany w żadnych plikach repozytorium.
+* Pliki tymczasowe stanu są bezpiecznie przechowywane w folderze tymczasowym systemu Windows (`$env:TEMP`).
+
+---
+
+### Licencja
+
+Projekt udostępniany jest na warunkach licencji **MIT**. Szczegóły w pliku [LICENSE](LICENSE).

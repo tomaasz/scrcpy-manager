@@ -2,19 +2,25 @@
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
-    # --- KONFIGURACJA ---
-    # PIN jest pobierany ze zmiennej środowiskowej, aby nie trafiał do repozytorium.
+    $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    if (-not $scriptDir) { $scriptDir = (Get-Location).Path }
+
+    # --- KONFIGURACJA BEZPIECZEŃSTWA ---
+    # PIN jest pobierany ze zmiennej środowiskowej SCRCPY_ADB_PIN, aby nie trafiał do repozytorium.
     $adbPin = $env:SCRCPY_ADB_PIN
 
-    # Domyślny rozmiar wirtualnego ekranu dla pojedynczych aplikacji (szer x wys)
-    $appDisplaySize = "1080x2200"
+    # Domyślny rozmiar wirtualnego ekranu (będzie dynamicznie aktualizowany na podstawie podłączonego telefonu)
+    $script:appDisplaySize = "1080x2400"
+    $script:deviceModel = "Android"
+    $script:deviceManufacturer = ""
+    $script:isWifiConnected = $false
 
     # Plik stanu do bezpiecznego zapamiętania pierwotnego limitu wygaszania ekranu
     $stateFile = Join-Path $env:TEMP "scrcpy_manager_original_timeout.txt"
     $script:launchedProcesses = New-Object 'System.Collections.Generic.List[System.Diagnostics.Process]'
     $script:originalTimeout = 30000 # Domyślny limit zapasowy (30 sekund)
 
-    # --- FUNKCJE POMOCNICZE ---
+    # --- FUNKCJE POMOCNICZE ADB I URZĄDZENIA ---
 
     function Test-AdbDeviceSilent {
         $devices = adb devices 2>$null | Select-String "device$"
@@ -24,7 +30,7 @@
     function Test-AdbDevice {
         if (-not (Test-AdbDeviceSilent)) {
             [System.Windows.Forms.MessageBox]::Show(
-                "Nie wykryto podłączonego telefonu (adb devices nie zwraca urządzenia). Sprawdź kabel/USB debugging.",
+                "Nie wykryto podłączonego telefonu (adb devices nie zwraca urządzenia).`n`nSprawdź kabel USB, debugowanie USB w telefonie lub połączenie Wi-Fi.",
                 "Brak urządzenia",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -34,8 +40,50 @@
         return $true
     }
 
+    function Update-DeviceInfo {
+        if (-not (Test-AdbDeviceSilent)) {
+            $script:deviceModel = "Brak urządzenia"
+            return
+        }
+
+        try {
+            $model = (adb shell getprop ro.product.model 2>$null)
+            $mfg = (adb shell getprop ro.product.manufacturer 2>$null)
+            if ($model) { $script:deviceModel = $model.Trim() }
+            if ($mfg) { $script:deviceManufacturer = $mfg.Trim() }
+
+            # Odczyt fizycznej rozdzielczości ekranu
+            $wmSize = (adb shell wm size 2>$null)
+            if ($wmSize -match "Physical size:\s*(\d+)x(\d+)") {
+                $w = $Matches[1]
+                $h = $Matches[2]
+                $script:appDisplaySize = "$($w)x$($h)"
+            }
+        }
+        catch {
+            # Błąd odczytu parametrów urządzenia nie przerywa działania
+        }
+    }
+
+    function Get-DeviceBatteryStatus {
+        if (-not (Test-AdbDeviceSilent)) { return "Odłączony" }
+        try {
+            $dump = (adb shell dumpsys battery 2>$null)
+            $level = 0
+            $charging = $false
+
+            if ($dump -match "level:\s*(\d+)") { $level = [int]$Matches[1] }
+            if ($dump -match "status:\s*(2|5)") { $charging = $true }
+
+            $chargeStr = if ($charging) { " (Ładowanie)" } else { "" }
+            return "$level%$chargeStr"
+        }
+        catch {
+            return "Nieznany"
+        }
+    }
+
     function Initialize-ScreenTimeoutSettings {
-        # 1. Sprawdź, czy w pliku tymczasowym mamy już zapisany pierwotny timeout
         if (Test-Path $stateFile) {
             $saved = Get-Content $stateFile -ErrorAction SilentlyContinue
             if ($saved -as [int] -and [int]$saved -gt 0 -and [int]$saved -lt 2147483647) {
@@ -44,7 +92,6 @@
             }
         }
 
-        # 2. Odczytaj bieżący limit z telefonu, jeśli podłączony
         if (Test-AdbDeviceSilent) {
             $current = (adb shell settings get system screen_off_timeout 2>$null)
             if ($current -and $current.Trim() -as [int]) {
@@ -63,14 +110,14 @@
         # 1. Wybudzenie ekranu
         adb shell input keyevent 224 2>$null
 
-        # 2. Sprawdzenie, czy ekran jest zablokowany (Keyguard)
-        $isLocked = [bool](adb shell dumpsys window 2>$null | Select-String "isKeyguardShowing=true")
+        # 2. Sprawdzenie, czy ekran jest zablokowany (Keyguard / Lockscreen)
+        $isLocked = [bool](adb shell dumpsys window 2>$null | Select-String "isKeyguardShowing=true|mShowing=true")
         if ($isLocked -and -not [string]::IsNullOrWhiteSpace($adbPin)) {
-            Start-Sleep -Milliseconds 400
-            # Odsłonięcie pola na PIN (przesunięcie w górę)
+            Start-Sleep -Milliseconds 350
+            # Uniwersalne współrzędne gestu swipe w górę (niezależne od rozdzielczości telefonu)
             adb shell input swipe 500 1500 500 300 200 2>$null
-            Start-Sleep -Milliseconds 400
-            # Wpisanie PINu i zatwierdzenie
+            Start-Sleep -Milliseconds 350
+            # Wpisanie PINu i zatwierdzenie (Enter)
             adb shell input text $adbPin 2>$null
             adb shell input keyevent 66 2>$null
             Start-Sleep -Milliseconds 200
@@ -80,12 +127,8 @@
     function Enable-ScreenLockPrevention {
         if (-not (Test-AdbDeviceSilent)) { return }
 
-        # Ustawienie maksymalnego limitu wygaszania (~24.8 dni)
         adb shell settings put system screen_off_timeout 2147483647 2>$null
-        # Czuwanie przy podłączonym zasilaniu/USB
         adb shell svc power stayon true 2>$null
-
-        # Wybudzenie i odblokowanie telefonu, jeśli zablokowany
         Invoke-AdbUnlock
     }
 
@@ -103,16 +146,19 @@
 
     function Start-Taskbar {
         if (-not (Test-AdbDeviceSilent)) { return }
-        # Włączenie freeform i skalowalnych okien
         adb shell settings put global enable_freeform_support 1 2>$null
         adb shell settings put secure force_resizable_activities 1 2>$null
-        # Uruchomienie Taskbara poprawnym intentem zamiast awaryjnego monkey
         adb shell am start -n com.farmerbb.taskbar/.activity.StartTaskbarActivity 2>$null | Out-Null
+    }
+
+    function Stop-Taskbar {
+        if (-not (Test-AdbDeviceSilent)) { return }
+        adb shell am force-stop com.farmerbb.taskbar 2>$null | Out-Null
+        adb shell input keyevent 3 2>$null
     }
 
     function Optimize-RdcClipboard {
         if (-not (Test-AdbDeviceSilent)) { return }
-        # Zezwolenie na odczyt schowka w tle oraz okna systemowe dla Windows App (Remote Desktop)
         adb shell cmd appops set com.microsoft.rdc.androidx READ_CLIPBOARD allow 2>$null
         adb shell cmd appops set com.microsoft.rdc.androidx SYSTEM_ALERT_WINDOW allow 2>$null
     }
@@ -134,45 +180,104 @@
         $script:launchedProcesses = $alive
     }
 
+    function Switch-ToWirelessAdb {
+        if (-not (Test-AdbDevice)) { return }
+
+        # Odczytanie adresu IP telefonu z interfejsu wlan0
+        $ip = $null
+        $ipRoute = (adb shell ip route 2>$null)
+        if ($ipRoute -match "src\s+(\d+\.\d+\.\d+\.\d+)") {
+            $ip = $Matches[1]
+        }
+        if (-not $ip) {
+            $ipAddr = (adb shell ip addr show wlan0 2>$null)
+            if ($ipAddr -match "inet\s+(\d+\.\d+\.\d+\.\d+)") {
+                $ip = $Matches[1]
+            }
+        }
+        if (-not $ip) {
+            $ipProp = (adb shell getprop dhcp.wlan0.ipaddress 2>$null)
+            if ($ipProp -match "\d+\.\d+\.\d+\.\d+") {
+                $ip = $ipProp.Trim()
+            }
+        }
+
+        if (-not $ip) {
+            [System.Windows.Forms.MessageBox]::Show(
+                "Nie udało się automatycznie wykryć adresu IP telefonu w sieci Wi-Fi.`n`nUpewnij się, że telefon jest połączony z tą samą siecią Wi-Fi co komputer.",
+                "Brak IP Wi-Fi",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            )
+            return
+        }
+
+        # Uruchomienie trybu TCP/IP
+        adb tcpip 5555 2>$null | Out-Null
+        Start-Sleep -Milliseconds 500
+        $connectRes = (adb connect "$($ip):5555" 2>$null)
+
+        if ($connectRes -match "connected") {
+            $script:isWifiConnected = $true
+            [System.Windows.Forms.MessageBox]::Show(
+                "Połączono bezprzewodowo z telefonem:`n$($ip):5555`n`nMożesz teraz odłączyć kabel USB!",
+                "Połączenie Wi-Fi aktywne",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Information
+            )
+        }
+        else {
+            [System.Windows.Forms.MessageBox]::Show(
+                "Próba połączenia z $($ip):5555 zwróciła:`n$connectRes",
+                "Informacja o połączeniu",
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            )
+        }
+    }
+
     function Start-ScrcpyApp {
         param(
             [Parameter(Mandatory = $true)][string]$PackageName,
-            [string]$DisplaySize = $appDisplaySize,
+            [string]$WindowTitle = "",
+            [string]$DisplaySize = $script:appDisplaySize,
             [switch]$UseUhidKeyboard,
             [switch]$ForwardAllClicks
         )
 
         if (-not (Test-AdbDevice)) { return }
 
-        # Upewnienie się, że telefon nie śpi i nie jest zablokowany
         Enable-ScreenLockPrevention
 
-        # Dla aplikacji Windows App upewnij się, że uprawnienia schowka w Androidzie są włączone
         if ($PackageName -eq "com.microsoft.rdc.androidx") {
             Optimize-RdcClipboard
         }
 
+        $title = if ($WindowTitle) { $WindowTitle } else { $PackageName }
+
         $argListItems = @(
             "--new-display=$DisplaySize",
             "--start-app=$PackageName",
+            "--window-title=`"$title`"",
             "--no-vd-system-decorations",
             "-w",
             "-K"
         )
 
-        # Dla aplikacji Windows App (RDP) NIE stosujemy flagi flex-display (-x).
-        # Flaga -x natychmiast wymusza przeskalowanie wirtualnego ekranu do rozmiaru fizycznego okna na monitorze (np. 1920x1008),
-        # co niwelowało wybraną rozdzielczość 2K / 4K. Bez -x wirtualny ekran zachowuje pełną rozdzielczość (np. 2560x1440).
+        # Dźwięk: jeśli przełącznik audio jest odznaczony, wyciszamy
+        if ($chkAudio -and -not $chkAudio.Checked) {
+            $argListItems += "--no-audio"
+        }
+
+        # Dla aplikacji Windows App (RDP) NIE używamy flagi flex-display (-x), aby nie niszczyć wybranej rozdzielczości
         if ($PackageName -ne "com.microsoft.rdc.androidx") {
             $argListItems += "-x"
         }
         else {
-            # Zwiększenie przepływności wideo dla Windows App do 16 Mbps, aby czcionki i detale w RDP były ostre
             $argListItems += "-b"
             $argListItems += "16M"
         }
 
-        # Włącz pełne przekazywanie kliknięć myszy (prawy przycisk myszy = menu kontekstowe/wklejanie, a nie 'Wstecz')
         if ($ForwardAllClicks -or $PackageName -eq "com.microsoft.rdc.androidx") {
             $argListItems += "--mouse-bind=++++"
         }
@@ -185,62 +290,135 @@
         }
         catch {
             [System.Windows.Forms.MessageBox]::Show(
-                "Nie udało się uruchomić scrcpy dla pakietu '$PackageName': $($_.Exception.Message)`n`nSprawdź, czy scrcpy.exe jest w PATH oraz czy pakiet jest poprawny.",
-                "Błąd",
+                "Nie udało się uruchomić scrcpy dla pakietu '$PackageName': $($_.Exception.Message)`n`nSprawdź, czy scrcpy.exe jest zainstalowany i dostępny w PATH.",
+                "Błąd scrcpy",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Error
             )
         }
     }
 
-    # --- INTERFEJS GRAFICZNY ---
+    # --- WCZYTYWANIE KONFIGURACJI APLIKACJI (apps.json) ---
 
-    # Główne okno aplikacji
+    $appsConfigFile = Join-Path $scriptDir "apps.json"
+    $appButtons = @()
+
+    if (Test-Path $appsConfigFile) {
+        try {
+            $rawJson = Get-Content $appsConfigFile -Raw -Encoding UTF8 -ErrorAction Stop
+            $parsed = $rawJson | ConvertFrom-Json
+            foreach ($item in $parsed) {
+                $flagsArray = if ($item.flags) { @($item.flags) } else { @() }
+                $appButtons += @{
+                    Text    = [string]$item.name
+                    Package = [string]$item.package
+                    Flags   = $flagsArray
+                }
+            }
+        }
+        catch {
+            # W razie błędu parsowania pliku JSON skorzystaj z listy domyślnej
+        }
+    }
+
+    if ($appButtons.Count -eq 0) {
+        $appButtons = @(
+            @{ Text = "Claude";              Package = "com.anthropic.claude";                  Flags = @() },
+            @{ Text = "ConneckBot";          Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
+            @{ Text = "Gmail (Wszystkie)";   Package = "com.google.android.gm";                 Flags = @() },
+            @{ Text = "Messenger";           Package = "com.facebook.orca";                     Flags = @() },
+            @{ Text = "TurboTel";            Package = "ellipi.messenger";                      Flags = @() },
+            @{ Text = "Ustawienia";          Package = "com.android.settings";                  Flags = @() },
+            @{ Text = "Vivaldi";             Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
+            @{ Text = "WhatsApp";            Package = "com.whatsapp";                          Flags = @() },
+            @{ Text = "Wiadomości (Google)"; Package = "com.google.android.apps.messaging";     Flags = @() },
+            @{ Text = "Windows App";         Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
+        )
+    }
+
+    # Sortowanie alfabetyczne
+    $appButtons = @($appButtons | Sort-Object { $_.Text })
+
+    # --- KOLORYSTYKA I MOTYW (MODERN DARK THEME) ---
+
+    $cBg         = [System.Drawing.Color]::FromArgb(26, 27, 34)      # Ciemny grafit
+    $cCard       = [System.Drawing.Color]::FromArgb(35, 37, 46)      # Karty / panele
+    $cCardBorder = [System.Drawing.Color]::FromArgb(55, 58, 72)      # Ramki
+    $cText       = [System.Drawing.Color]::FromArgb(240, 242, 248)    # Główny tekst
+    $cTextMuted  = [System.Drawing.Color]::FromArgb(150, 155, 175)    # Tekst pomocniczy
+    $cGreen      = [System.Drawing.Color]::FromArgb(40, 167, 69)      # Zielony akcent (Uruchom)
+    $cBlue       = [System.Drawing.Color]::FromArgb(33, 115, 205)     # Niebieski akcent (Narzędzia)
+    $cPurple     = [System.Drawing.Color]::FromArgb(110, 75, 180)     # Fioletowy akcent (Wi-Fi)
+    $cBtnApp     = [System.Drawing.Color]::FromArgb(48, 52, 65)      # Przyciski aplikacji
+    $cRed        = [System.Drawing.Color]::FromArgb(180, 50, 50)      # Czerwony akcent (Reset)
+
+    $fontRegular = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Regular)
+    $fontBold    = New-Object System.Drawing.Font("Segoe UI", [float]9, [System.Drawing.FontStyle]::Bold)
+    $fontTitle   = New-Object System.Drawing.Font("Segoe UI", [float]9.5, [System.Drawing.FontStyle]::Bold)
+    $fontSmall   = New-Object System.Drawing.Font("Segoe UI", [float]8, [System.Drawing.FontStyle]::Regular)
+
+    # --- GŁÓWNE OKNO FORMULARZA ---
+
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "Scrcpy Manager"
-    $form.Size = New-Object System.Drawing.Size(380, 715)
+    $form.Size = New-Object System.Drawing.Size(385, 765)
     $form.StartPosition = "CenterScreen"
-    $form.FormBorderStyle = "FixedDialog"
+    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
+    $form.BackColor = $cBg
+    $form.ForeColor = $cText
 
-    # Etykieta
-    $label = New-Object System.Windows.Forms.Label
-    $label.Text = "Zarządzanie ekranem (Pixel):"
-    $label.Location = New-Object System.Drawing.Point(18, 12)
-    $label.AutoSize = $true
-    $form.Controls.Add($label)
+    # Etykieta nagłówkowa urządzenia
+    $lblHeader = New-Object System.Windows.Forms.Label
+    $lblHeader.Text = "Zarządzanie urządzeniem:"
+    $lblHeader.Location = New-Object System.Drawing.Point(18, 12)
+    $lblHeader.Size = New-Object System.Drawing.Size(340, 20)
+    $lblHeader.Font = $fontTitle
+    $lblHeader.ForeColor = $cText
+    $form.Controls.Add($lblHeader)
 
-    # Przycisk 1: Tryb Desktop
+    # Przycisk 1: Tryb Desktop (Małe DPI)
     $btnDesktop = New-Object System.Windows.Forms.Button
-    $btnDesktop.Location = New-Object System.Drawing.Point(18, 32)
-    $btnDesktop.Size = New-Object System.Drawing.Size(335, 38)
+    $btnDesktop.Location = New-Object System.Drawing.Point(18, 36)
+    $btnDesktop.Size = New-Object System.Drawing.Size(335, 34)
     $btnDesktop.Text = "1. Włącz Tryb Desktop (Małe DPI)"
+    $btnDesktop.BackColor = $cCard
+    $btnDesktop.ForeColor = $cText
+    $btnDesktop.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnDesktop.FlatAppearance.BorderColor = $cCardBorder
+    $btnDesktop.Font = $fontBold
     $btnDesktop.Add_Click({
         if (-not (Test-AdbDevice)) { return }
 
-        Enable-ScreenLockPrevention
+        adb shell wm density 250 2>$null
+        adb shell settings put global window_animation_scale 0.5 2>$null
+        adb shell settings put global transition_animation_scale 0.5 2>$null
+        adb shell settings put global animator_duration_scale 0.5 2>$null
 
-        adb shell wm density 250
-        adb shell settings put global window_animation_scale 0.5
-        adb shell settings put global transition_animation_scale 0.5
-        adb shell settings put global animator_duration_scale 0.5
+        adb shell settings put global enable_freeform_support 1 2>$null
+        adb shell settings put secure force_resizable_activities 1 2>$null
 
         Start-Taskbar
 
         [System.Windows.Forms.MessageBox]::Show(
-            "Zastosowano małe DPI, przyspieszono animacje, włączono freeform i uruchomiono Taskbar.`n`nJeśli okna aplikacji w Taskbarze nadal nie mają ramki do przeciągania/zmiany rozmiaru - zrestartuj telefon.",
-            "Gotowe"
+            "Zastosowano małe DPI, przyspieszono animacje i włączono tryb okienkowy na telefonie.",
+            "Tryb Desktop włączony",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
         )
     })
     $form.Controls.Add($btnDesktop)
 
-    # Przycisk 2: Uruchom scrcpy (z automatycznym obracaniem i logowaniem)
+    # Przycisk 2: Główny przycisk URUCHOM SCRCPY
     $btnScrcpy = New-Object System.Windows.Forms.Button
-    $btnScrcpy.Location = New-Object System.Drawing.Point(18, 75)
-    $btnScrcpy.Size = New-Object System.Drawing.Size(335, 48)
-    $btnScrcpy.Text = "2. URUCHOM SCRCPY"
-    $btnScrcpy.BackColor = [System.Drawing.Color]::LightGreen
-    $btnScrcpy.Font = New-Object System.Drawing.Font("Arial", [float]9, [System.Drawing.FontStyle]::Bold)
+    $btnScrcpy.Location = New-Object System.Drawing.Point(18, 76)
+    $btnScrcpy.Size = New-Object System.Drawing.Size(335, 44)
+    $btnScrcpy.Text = "2. URUCHOM SCRCPY (Cały Ekran)"
+    $btnScrcpy.BackColor = $cGreen
+    $btnScrcpy.ForeColor = [System.Drawing.Color]::White
+    $btnScrcpy.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnScrcpy.FlatAppearance.BorderSize = 0
+    $btnScrcpy.Font = New-Object System.Drawing.Font("Segoe UI", [float]10, [System.Drawing.FontStyle]::Bold)
     $btnScrcpy.Add_Click({
         if (-not (Test-AdbDevice)) { return }
 
@@ -250,22 +428,23 @@
             Start-Taskbar
         }
 
-        # 1. Wymuszenie orientacji poziomej
-        adb shell settings put system accelerometer_rotation 0
-        adb shell settings put system user_rotation 1
+        # Wymuszenie orientacji poziomej dla pełnego scrcpy
+        adb shell settings put system accelerometer_rotation 0 2>$null
+        adb shell settings put system user_rotation 1 2>$null
 
-        # 2. Wybudzenie ekranu i odblokowanie
         Invoke-AdbUnlock
 
-        # 3. Uruchomienie scrcpy
+        $title = if ($script:deviceModel) { "$($script:deviceModel) (Scrcpy)" } else { "Telefon Android (Scrcpy)" }
+        $audioArg = if ($chkAudio.Checked) { "" } else { "--no-audio" }
+
         try {
-            $proc = Start-Process "scrcpy" -ArgumentList "-S -w -K -M" -PassThru -ErrorAction Stop
+            $proc = Start-Process "scrcpy" -ArgumentList "-S -w -K -M --window-title=`"$title`" $audioArg" -PassThru -ErrorAction Stop
             Register-ScrcpyProcess -Process $proc
         }
         catch {
             [System.Windows.Forms.MessageBox]::Show(
-                "Nie udało się uruchomić scrcpy: $($_.Exception.Message)`n`nSprawdź, czy scrcpy.exe jest w PATH.",
-                "Błąd",
+                "Nie udało się uruchomić scrcpy: $($_.Exception.Message)`n`nUpewnij się, że scrcpy.exe jest zainstalowany i dostępny w PATH.",
+                "Błąd scrcpy",
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Error
             )
@@ -275,102 +454,112 @@
 
     # Przycisk 3: Tryb Normalny (Reset)
     $btnNormal = New-Object System.Windows.Forms.Button
-    $btnNormal.Location = New-Object System.Drawing.Point(18, 128)
-    $btnNormal.Size = New-Object System.Drawing.Size(335, 36)
+    $btnNormal.Location = New-Object System.Drawing.Point(18, 126)
+    $btnNormal.Size = New-Object System.Drawing.Size(335, 32)
     $btnNormal.Text = "3. Przywróć Tryb Normalny (Reset)"
+    $btnNormal.BackColor = $cCard
+    $btnNormal.ForeColor = [System.Drawing.Color]::FromArgb(255, 120, 120)
+    $btnNormal.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnNormal.FlatAppearance.BorderColor = $cCardBorder
+    $btnNormal.Font = $fontBold
     $btnNormal.Add_Click({
         if (-not (Test-AdbDevice)) { return }
 
-        # Resetowanie DPI i animacji
-        adb shell wm density reset
-        adb shell settings put global window_animation_scale 1.0
-        adb shell settings put global transition_animation_scale 1.0
-        adb shell settings put global animator_duration_scale 1.0
+        adb shell wm density reset 2>$null
+        adb shell settings put global window_animation_scale 1.0 2>$null
+        adb shell settings put global transition_animation_scale 1.0 2>$null
+        adb shell settings put global animator_duration_scale 1.0 2>$null
 
-        # Przywrócenie orientacji pionowej i auto-obracania
-        adb shell settings put system user_rotation 0
-        adb shell settings put system accelerometer_rotation 1
+        adb shell settings put system user_rotation 0 2>$null
+        adb shell settings put system accelerometer_rotation 1 2>$null
 
-        # Przywrócenie domyślnego wygaszania ekranu i wyłączenie wymuszonego czuwania
         Restore-ScreenLockSettings
+        Stop-Taskbar
 
-        # Wymuszone zamknięcie Taskbara i powrót na domyślny ekran główny
-        adb shell am force-stop com.farmerbb.taskbar 2>$null
-        adb shell input keyevent 3
-
-        [System.Windows.Forms.MessageBox]::Show("Przywrócono domyślne ustawienia telefonu (w tym wygaszanie ekranu) i zamknięto Taskbar.", "Gotowe")
+        [System.Windows.Forms.MessageBox]::Show(
+            "Przywrócono domyślne ustawienia telefonu, zresetowano DPI i zamknięto Taskbar.",
+            "Przywrócono stan domyślny",
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        )
     })
     $form.Controls.Add($btnNormal)
 
-    # Przycisk 4: Napraw schowek (3 maszyny)
+    # Rząd narzędzi: Schowek, Klawiatura, Wi-Fi
     $btnClipFix = New-Object System.Windows.Forms.Button
-    $btnClipFix.Location = New-Object System.Drawing.Point(18, 169)
-    $btnClipFix.Size = New-Object System.Drawing.Size(163, 32)
+    $btnClipFix.Location = New-Object System.Drawing.Point(18, 164)
+    $btnClipFix.Size = New-Object System.Drawing.Size(106, 30)
     $btnClipFix.Text = "Napraw schowek"
-    $btnClipFix.BackColor = [System.Drawing.Color]::LightSkyBlue
-    $btnClipFix.Font = New-Object System.Drawing.Font("Arial", [float]8.2, [System.Drawing.FontStyle]::Bold)
+    $btnClipFix.BackColor = $cBlue
+    $btnClipFix.ForeColor = [System.Drawing.Color]::White
+    $btnClipFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnClipFix.FlatAppearance.BorderSize = 0
+    $btnClipFix.Font = $fontSmall
     $btnClipFix.Add_Click({
-        if (Test-AdbDeviceSilent) {
-            Optimize-RdcClipboard
-        }
-
-        # Skopiowanie polecenia naprawy rdpclip na zdalnym PC do schowka użytkownika
+        if (Test-AdbDeviceSilent) { Optimize-RdcClipboard }
         $remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe"
-        try {
-            [System.Windows.Forms.Clipboard]::SetText($remoteFixCmd)
-            $copiedNotice = "Polecenie naprawcze dla ZDALNEJ maszyny zostało skopiowane do Twojego schowka:`n`n    $remoteFixCmd`n`nMożesz je wkleić (Win+R lub cmd) na zdalnym komputerze, jeśli schowek RDP się zablokuje."
-        }
-        catch {
-            $copiedNotice = "Polecenie naprawcze dla zdalnego PC (w razie zawieszenia):`n    $remoteFixCmd"
-        }
-
+        try { [System.Windows.Forms.Clipboard]::SetText($remoteFixCmd) } catch {}
         [System.Windows.Forms.MessageBox]::Show(
-            "Zastosowano optymalizacje schowka dla telefonu (READ_CLIPBOARD: allow).`n`n" +
-            "Skróty scrcpy do sterowania schowkiem w oknie Windows App:`n" +
-            "• Alt + V : Wymuś wysłanie schowka z tego komputera do telefonu/RDP i wklejenie`n" +
-            "• Alt + C : Wymuś pobranie schowka z telefonu/RDP do tego komputera`n`n" +
-            "Upewnij się również:`n" +
-            "1. W aplikacji Windows App na telefonie w ustawieniach połączenia (Devices & Audio) opcja 'Clipboard' (Schowek) jest WŁĄCZONA.`n" +
-            "2. $copiedNotice",
-            "Diagnostyka i pomoc schowka (3 maszyny)",
+            "Zastosowano optymalizacje schowka dla telefonu.`n`nPolecenie naprawcze dla zdalnego PC skopiowano do schowka:`n$remoteFixCmd`n`nSkróty w oknie:`n• Alt + V : Wklej schowek PC do sesji`n• Alt + C : Pobierz schowek sesji do PC",
+            "Schowek",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         )
     })
     $form.Controls.Add($btnClipFix)
 
-    # Przycisk 5: Klawiatura fizyczna (Polski)
     $btnKeyFix = New-Object System.Windows.Forms.Button
-    $btnKeyFix.Location = New-Object System.Drawing.Point(190, 169)
-    $btnKeyFix.Size = New-Object System.Drawing.Size(163, 32)
+    $btnKeyFix.Location = New-Object System.Drawing.Point(130, 164)
+    $btnKeyFix.Size = New-Object System.Drawing.Size(112, 30)
     $btnKeyFix.Text = "Klawiatura (Polski)"
-    $btnKeyFix.BackColor = [System.Drawing.Color]::LightSkyBlue
-    $btnKeyFix.Font = New-Object System.Drawing.Font("Arial", [float]8.2, [System.Drawing.FontStyle]::Bold)
+    $btnKeyFix.BackColor = $cBlue
+    $btnKeyFix.ForeColor = [System.Drawing.Color]::White
+    $btnKeyFix.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnKeyFix.FlatAppearance.BorderSize = 0
+    $btnKeyFix.Font = $fontSmall
     $btnKeyFix.Add_Click({
         if (Test-AdbDeviceSilent) {
             adb shell am start -a android.settings.HARD_KEYBOARD_SETTINGS 2>$null | Out-Null
         }
         [System.Windows.Forms.MessageBox]::Show(
-            "Otwarto ustawienia klawiatury fizycznej na telefonie.`n`n" +
-            "Jeśli polskie znaki (AltGr + a, e, c, s, l, z, x, o, n) nie działają:`n" +
-            "1. Kliknij na liście widoczną klawiaturę fizyczną ('scrcpy').`n" +
-            "2. Wybierz 'Skonfiguruj układy klawiatury'.`n" +
-            "3. Zaznacz 'Polski (programisty)'.`n`n" +
-            "Wszystkie aplikacje w panelu uruchamiają się ze sprzętową obsługą klawiatury (-K).",
-            "Ustawienia klawiatury fizycznej",
+            "Otwarto ustawienia klawiatury fizycznej w telefonie.`n`nUpewnij się, że układ klawiatury fizycznej 'scrcpy' ma zaznaczone 'Polski (programisty)'.",
+            "Klawiatura fizyczna",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         )
     })
     $form.Controls.Add($btnKeyFix)
 
-    # Przełącznik automatycznego włączania Taskbara
+    $btnWifi = New-Object System.Windows.Forms.Button
+    $btnWifi.Location = New-Object System.Drawing.Point(248, 164)
+    $btnWifi.Size = New-Object System.Drawing.Size(105, 30)
+    $btnWifi.Text = "Wi-Fi (Bez kabla)"
+    $btnWifi.BackColor = $cPurple
+    $btnWifi.ForeColor = [System.Drawing.Color]::White
+    $btnWifi.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnWifi.FlatAppearance.BorderSize = 0
+    $btnWifi.Font = $fontSmall
+    $btnWifi.Add_Click({ Switch-ToWirelessAdb })
+    $form.Controls.Add($btnWifi)
+
+    # Przełączniki opcji: Taskbar i Audio
     $chkAutoTaskbar = New-Object System.Windows.Forms.CheckBox
-    $chkAutoTaskbar.Text = "Automatycznie włączaj Taskbar (pasek zadań)"
+    $chkAutoTaskbar.Text = "Automatycznie włączaj Taskbar na telefonie"
     $chkAutoTaskbar.Checked = $true
     $chkAutoTaskbar.AutoSize = $true
-    $chkAutoTaskbar.Location = New-Object System.Drawing.Point(20, 206)
+    $chkAutoTaskbar.ForeColor = $cText
+    $chkAutoTaskbar.Font = $fontRegular
+    $chkAutoTaskbar.Location = New-Object System.Drawing.Point(20, 202)
     $form.Controls.Add($chkAutoTaskbar)
+
+    $chkAudio = New-Object System.Windows.Forms.CheckBox
+    $chkAudio.Text = "Przesyłaj dźwięk z telefonu do PC"
+    $chkAudio.Checked = $true
+    $chkAudio.AutoSize = $true
+    $chkAudio.ForeColor = $cText
+    $chkAudio.Font = $fontRegular
+    $chkAudio.Location = New-Object System.Drawing.Point(20, 224)
+    $form.Controls.Add($chkAudio)
 
     # Profil rozdzielczości dla Windows App (RDP)
     $resProfiles = @{
@@ -378,54 +567,48 @@
         "2K QHD (2560x1440 / DPI 160) - Duża przestrzeń robocza"     = "2560x1440/160"
         "2K QHD Kompakt (2560x1440 / DPI 140)"                       = "2560x1440/140"
         "4K UHD (3840x2160 / DPI 200)"                               = "3840x2160/200"
-        "Domyślna telefonu (1080x2200)"                              = "1080x2200"
+        "Domyślna telefonu (Natywna)"                                 = "AUTO"
     }
 
     $lblRes = New-Object System.Windows.Forms.Label
     $lblRes.Text = "Rozdzielczość dla Windows App (RDP):"
-    $lblRes.Location = New-Object System.Drawing.Point(18, 230)
+    $lblRes.Location = New-Object System.Drawing.Point(18, 248)
     $lblRes.AutoSize = $true
+    $lblRes.ForeColor = $cTextMuted
+    $lblRes.Font = $fontRegular
     $form.Controls.Add($lblRes)
 
     $cmbRes = New-Object System.Windows.Forms.ComboBox
     $cmbRes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-    $cmbRes.Location = New-Object System.Drawing.Point(18, 248)
+    $cmbRes.Location = New-Object System.Drawing.Point(18, 268)
     $cmbRes.Size = New-Object System.Drawing.Size(335, 24)
+    $cmbRes.BackColor = $cCard
+    $cmbRes.ForeColor = $cText
+    $cmbRes.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $cmbRes.Font = $fontRegular
     $cmbRes.Items.Add("Full HD Natywna (1920x1080 / DPI 160) - Żyleta 1:1 monitora") | Out-Null
     $cmbRes.Items.Add("2K QHD (2560x1440 / DPI 160) - Duża przestrzeń robocza") | Out-Null
     $cmbRes.Items.Add("2K QHD Kompakt (2560x1440 / DPI 140)") | Out-Null
     $cmbRes.Items.Add("4K UHD (3840x2160 / DPI 200)") | Out-Null
-    $cmbRes.Items.Add("Domyślna telefonu (1080x2200)") | Out-Null
+    $cmbRes.Items.Add("Domyślna telefonu (Natywna)") | Out-Null
     $cmbRes.SelectedIndex = 0
     $form.Controls.Add($cmbRes)
 
-    # --- Sekcja: uruchamianie konkretnych aplikacji w osobnym oknie (2 KOLUMNY, ALFABETYCZNIE) ---
+    # --- SEKCJA APLIKACJI (2 KOLUMNY, ALFABETYCZNIE) ---
 
     $groupApps = New-Object System.Windows.Forms.GroupBox
     $groupApps.Text = "Uruchom aplikację w osobnym oknie"
-    $groupApps.Location = New-Object System.Drawing.Point(18, 280)
-    $groupApps.Size = New-Object System.Drawing.Size(335, 335)
+    $groupApps.Location = New-Object System.Drawing.Point(18, 302)
+    $groupApps.Size = New-Object System.Drawing.Size(335, 355)
+    $groupApps.ForeColor = $cText
+    $groupApps.BackColor = $cCard
+    $groupApps.Font = $fontBold
     $form.Controls.Add($groupApps)
 
-    # Lista aplikacji posortowana alfabetycznie
-    $appButtons = @(
-        @{ Text = "Claude";              Package = "com.anthropic.claude";                  Flags = @() },
-        @{ Text = "ConneckBot";          Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
-        @{ Text = "Gmail (Wszystkie)";   Package = "com.google.android.gm";                 Flags = @() },
-        @{ Text = "Messenger";           Package = "com.facebook.orca";                     Flags = @() },
-        @{ Text = "TurboTel";            Package = "ellipi.messenger";                      Flags = @() },
-        @{ Text = "Ustawienia";          Package = "com.android.settings";                  Flags = @() },
-        @{ Text = "Vivaldi";             Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
-        @{ Text = "WhatsApp";            Package = "com.whatsapp";                          Flags = @() },
-        @{ Text = "Wiadomości (Google)"; Package = "com.google.android.apps.messaging";     Flags = @() },
-        @{ Text = "Windows App";         Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
-    )
-
-    # Generowanie przycisków w 2 kolumnach
-    $colWidth = 148
-    $btnHeight = 35
-    $rowPitch = 41
-    $colPitch = 157
+    $colWidth = 146
+    $btnHeight = 34
+    $rowPitch = 40
+    $colPitch = 156
     $startX = 15
     $startY = 24
 
@@ -439,110 +622,142 @@
 
         $btn = New-Object System.Windows.Forms.Button
         $btn.Text = $app.Text
-        $btn.Font = New-Object System.Drawing.Font("Arial", [float]8.5)
+        $btn.Font = $fontRegular
         $btn.Location = New-Object System.Drawing.Point($posX, $posY)
         $btn.Size = New-Object System.Drawing.Size($colWidth, $btnHeight)
+        $btn.BackColor = $cBtnApp
+        $btn.ForeColor = $cText
+        $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btn.FlatAppearance.BorderColor = $cCardBorder
 
         $pkg = $app.Package
+        $appName = $app.Text
         $useUhid = $app.Flags -contains "-UseUhidKeyboard"
         $forwardClicks = $app.Flags -contains "-ForwardAllClicks"
 
         $btn.Add_Click({
             if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-            $disp = $appDisplaySize
+            $disp = $script:appDisplaySize
+
             if ($pkg -eq "com.microsoft.rdc.androidx") {
                 $sel = $cmbRes.SelectedItem.ToString()
                 if ($resProfiles.ContainsKey($sel)) {
-                    $disp = $resProfiles[$sel]
+                    $profileVal = $resProfiles[$sel]
+                    if ($profileVal -eq "AUTO") {
+                        $disp = $script:appDisplaySize
+                    }
+                    else {
+                        $disp = $profileVal
+                    }
                 }
                 else {
-                    $disp = "2560x1440/140"
+                    $disp = "1920x1080/160"
                 }
             }
-            Start-ScrcpyApp -PackageName $pkg -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
+
+            Start-ScrcpyApp -PackageName $pkg -WindowTitle $appName -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
         }.GetNewClosure())
 
         $groupApps.Controls.Add($btn)
     }
 
-    # Dowolny inny pakiet - pole tekstowe + przycisk
+    # Inny pakiet z pola tekstowego
     $lblCustom = New-Object System.Windows.Forms.Label
     $lblCustom.Text = "Inny pakiet (np. com.spotify.music):"
-    $lblCustom.Location = New-Object System.Drawing.Point(15, 233)
+    $lblCustom.Location = New-Object System.Drawing.Point(15, 255)
     $lblCustom.AutoSize = $true
+    $lblCustom.ForeColor = $cTextMuted
+    $lblCustom.Font = $fontSmall
     $groupApps.Controls.Add($lblCustom)
 
     $txtCustom = New-Object System.Windows.Forms.TextBox
-    $txtCustom.Location = New-Object System.Drawing.Point(15, 253)
-    $txtCustom.Size = New-Object System.Drawing.Size(305, 20)
+    $txtCustom.Location = New-Object System.Drawing.Point(15, 275)
+    $txtCustom.Size = New-Object System.Drawing.Size(305, 23)
+    $txtCustom.BackColor = $cBg
+    $txtCustom.ForeColor = $cText
+    $txtCustom.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+    $txtCustom.Font = $fontRegular
     $groupApps.Controls.Add($txtCustom)
 
     $btnCustom = New-Object System.Windows.Forms.Button
-    $btnCustom.Location = New-Object System.Drawing.Point(15, 278)
+    $btnCustom.Location = New-Object System.Drawing.Point(15, 305)
     $btnCustom.Size = New-Object System.Drawing.Size(305, 32)
-    $btnCustom.Text = "Uruchom"
+    $btnCustom.Text = "Uruchom wpisany pakiet"
+    $btnCustom.BackColor = $cBtnApp
+    $btnCustom.ForeColor = $cText
+    $btnCustom.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnCustom.FlatAppearance.BorderColor = $cCardBorder
+    $btnCustom.Font = $fontBold
     $btnCustom.Add_Click({
         $pkg = $txtCustom.Text.Trim()
         if ([string]::IsNullOrWhiteSpace($pkg)) {
-            [System.Windows.Forms.MessageBox]::Show("Wpisz nazwę pakietu aplikacji.", "Brak pakietu")
+            [System.Windows.Forms.MessageBox]::Show("Wpisz poprawną nazwę pakietu Androida.", "Brak pakietu")
             return
         }
         if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-        $disp = $appDisplaySize
-        if ($pkg -eq "com.microsoft.rdc.androidx") {
-            $sel = $cmbRes.SelectedItem.ToString()
-            if ($resProfiles.ContainsKey($sel)) { $disp = $resProfiles[$sel] }
-        }
-        Start-ScrcpyApp -PackageName $pkg -DisplaySize $disp
+        Start-ScrcpyApp -PackageName $pkg -WindowTitle $pkg -DisplaySize $script:appDisplaySize
     })
     $groupApps.Controls.Add($btnCustom)
 
-    # Etykieta informacyjna o stanie blokady ekranu
+    # Pasek stanu na dole okna (Bateria, Model, Blokada)
     $lblStatus = New-Object System.Windows.Forms.Label
-    $lblStatus.Text = "Blokada ekranu: wyłączona (czuwanie aktywne)"
-    $lblStatus.Location = New-Object System.Drawing.Point(18, 626)
-    $lblStatus.Size = New-Object System.Drawing.Size(335, 25)
-    $lblStatus.ForeColor = [System.Drawing.Color]::DarkGreen
-    $lblStatus.Font = New-Object System.Drawing.Font("Arial", [float]8, [System.Drawing.FontStyle]::Italic)
-    $lblStatus.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+    $lblStatus.Text = "Inicjalizacja..."
+    $lblStatus.Location = New-Object System.Drawing.Point(18, 665)
+    $lblStatus.Size = New-Object System.Drawing.Size(335, 38)
+    $lblStatus.ForeColor = $cTextMuted
+    $lblStatus.Font = $fontSmall
     $form.Controls.Add($lblStatus)
 
-    # --- CYKLICZNY TIMER PODTRZYMUJĄCY CZUWANIE ---
+    # Timer czuwania oraz odświeżania paska stanu
     $keepAwakeTimer = New-Object System.Windows.Forms.Timer
-    $keepAwakeTimer.Interval = 8000 # Sprawdzanie co 8 sekund
+    $keepAwakeTimer.Interval = 8000
     $keepAwakeTimer.Add_Tick({
         Clean-ExitedProcesses
 
         if (Test-AdbDeviceSilent) {
-            # Upewnienie się, że timeout nadal jest ustawiony na brak wygaszania
             adb shell settings put system screen_off_timeout 2147483647 2>$null
             adb shell svc power stayon true 2>$null
 
-            # Jeśli telefon jest uśpiony lub zablokowany, wybudź i odblokuj
-            $isLocked = [bool](adb shell dumpsys window 2>$null | Select-String "isKeyguardShowing=true")
+            $isLocked = [bool](adb shell dumpsys window 2>$null | Select-String "isKeyguardShowing=true|mShowing=true")
             if ($isLocked) {
                 Invoke-AdbUnlock
             }
+
+            $bat = Get-DeviceBatteryStatus
+            $modeStr = if ($script:isWifiConnected) { "Wi-Fi" } else { "USB" }
+            $lblStatus.Text = "Urządzenie: $($script:deviceModel) ($modeStr)`nBateria: $bat | Czuwanie aktywne"
+        }
+        else {
+            $lblStatus.Text = "Brak połączenia z telefonem (sprawdź kabel/Wi-Fi)"
         }
     })
 
-    # Zdarzenie po wyświetleniu formularza (Shown gwarantuje, że okno już jest wyrenderowane)
+    # Bezpieczne zdarzenie po wyświetleniu okna
     $form.Add_Shown({
         try {
+            Update-DeviceInfo
+            if ($script:deviceModel -ne "Brak urządzenia") {
+                $lblHeader.Text = "Zarządzanie: $($script:deviceModel)"
+            }
             Initialize-ScreenTimeoutSettings
             Enable-ScreenLockPrevention
             Optimize-RdcClipboard
             if ($chkAutoTaskbar.Checked) {
                 Start-Taskbar
             }
+
+            $bat = Get-DeviceBatteryStatus
+            $modeStr = if ($script:isWifiConnected) { "Wi-Fi" } else { "USB" }
+            $lblStatus.Text = "Urządzenie: $($script:deviceModel) ($modeStr)`nBateria: $bat | Czuwanie aktywne"
+
             $keepAwakeTimer.Start()
         }
         catch {
-            # Błąd ADB w tle nie blokuje działania okna aplikacji
+            # Błąd poboczny w tle nie zamyka okna
         }
     })
 
-    # Zdarzenie zamknięcia formularza
+    # Zamknięcie formularza
     $form.Add_FormClosing({
         $keepAwakeTimer.Stop()
         Clean-ExitedProcesses
@@ -550,12 +765,9 @@
         $runningPids = @($script:launchedProcesses | Where-Object { -not $_.HasExited } | Select-Object -ExpandProperty Id)
 
         if ($runningPids.Count -eq 0) {
-            # Brak działających aplikacji potomnych - od razu przywracamy stan pierwotny telefonu
             Restore-ScreenLockSettings
         }
         else {
-            # Któraś aplikacja z przycisków nadal działa!
-            # Uruchamiamy ukryty proces PowerShell, który czuwa dopóki procesy scrcpy nie zostaną zamknięte.
             $pidArrayStr = ($runningPids -join ",")
             $timeoutVal = if ($script:originalTimeout -gt 0) { $script:originalTimeout } else { 30000 }
 
@@ -578,7 +790,6 @@ if (Test-Path '$stateFile') {
         }
     })
 
-    # Uruchomienie okna
     $form.ShowDialog() | Out-Null
 }
 catch {
