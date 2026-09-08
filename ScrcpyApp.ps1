@@ -106,8 +106,8 @@
         # Włączenie freeform i skalowalnych okien
         adb shell settings put global enable_freeform_support 1 2>$null
         adb shell settings put secure force_resizable_activities 1 2>$null
-        # Uruchomienie Taskbara
-        adb shell monkey -p com.farmerbb.taskbar 1 2>$null | Out-Null
+        # Uruchomienie Taskbara poprawnym intentem zamiast awaryjnego monkey
+        adb shell am start -n com.farmerbb.taskbar/.activity.StartTaskbarActivity 2>$null | Out-Null
     }
 
     function Optimize-RdcClipboard {
@@ -156,10 +156,21 @@
             "--new-display=$DisplaySize",
             "--start-app=$PackageName",
             "--no-vd-system-decorations",
-            "-x",
             "-w",
             "-K"
         )
+
+        # Dla aplikacji Windows App (RDP) NIE stosujemy flagi flex-display (-x).
+        # Flaga -x natychmiast wymusza przeskalowanie wirtualnego ekranu do rozmiaru fizycznego okna na monitorze (np. 1920x1008),
+        # co niwelowało wybraną rozdzielczość 2K / 4K. Bez -x wirtualny ekran zachowuje pełną rozdzielczość (np. 2560x1440).
+        if ($PackageName -ne "com.microsoft.rdc.androidx") {
+            $argListItems += "-x"
+        }
+        else {
+            # Zwiększenie przepływności wideo dla Windows App do 16 Mbps, aby czcionki i detale w RDP były ostre
+            $argListItems += "-b"
+            $argListItems += "16M"
+        }
 
         # Włącz pełne przekazywanie kliknięć myszy (prawy przycisk myszy = menu kontekstowe/wklejanie, a nie 'Wstecz')
         if ($ForwardAllClicks -or $PackageName -eq "com.microsoft.rdc.androidx") {
@@ -515,15 +526,20 @@
         }
     })
 
-    # Zdarzenie załadowania formularza
-    $form.Add_Load({
-        Initialize-ScreenTimeoutSettings
-        Enable-ScreenLockPrevention
-        Optimize-RdcClipboard
-        if ($chkAutoTaskbar.Checked) {
-            Start-Taskbar
+    # Zdarzenie po wyświetleniu formularza (Shown gwarantuje, że okno już jest wyrenderowane)
+    $form.Add_Shown({
+        try {
+            Initialize-ScreenTimeoutSettings
+            Enable-ScreenLockPrevention
+            Optimize-RdcClipboard
+            if ($chkAutoTaskbar.Checked) {
+                Start-Taskbar
+            }
+            $keepAwakeTimer.Start()
         }
-        $keepAwakeTimer.Start()
+        catch {
+            # Błąd ADB w tle nie blokuje działania okna aplikacji
+        }
     })
 
     # Zdarzenie zamknięcia formularza
@@ -566,8 +582,12 @@ if (Test-Path '$stateFile') {
     $form.ShowDialog() | Out-Null
 }
 catch {
+    $errLog = Join-Path $env:TEMP "scrcpy_manager_error.log"
+    $errMsg = "Wystąpił błąd podczas uruchamiania Scrcpy Manager:`n`n$($_.Exception.ToString())"
+    Set-Content -Path $errLog -Value $errMsg -Encoding UTF8 -ErrorAction SilentlyContinue
+
     [System.Windows.Forms.MessageBox]::Show(
-        "Wystąpił błąd podczas uruchamiania Scrcpy Manager:`n`n$($_.Exception.ToString())",
+        $errMsg,
         "Błąd Scrcpy Manager",
         [System.Windows.Forms.MessageBoxButtons]::OK,
         [System.Windows.Forms.MessageBoxIcon]::Error

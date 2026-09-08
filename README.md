@@ -60,3 +60,10 @@ Gdy łączysz się przez `Windows App` (Microsoft Remote Desktop) w scrcpy:
      taskkill /f /im rdpclip.exe & start rdpclip.exe
      ```
    - Przycisk **„📋 Napraw schowek (3 maszyny)”** w panelu automatycznie kopiuje to polecenie do Twojego schowka i odświeża uprawnienia ADB.
+
+4. **Wysoka rozdzielczość zdalnego Windows (2K / 4K)**:
+   - W panelu Scrcpy Manager wybierz żądany profil z listy (np. **2K QHD (2560x1440 / DPI 140)** lub **4K UHD**).
+   - Kliknij **Windows App**.
+   - W aplikacji Windows App na kafelku danego komputera kliknij menu `...` $\rightarrow$ **Edit** $\rightarrow$ sekcja **Display** (Ekran):
+     - Ustaw **Display resolution** na **Match this display** (Dopasuj do tego ekranu) lub wskaż `2560x1440` / `3840x2160`.
+   - Naciśnij `Alt + F`, aby włączyć tryb pełnoekranowy scrcpy na Twoim monitorze.
