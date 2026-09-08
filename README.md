@@ -23,8 +23,10 @@
   * `2K QHD (2560x1440 / DPI 160)` – +77% expanded desktop workspace.
   * `4K UHD (3840x2160 / DPI 200)` – Ultra-high workspace.
   * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
+* 🌓 **Dark & Light Mode**: Seamless 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with custom OwnerDraw dropdowns.
+* 🌐 **Bilingual Interface**: Instant on-the-fly toggling between Polish (PL) and English (EN) with preference persistence (`preferences.json`).
 * 🔋 **Battery & Device Monitor**: Real-time battery percentage, charging state, device model, and connection mode.
-* 🌙 **Modern Dark UI**: Clean dark theme crafted for Windows 10/11.
+* 🎨 **Refined Action Layout**: Hero launch button, side-by-side mode controls, and 3-column utility pills.
 * ⚙️ **Configurable App Grid (`apps.json`)**: Add, remove, or customize your favorite apps simply by editing a JSON file.
 * 🔒 **Zero Hardcoded Secrets**: Secure PIN handling via environment variables; no credentials or sensitive tokens stored in git.
 
@@ -100,7 +102,9 @@ You can edit `apps.json` to configure the buttons shown in the manager:
   * Wyłączone wymuszone skalowanie w dół i podniesiony bitrate do 16 Mbps dla ostrych czcionek.
   * Przycisk szybkiej naprawy schowka między 3 maszynami (PC lokalny $\leftrightarrow$ Telefon $\leftrightarrow$ PC zdalny).
 * **Automatyczne czuwanie i odblokowywanie**: Telefon nie blokuje się podczas pracy z panelem lub oknami scrcpy, a po zakończeniu przywracany jest pierwotny limit wygaszania.
-* **Nowoczesny ciemny motyw**: Estetyczny interfejs w stylu Windows 11 Dark Theme.
+* **Tryb Ciemny i Jasny (Dark / Light Mode)**: Przełączanie motywu jednym kliknięciem z dedykowaną obsługą rysowania list rozwijanych (brak białych pól w trybie ciemnym).
+* **Pełna dwujęzyczność (PL / EN)**: Błyskawiczna zmiana języka interfejsu w locie z zapamiętywaniem w `preferences.json`.
+* **Przejrzysty układ przycisków**: Przycisk akcji głównej (Hero), czytelne przyciski trybów obok siebie oraz 3-kolumnowe pigułki narzędziowe (Schowek, Klawiatura, Wi-Fi).
 * **Konfiguracja przez `apps.json`**: Łatwe dodawanie i usuwanie programów bez modyfikacji kodu skryptu.
 
 ---

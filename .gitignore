@@ -8,3 +8,5 @@ local.env
 *.user.ps1
 .vscode/
 .idea/
+# Local user preferences
+preferences.json
