@@ -374,11 +374,11 @@
 
     # Profil rozdzielczości dla Windows App (RDP)
     $resProfiles = @{
-        "2K QHD (2560x1440 / DPI 140) - Duża przestrzeń" = "2560x1440/140"
-        "Full HD Kompakt (1920x1080 / DPI 120)"         = "1920x1080/120"
-        "Full HD Standard (1920x1080 / DPI 160)"        = "1920x1080/160"
-        "4K UHD (3840x2160 / DPI 200)"                  = "3840x2160/200"
-        "Domyślna telefonu (1080x2200)"                 = "1080x2200"
+        "Full HD Natywna (1920x1080 / DPI 160) - Żyleta 1:1 monitora" = "1920x1080/160"
+        "2K QHD (2560x1440 / DPI 160) - Duża przestrzeń robocza"     = "2560x1440/160"
+        "2K QHD Kompakt (2560x1440 / DPI 140)"                       = "2560x1440/140"
+        "4K UHD (3840x2160 / DPI 200)"                               = "3840x2160/200"
+        "Domyślna telefonu (1080x2200)"                              = "1080x2200"
     }
 
     $lblRes = New-Object System.Windows.Forms.Label
@@ -391,9 +391,9 @@
     $cmbRes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $cmbRes.Location = New-Object System.Drawing.Point(18, 248)
     $cmbRes.Size = New-Object System.Drawing.Size(335, 24)
-    $cmbRes.Items.Add("2K QHD (2560x1440 / DPI 140) - Duża przestrzeń") | Out-Null
-    $cmbRes.Items.Add("Full HD Kompakt (1920x1080 / DPI 120)") | Out-Null
-    $cmbRes.Items.Add("Full HD Standard (1920x1080 / DPI 160)") | Out-Null
+    $cmbRes.Items.Add("Full HD Natywna (1920x1080 / DPI 160) - Żyleta 1:1 monitora") | Out-Null
+    $cmbRes.Items.Add("2K QHD (2560x1440 / DPI 160) - Duża przestrzeń robocza") | Out-Null
+    $cmbRes.Items.Add("2K QHD Kompakt (2560x1440 / DPI 140)") | Out-Null
     $cmbRes.Items.Add("4K UHD (3840x2160 / DPI 200)") | Out-Null
     $cmbRes.Items.Add("Domyślna telefonu (1080x2200)") | Out-Null
     $cmbRes.SelectedIndex = 0
