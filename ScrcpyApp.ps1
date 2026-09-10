@@ -75,10 +75,11 @@ public static class WinFormsCueBanner {
     function Get-ResizedAppIcon {
         param(
             [string]$Package,
-            [int]$Size = 18
+            [int]$Size = 18,
+            [int]$Gap = 5
         )
         if ([string]::IsNullOrWhiteSpace($Package)) { return $null }
-        $key = "$($Package)_$Size"
+        $key = "$($Package)_$($Size)_$Gap"
         if ($script:loadedIconBitmaps.ContainsKey($key)) {
             $cachedBmp = $script:loadedIconBitmaps[$key]
             if ($cachedBmp -and -not $cachedBmp.Disposed) {
@@ -97,7 +98,8 @@ public static class WinFormsCueBanner {
                 $ms = New-Object System.IO.MemoryStream($bytes, $false)
                 $src = [System.Drawing.Image]::FromStream($ms)
 
-                $dest = New-Object System.Drawing.Bitmap($Size, $Size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+                $totalW = $Size + $Gap
+                $dest = New-Object System.Drawing.Bitmap($totalW, $Size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
                 $g = [System.Drawing.Graphics]::FromImage($dest)
                 $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
                 $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
@@ -1867,6 +1869,7 @@ public static class WinFormsCueBanner {
                     $btnAlign = [System.Drawing.ContentAlignment]::MiddleLeft
                     $btnPad = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
                     $targetIconSize = 18
+                    $targetIconGap = 6
                     $btnIconPadding = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
                 }
                 elseif ($layout -eq 3) {
@@ -1877,9 +1880,10 @@ public static class WinFormsCueBanner {
                     $renW = 23
                     $delX = 95
                     $delW = 23
-                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-                    $btnPad = New-Object System.Windows.Forms.Padding(0)
+                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+                    $btnPad = New-Object System.Windows.Forms.Padding(2, 0, 0, 0)
                     $targetIconSize = 16
+                    $targetIconGap = 4
                     $btnIconPadding = New-Object System.Windows.Forms.Padding(2, 0, 0, 0)
                 }
                 else {
@@ -1890,9 +1894,10 @@ public static class WinFormsCueBanner {
                     $renW = 25
                     $delX = 153
                     $delW = 25
-                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-                    $btnPad = New-Object System.Windows.Forms.Padding(0)
+                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+                    $btnPad = New-Object System.Windows.Forms.Padding(4, 0, 0, 0)
                     $targetIconSize = 18
+                    $targetIconGap = 5
                     $btnIconPadding = New-Object System.Windows.Forms.Padding(4, 0, 0, 0)
                 }
 
@@ -1917,8 +1922,9 @@ public static class WinFormsCueBanner {
                     $btn.BackColor = $c.BtnApp
                     $btn.ForeColor = $c.BtnAppText
                     $btn.Cursor = [System.Windows.Forms.Cursors]::Hand
+                    $btn.AutoEllipsis = $true
 
-                    $iconImg = Get-ResizedAppIcon -Package $selectedApp.Package -Size $targetIconSize
+                    $iconImg = Get-ResizedAppIcon -Package $selectedApp.Package -Size $targetIconSize -Gap $targetIconGap
                     if ($iconImg) {
                         $btn.Image = $iconImg
                         $btn.ImageAlign = [System.Drawing.ContentAlignment]::MiddleLeft
