@@ -1,10 +1,14 @@
-﻿# scrcpy Manager 📱🖥️
+# scrcpy Manager 📱🖥️
 
 > **Universal Windows desktop companion for `scrcpy` and Android power users.**  
 > Launch Android apps in dedicated floating windows, manage virtual displays, switch seamlessly to Wireless ADB (Wi‑Fi), prevent screen sleep, and streamline Remote Desktop workflows.
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="scrcpy Manager Screenshot" width="360" />
+  <b>🌐 Language / Język / Sprache / Idioma:</b><br>
+  <b><a href="README.md">🇬🇧 English</a></b> &nbsp;|&nbsp;
+  <a href="README.pl.md">🇵🇱 Polski</a> &nbsp;|&nbsp;
+  <a href="README.de.md">🇩🇪 Deutsch</a> &nbsp;|&nbsp;
+  <a href="README.es.md">🇪🇸 Español</a>
 </p>
 
 <p align="center">
@@ -13,6 +17,10 @@
   <a href="https://github.com/tomaasz/scrcpy-manager/releases"><img src="https://img.shields.io/badge/Release-Portable%20Edition-orange.svg" alt="Portable Release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <img src="https://img.shields.io/badge/Languages-PL%20%7C%20EN%20%7C%20DE%20%7C%20ES-lightgrey.svg" alt="Languages" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="scrcpy Manager Screenshot" width="360" />
 </p>
 
 ---
@@ -24,6 +32,7 @@
 * **Zero setup & zero dependencies**: Bundles `scrcpy v4.1`, Android Debug Bridge (`adb`), and all required libraries inside a single standalone executable.
 * **No installation**: Runs immediately on any Windows 10/11 computer without installing `scrcpy` or modifying system `PATH`.
 * **Zero console window**: Clean native desktop GUI experience with no flashing command prompts.
+* **Instant subsequent starts**: Cached runtime verified with MD5 hash starts in under 0.2s.
 
 ---
 
@@ -42,7 +51,7 @@
   * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
 * 📐 **Flexible Tile Layouts**: Switch between 1-column list, 2-column standard, and 3-column compact view with persistent user preferences.
 * 🌓 **Dark & Light Mode**: 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with smooth custom controls.
-* 🌐 **Multilingual (4 Languages)**: Instant on-the-fly toggling between 🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, and 🇪🇸 Spanish.
+* 🌐 **Multilingual Interface**: 4 languages supported out of the box (🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, 🇪🇸 Spanish) with persistent preference.
 * 🔋 **Real-Time Status Card**: Connection status dot, battery level with charging state, and keep-awake monitor.
 
 ---
@@ -53,7 +62,7 @@ If you prefer running the script directly instead of downloading the portable `.
 
 ### Requirements
 1. **Windows 10 / 11** (PowerShell 5.1 or PowerShell 7+)
-2. **[scrcpy](https://github.com/Genymobile/scrcpy)** & **adb** available in system `PATH`
+2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 or newer) & **adb** available in system `PATH`
 3. Android device with **USB Debugging** enabled
 
 ### Instructions
@@ -95,34 +104,20 @@ If you prefer running the script directly instead of downloading the portable `.
 
 ---
 
-<details>
-<summary><b>🇵🇱 Dokumentacja po polsku (Kliknij tutaj, aby rozwinąć)</b></summary>
+## 🙏 Credits & Acknowledgments
 
-<br>
+This project is built with gratitude upon the following incredible open-source projects and technologies:
 
-### Najważniejsze funkcje
-* **Aplikacje w osobnych oknach**: Uruchamianie aplikacji Androida w niezależnych, pływających oknach (`--new-display`).
-* **Wersja przenośna (Portable)**: Gotowy, samodzielny plik `ScrcpyManager-Portable.exe` w zakładce [Releases](https://github.com/tomaasz/scrcpy-manager/releases) ze zintegrowanym `scrcpy v4.1` i `adb` (działa od razu bez instalacji czegokolwiek).
-* **Ikony aplikacji na kafelkach**: Błyskawiczne pobieranie oryginalnych ikon aplikacji bezpośrednio z telefonu oraz Google Play.
-* **Wyszukiwarka pakietów na żywo**: Błyskawiczne filtrowanie aplikacji zainstalowanych na telefonie w oknie edycji.
-* **Bezprzewodowe ADB jednym kliknięciem**: Automatyczne wykrycie IP telefonu w sieci domowej/biurowej i przełączenie na tryb Wi‑Fi (`adb connect <IP>:5555`).
-* **Przełącznik przesyłania dźwięku**: Opcja włączenia lub wyciszenia dźwięku (`--no-audio`) z poziomu panelu.
-* **Pełna obsługa polskich znaków i klawiatury fizycznej**: Wszystkie aplikacje uruchamiają się z obsługą sprzętowej klawiatury UHID (`-K`), dzięki czemu prawy Alt (`AltGr`) działa natywnie.
-* **Optymalizacje dla Windows App (RDP)**:
-  * Gotowe profile rozdzielczości (Full HD 1:1, 2K QHD, 4K UHD).
-  * Podniesiony bitrate do 16 Mbps dla ostrych czcionek na zdalnym pulpicie.
-  * Przycisk szybkiej naprawy schowka między 3 maszynami (PC lokalny $\leftrightarrow$ Telefon $\leftrightarrow$ PC zdalny).
-* **Automatyczne czuwanie i odblokowywanie**: Telefon nie blokuje się podczas pracy z panelem lub oknami scrcpy, a po zakończeniu przywracany jest pierwotny limit wygaszania.
-* **Tryb Ciemny i Jasny**: Przełączanie motywu jednym kliknięciem.
-* **Obsługa 4 języków**: Szybkie przełączanie między polskim, angielskim, niemieckim i hiszpańskim.
-* **Dostosowanie układu kafelków**: Wybór między listą (1 kolumna), siatką 2-kolumnową i zwartą 3-kolumnową z zapamiętywaniem w preferencjach.
-
-### Bezpieczeństwo i prywatność
-* Skrypt **nie przechowuje ani nie wysyła** żadnych danych na zewnętrzne serwery.
-* Kod PIN telefonu podawany jest wyłącznie jako lokalna zmienna środowiskowa (`$env:SCRCPY_ADB_PIN`) i nie jest zapisywany w plikach repozytorium.
-* Pliki tymczasowe stanu są bezpiecznie przechowywane w folderze tymczasowym systemu Windows (`$env:TEMP`).
-
-</details>
+* **[scrcpy](https://github.com/Genymobile/scrcpy)** by [Romain Vimont (@rom1v)](https://github.com/rom1v) & [Genymobile](https://github.com/Genymobile) (Apache License 2.0)  
+  *The core mirroring engine providing ultra-low latency display streaming, virtual display creation, UHID hardware keyboard emulation, and audio passthrough.*
+* **[Android Debug Bridge (ADB)](https://developer.android.com/tools/adb)** by Google & the Android Open Source Project (AOSP) (Apache License 2.0)  
+  *The foundation for device discovery, shell commands, wireless debugging, and package query.*
+* **[Taskbar](https://github.com/farmerbb/Taskbar)** by [Braden Farmer (farmerbb)](https://github.com/farmerbb) (Apache License 2.0)  
+  *Android desktop taskbar and freeform window manager launcher.*
+* **[Windows Forms & User32 CueBanner](https://learn.microsoft.com/en-us/windows/win32/controls/em-setcuebanner)** by Microsoft  
+  *Native Windows textbox placeholder cues via P/Invoke `SendMessage`.*
+* **[Google Play Store API](https://play.google.com)**  
+  *Online high-resolution icon resolver for Android adaptive vector icon packages.*
 
 ---
 
