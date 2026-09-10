@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://microsoft.com/PowerShell"><img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-blue.svg" alt="PowerShell" /></a>
+  <img src="https://img.shields.io/badge/C%23-Native%20WinForms-239120.svg" alt="C# Native" />
   <a href="https://github.com/Genymobile/scrcpy"><img src="https://img.shields.io/badge/scrcpy-v4.1%2B-brightgreen.svg" alt="scrcpy" /></a>
   <a href="https://github.com/tomaasz/scrcpy-manager/releases"><img src="https://img.shields.io/badge/Wydanie-Wersja%20Portable-orange.svg" alt="Wydanie Portable" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencja-MIT-yellow.svg" alt="Licencja: MIT" /></a>

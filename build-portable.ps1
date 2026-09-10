@@ -24,6 +24,12 @@ if ($env:SCRCPY_DIR -and (Test-Path (Join-Path $env:SCRCPY_DIR "scrcpy.exe"))) {
             $sub = Get-ChildItem $wingetPath -Directory | Where-Object { $_.Name -like "scrcpy*" } | Select-Object -First 1
             if ($sub) { $scrcpyDir = $sub.FullName }
         }
+        if (-not $scrcpyDir) {
+            $runtimePath = Join-Path $env:LOCALAPPDATA "scrcpy-manager\runtime"
+            if (Test-Path (Join-Path $runtimePath "scrcpy.exe")) {
+                $scrcpyDir = $runtimePath
+            }
+        }
     }
 }
 
@@ -71,16 +77,16 @@ try {
     $zipSizeMb = (Get-Item $bundleZip).Length / 1MB
     Write-Host ("Rozmiar archiwum bundle.zip: {0:N2} MB" -f $zipSizeMb) -ForegroundColor Green
 
-    # 6. Kompilacja C#
+    # 6. Kompilacja C# (Natywny Dashboard WinForms w C#)
     $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-    $launcherCs = Join-Path $repoDir "src\LauncherPortable.cs"
+    $csFiles = Get-ChildItem -Path (Join-Path $repoDir "src") -Filter "*.cs" | Select-Object -ExpandProperty FullName
 
-    $refs = "System.dll,System.Windows.Forms.dll,System.IO.Compression.dll,System.IO.Compression.FileSystem.dll,Microsoft.CSharp.dll"
+    $refs = "System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.IO.Compression.dll,System.IO.Compression.FileSystem.dll,System.Web.Extensions.dll,Microsoft.CSharp.dll"
 
-    Write-Host "Kompilacja przez csc.exe..." -ForegroundColor Cyan
+    Write-Host "Kompilacja natywnego programu C# przez csc.exe..." -ForegroundColor Cyan
 
     $iconArg = if (Test-Path $appIco) { "/win32icon:$appIco" } else { "" }
-    & $csc /nologo /target:winexe /optimize+ /platform:x64 $iconArg "/out:$outputExe" "/resource:$bundleZip,bundle.zip" "/r:$refs" "$launcherCs"
+    & $csc /nologo /target:winexe /optimize+ /platform:x64 $iconArg "/out:$outputExe" "/resource:$bundleZip,bundle.zip" "/r:$refs" $csFiles
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Błąd kompilacji csc.exe! Kod wyjścia: $LASTEXITCODE"

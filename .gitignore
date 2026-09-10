@@ -15,4 +15,7 @@ preferences.json
 *.exe
 temp_portable_stage/
 bundle.zip
+bin/
+obj/
+*.user
 
