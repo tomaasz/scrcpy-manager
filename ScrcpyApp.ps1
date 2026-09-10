@@ -64,6 +64,127 @@ public static class WinFormsCueBanner {
         catch {}
     }
 
+    # --- PAMIĘĆ PODRĘCZNA IKON APLIKACJI (ICONS CACHE) ---
+    $repoIconsDir = Join-Path $scriptDir "icons"
+    $iconCacheDir = Join-Path $userConfigRoot "icons"
+    if (-not (Test-Path $iconCacheDir)) {
+        [void](New-Item -ItemType Directory -Path $iconCacheDir -Force -ErrorAction SilentlyContinue)
+    }
+    $script:loadedIconBitmaps = @{}
+
+    function Get-ResizedAppIcon {
+        param(
+            [string]$Package,
+            [int]$Size = 18
+        )
+        if ([string]::IsNullOrWhiteSpace($Package)) { return $null }
+        $key = "$($Package)_$Size"
+        if ($script:loadedIconBitmaps.ContainsKey($key)) {
+            $cachedBmp = $script:loadedIconBitmaps[$key]
+            if ($cachedBmp -and -not $cachedBmp.Disposed) {
+                return $cachedBmp
+            }
+        }
+
+        $cachedPath = Join-Path $iconCacheDir "$Package.png"
+        if (-not (Test-Path $cachedPath) -and (Test-Path (Join-Path $repoIconsDir "$Package.png"))) {
+            Copy-Item -LiteralPath (Join-Path $repoIconsDir "$Package.png") -Destination $cachedPath -Force -ErrorAction SilentlyContinue
+        }
+
+        if (Test-Path $cachedPath) {
+            try {
+                $bytes = [System.IO.File]::ReadAllBytes($cachedPath)
+                $ms = New-Object System.IO.MemoryStream($bytes, $false)
+                $src = [System.Drawing.Image]::FromStream($ms)
+
+                $dest = New-Object System.Drawing.Bitmap($Size, $Size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+                $g = [System.Drawing.Graphics]::FromImage($dest)
+                $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+                $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+                $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+                $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+                $g.DrawImage($src, 0, 0, $Size, $Size)
+                $g.Dispose()
+                $src.Dispose()
+                $ms.Dispose()
+
+                $script:loadedIconBitmaps[$key] = $dest
+                return $dest
+            }
+            catch {}
+        }
+        return $null
+    }
+
+    function Fetch-SingleAppIcon {
+        param([string]$Package)
+        if ([string]::IsNullOrWhiteSpace($Package)) { return $false }
+        $cachedPath = Join-Path $iconCacheDir "$Package.png"
+        if (Test-Path $cachedPath) { return $true }
+
+        # Metoda 1: Wyciągnięcie bezpośrednio z podłączonego telefonu przez ADB (błyskawiczne, ~8ms)
+        if (Test-AdbDeviceSilent) {
+            if ($Package -eq "com.android.settings") {
+                adb shell "unzip -p /system/framework/framework-res.apk res/drawable-xxhdpi-v4/ic_settings.png > /data/local/tmp/scrcpy_icon.png 2>/dev/null"
+                adb pull /data/local/tmp/scrcpy_icon.png $cachedPath 2>$null | Out-Null
+                if ((Test-Path $cachedPath) -and (Get-Item $cachedPath).Length -gt 100) { return $true }
+            }
+
+            $apk = (adb shell pm path $Package 2>$null) -replace "^package:" | Select-Object -First 1
+            if ($apk) {
+                $lines = adb shell "unzip -l $apk 2>/dev/null"
+                $match = $lines | Select-String -Pattern "res/(mipmap|drawable)[^/]+/(ic_launcher|icon|app_icon)[^/]*\.png" | Select-Object -Last 1
+                if ($match) {
+                    $entry = ($match.Line -split "\s+")[-1]
+                    if ($entry) {
+                        adb shell "unzip -p $apk $entry > /data/local/tmp/scrcpy_icon.png 2>/dev/null"
+                        adb pull /data/local/tmp/scrcpy_icon.png $cachedPath 2>$null | Out-Null
+                        if ((Test-Path $cachedPath) -and (Get-Item $cachedPath).Length -gt 100) { return $true }
+                    }
+                }
+            }
+        }
+
+        # Metoda 2: Google Play Store API dla ikon adaptacyjnych / wektorowych XML
+        try {
+            $r = Invoke-WebRequest "https://play.google.com/store/apps/details?id=$Package" -UseBasicParsing -UserAgent "Mozilla/5.0" -TimeoutSec 3 -ErrorAction Stop
+            if ($r.Content -match "(https://play-lh.googleusercontent.com/[^""''>\s=]+)") {
+                $imgUrl = "$($matches[1])=s64"
+                Invoke-WebRequest $imgUrl -OutFile $cachedPath -TimeoutSec 3 -ErrorAction Stop
+                if ((Test-Path $cachedPath) -and (Get-Item $cachedPath).Length -gt 100) { return $true }
+            }
+        } catch {}
+
+        return $false
+    }
+
+    function Start-AsyncIconDownload {
+        $missing = @($appButtons | Where-Object {
+            $p = $_.Package
+            $p -and -not (Test-Path (Join-Path $iconCacheDir "$p.png")) -and -not (Test-Path (Join-Path $repoIconsDir "$p.png"))
+        })
+        if ($missing.Count -eq 0) { return }
+
+        $timerIcons = New-Object System.Windows.Forms.Timer
+        $timerIcons.Interval = 250
+        $idx = 0
+        $timerIcons.Add_Tick({
+            if ($idx -ge $missing.Count) {
+                $timerIcons.Stop()
+                $timerIcons.Dispose()
+                Update-AppButtonGrid
+                return
+            }
+            $targetPkg = $missing[$idx].Package
+            $idx++
+            $ok = Fetch-SingleAppIcon -Package $targetPkg
+            if ($ok) {
+                Update-AppButtonGrid
+            }
+        })
+        $timerIcons.Start()
+    }
+
     # Plik stanu do bezpiecznego zapamiętania pierwotnego limitu wygaszania ekranu
     $stateFile = Join-Path $env:TEMP "scrcpy_manager_original_timeout.txt"
     $script:launchedProcesses = New-Object 'System.Collections.Generic.List[System.Diagnostics.Process]'
@@ -1791,6 +1912,21 @@ public static class WinFormsCueBanner {
                     $btn.ForeColor = $c.BtnAppText
                     $btn.Cursor = [System.Windows.Forms.Cursors]::Hand
 
+                    $iconImg = Get-ResizedAppIcon -Package $selectedApp.Package -Size (if ($layout -eq 3) { 16 } else { 18 })
+                    if ($iconImg) {
+                        $btn.Image = $iconImg
+                        $btn.ImageAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+                        $btn.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+                        $btn.TextImageRelation = [System.Windows.Forms.TextImageRelation]::ImageBeforeText
+                        $btn.Padding = if ($layout -eq 1) {
+                            New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
+                        } elseif ($layout -eq 3) {
+                            New-Object System.Windows.Forms.Padding(2, 0, 0, 0)
+                        } else {
+                            New-Object System.Windows.Forms.Padding(4, 0, 0, 0)
+                        }
+                    }
+
                     $btnTip = New-Object System.Windows.Forms.ToolTip
                     $btnTip.SetToolTip($btn, "$($selectedApp.Text)`n$($selectedApp.Package)")
 
@@ -2241,6 +2377,7 @@ public static class WinFormsCueBanner {
             if ($lstCustomSuggestions) { $lstCustomSuggestions.Visible = $false }
             $txtCustom.Text = ""
             Update-AppButtonGrid
+            Start-AsyncIconDownload
         }
     })
     $form.Controls.Add($btnAddCustom)
@@ -2561,6 +2698,7 @@ public static class WinFormsCueBanner {
             }
 
             Update-StatusDisplay
+            Start-AsyncIconDownload
             $keepAwakeTimer.Start()
         }
         catch {}

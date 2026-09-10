@@ -53,6 +53,10 @@ try {
     if (Test-Path $appIco) {
         Copy-Item -LiteralPath $appIco -Destination $tempStage -Force
     }
+    $iconsDir = Join-Path $repoDir "icons"
+    if (Test-Path $iconsDir) {
+        Copy-Item -LiteralPath $iconsDir -Destination (Join-Path $tempStage "icons") -Recurse -Force
+    }
 
     Write-Host "Spakowano pliki do stagingu: $( (Get-ChildItem $tempStage).Count ) plików" -ForegroundColor Green
 
