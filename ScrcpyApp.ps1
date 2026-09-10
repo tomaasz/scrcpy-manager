@@ -88,7 +88,7 @@ public static class WinFormsCueBanner {
             AppsSubtitle        = "Uruchom wybraną aplikację w oddzielnym oknie scrcpy"
             AppsEdit            = "Edytuj"
             CustomLabel         = "Inny pakiet Androida (np. com.spotify.music):"
-            CustomPlaceholder   = "np. com.spotify.music"
+            CustomPlaceholder   = "Szukaj pakietu (np. spotify, maps)..."
             CustomBtn           = "Uruchom"
 
             AppsEditorTitle               = "Edytuj aplikacje w oknach"
@@ -163,7 +163,7 @@ public static class WinFormsCueBanner {
             AppsSubtitle        = "Launch selected app in a dedicated scrcpy window"
             AppsEdit            = "Edit"
             CustomLabel         = "Custom Android package (e.g. com.spotify.music):"
-            CustomPlaceholder   = "e.g. com.spotify.music"
+            CustomPlaceholder   = "Search package (e.g. spotify, maps)..."
             CustomBtn           = "Launch"
 
             AppsEditorTitle               = "Edit windowed applications"
@@ -548,6 +548,8 @@ public static class WinFormsCueBanner {
     $appButtons = New-Object System.Collections.ArrayList
     foreach ($app in $loadedAppButtons) { [void]$appButtons.Add($app) }
 
+    $script:cachedInstalledPackages = New-Object 'System.Collections.Generic.List[string]'
+
     function Get-InstalledAndroidPackages {
         if (-not (Test-AdbDeviceSilent)) { return @() }
 
@@ -568,7 +570,21 @@ public static class WinFormsCueBanner {
         }
         catch {}
 
-        return @($packages | Sort-Object)
+        $sorted = @($packages | Sort-Object)
+        if ($sorted.Count -gt 0) {
+            $script:cachedInstalledPackages.Clear()
+            foreach ($pkg in $sorted) {
+                [void]$script:cachedInstalledPackages.Add($pkg)
+            }
+        }
+        return $sorted
+    }
+
+    function Ensure-InstalledAndroidPackages {
+        if ($script:cachedInstalledPackages.Count -eq 0 -and (Test-AdbDeviceSilent)) {
+            [void](Get-InstalledAndroidPackages)
+        }
+        return $script:cachedInstalledPackages
     }
 
     # --- PALETA KOLORÓW DLA MOTYWÓW ---
@@ -1381,6 +1397,134 @@ public static class WinFormsCueBanner {
     $txtCustom.Font = $fontRegular
     $form.Controls.Add($txtCustom)
 
+    # Dynamiczna wyszukiwarka / podpowiedzi pakietów w rozwijanym dymku
+    $popupCustom = New-Object System.Windows.Forms.ToolStripDropDown
+    $popupCustom.AutoClose = $true
+    $popupCustom.DropShadowEnabled = $true
+    $popupCustom.Margin = [System.Windows.Forms.Padding]::Empty
+    $popupCustom.Padding = [System.Windows.Forms.Padding]::Empty
+
+    $lstCustomSuggestions = New-Object System.Windows.Forms.ListBox
+    $lstCustomSuggestions.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+    $lstCustomSuggestions.Font = $fontRegular
+    $lstCustomSuggestions.IntegralHeight = $false
+    $lstCustomSuggestions.Width = $txtCustom.Width
+
+    $hostCustom = New-Object System.Windows.Forms.ToolStripControlHost($lstCustomSuggestions)
+    $hostCustom.Margin = [System.Windows.Forms.Padding]::Empty
+    $hostCustom.Padding = [System.Windows.Forms.Padding]::Empty
+    $hostCustom.AutoSize = $false
+    $hostCustom.Size = New-Object System.Drawing.Size($txtCustom.Width, 120)
+    [void]$popupCustom.Items.Add($hostCustom)
+
+    $applyCustomFilter = {
+        Ensure-InstalledAndroidPackages | Out-Null
+        $query = $txtCustom.Text.Trim()
+        if ($query.Length -lt 1 -or $script:cachedInstalledPackages.Count -eq 0) {
+            if ($popupCustom.Visible) { $popupCustom.Close() }
+            return
+        }
+
+        $tokens = @($query -split '\s+' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        $matches = @($script:cachedInstalledPackages | Where-Object {
+            $pkg = $_
+            $allMatch = $true
+            foreach ($tok in $tokens) {
+                if ($pkg -notlike "*$tok*") {
+                    $allMatch = $false
+                    break
+                }
+            }
+            $allMatch
+        })
+
+        if ($matches.Count -eq 0) {
+            if ($popupCustom.Visible) { $popupCustom.Close() }
+            return
+        }
+
+        $lstCustomSuggestions.BeginUpdate()
+        try {
+            $lstCustomSuggestions.Items.Clear()
+            $maxCount = [Math]::Min($matches.Count, 30)
+            for ($i = 0; $i -lt $maxCount; $i++) {
+                [void]$lstCustomSuggestions.Items.Add($matches[$i])
+            }
+            if ($lstCustomSuggestions.Items.Count -gt 0) {
+                $lstCustomSuggestions.SelectedIndex = 0
+            }
+        }
+        finally {
+            $lstCustomSuggestions.EndUpdate()
+        }
+
+        $itemH = [Math]::Max($lstCustomSuggestions.ItemHeight, 22)
+        $visibleCount = [Math]::Min($matches.Count, 6)
+        $popupH = ($visibleCount * $itemH) + 6
+        $lstCustomSuggestions.Height = $popupH
+        $hostCustom.Size = New-Object System.Drawing.Size($txtCustom.Width, $popupH)
+        $popupCustom.Size = $hostCustom.Size
+
+        if (-not $popupCustom.Visible -and $txtCustom.Focused) {
+            $popupCustom.Show($txtCustom, 0, $txtCustom.Height)
+        }
+    }
+
+    $txtCustom.Add_TextChanged({ & $applyCustomFilter })
+
+    $txtCustom.Add_KeyDown({
+        param($s, $e)
+        if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Down -and $popupCustom.Visible) {
+            if ($lstCustomSuggestions.SelectedIndex -lt ($lstCustomSuggestions.Items.Count - 1)) {
+                $lstCustomSuggestions.SelectedIndex++
+            }
+            $e.Handled = $true
+        }
+        elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Up -and $popupCustom.Visible) {
+            if ($lstCustomSuggestions.SelectedIndex -gt 0) {
+                $lstCustomSuggestions.SelectedIndex--
+            }
+            $e.Handled = $true
+        }
+        elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
+            if ($popupCustom.Visible -and $lstCustomSuggestions.SelectedItem) {
+                $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
+                $txtCustom.SelectionStart = $txtCustom.Text.Length
+                $popupCustom.Close()
+                $e.Handled = $true
+                $e.SuppressKeyPress = $true
+            }
+            else {
+                $btnCustom.PerformClick()
+                $e.Handled = $true
+                $e.SuppressKeyPress = $true
+            }
+        }
+        elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Escape) {
+            if ($popupCustom.Visible) {
+                $popupCustom.Close()
+                $e.Handled = $true
+            }
+        }
+    })
+
+    $lstCustomSuggestions.Add_Click({
+        if ($lstCustomSuggestions.SelectedItem) {
+            $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
+            $txtCustom.SelectionStart = $txtCustom.Text.Length
+            $popupCustom.Close()
+            $txtCustom.Focus()
+        }
+    })
+
+    $lstCustomSuggestions.Add_DoubleClick({
+        if ($lstCustomSuggestions.SelectedItem) {
+            $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
+            $popupCustom.Close()
+            $btnCustom.PerformClick()
+        }
+    })
+
     $btnCustom = New-Object System.Windows.Forms.Button
     $btnCustom.Location = New-Object System.Drawing.Point(306, 519)
     $btnCustom.Size = New-Object System.Drawing.Size(82, 26)
@@ -1533,6 +1677,13 @@ public static class WinFormsCueBanner {
         $lblCustom.ForeColor = $c.TextMuted
         $txtCustom.BackColor = $c.InputBg
         $txtCustom.ForeColor = $c.InputText
+        if ($lstCustomSuggestions) {
+            $lstCustomSuggestions.BackColor = $c.InputBg
+            $lstCustomSuggestions.ForeColor = $c.InputText
+        }
+        if ($popupCustom) {
+            $popupCustom.BackColor = $c.CardBorder
+        }
 
         $btnCustom.BackColor = $c.BtnApp
         $btnCustom.ForeColor = $c.BtnAppText
@@ -1677,6 +1828,7 @@ public static class WinFormsCueBanner {
     # Zdarzenie zamknięcia okna
     $form.Add_FormClosing({
         $keepAwakeTimer.Stop()
+        if ($popupCustom) { $popupCustom.Dispose() }
         Clean-ExitedProcesses
 
         $runningPids = @($script:launchedProcesses | Where-Object { -not $_.HasExited } | Select-Object -ExpandProperty Id)
