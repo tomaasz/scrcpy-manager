@@ -21,6 +21,13 @@ namespace ScrcpyManager
             this.package = package;
             this.flags = initialFlags != null ? new List<string>(initialFlags) : new List<string>();
         }
+
+        public AppEntry(string name, string package, IEnumerable<string> initialFlags)
+        {
+            this.name = name;
+            this.package = package;
+            this.flags = initialFlags != null ? new List<string>(initialFlags) : new List<string>();
+        }
     }
 
     public class UserPreferences

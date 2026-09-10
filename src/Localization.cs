@@ -88,8 +88,10 @@ namespace ScrcpyManager
                 { "MsgAppsEmpty", "Lista musi zawierać co najmniej jedną aplikację." },
                 { "MsgAppsSaveError", "Nie udało się zapisać układu użytkownika:\n{0}" },
                 { "MsgAppsPhoneError", "Nie udało się pobrać aplikacji z telefonu. Sprawdź połączenie ADB." },
-                { "MsgLoadPopular", "Czy chcesz dodać zestaw 10 popularnych aplikacji (YouTube, Spotify, Chrome, WhatsApp, Messenger, Mapy itp.) do swojej listy?" },
-                { "MsgEmptyAppsPrompt", "Twoja lista aplikacji jest pusta. Czy chcesz wczytać zestaw 10 popularnych aplikacji (YouTube, Spotify, Chrome itp.)?" },
+                { "MsgLoadPopular", "Czy chcesz dodać zestaw popularnych aplikacji (YouTube, Spotify, Chrome, WhatsApp, Messenger itp.) do swojej listy?" },
+                { "MsgEmptyAppsPrompt", "Twoja lista aplikacji jest pusta. Czy chcesz wczytać zestaw popularnych aplikacji?" },
+                { "DiscoverTitle", "Wykrywanie aplikacji" },
+                { "MsgDiscoverPrompt", "Wykryto podłączony telefon ({0}).\n\nCzy chcesz, aby scrcpy Manager sprawdził aplikacje zainstalowane na Twoim telefonie i automatycznie dodał kafelki dla popularnych aplikacji (np. YouTube, WhatsApp, Chrome, Ustawienia itp.)?" },
 
                 { "SectionDevice", "OPERACJE NA URZĄDZENIU" },
                 { "DesktopMode", "Włącz tryb pulpitu" },
@@ -210,6 +212,8 @@ namespace ScrcpyManager
                 { "MsgAppsPhoneError", "Could not load applications from the phone. Check the ADB connection." },
                 { "MsgLoadPopular", "Do you want to add a set of 10 popular apps (YouTube, Spotify, Chrome, WhatsApp, Messenger, Maps, etc.) to your list?" },
                 { "MsgEmptyAppsPrompt", "Your app list is empty. Would you like to load a set of 10 popular apps (YouTube, Spotify, Chrome, etc.)?" },
+                { "DiscoverTitle", "App Discovery" },
+                { "MsgDiscoverPrompt", "Connected phone detected ({0}).\n\nWould you like scrcpy Manager to check the apps installed on your phone and automatically add tiles for popular apps (e.g. YouTube, WhatsApp, Chrome, Settings, etc.)?" },
 
                 { "SectionDevice", "DEVICE OPERATIONS" },
                 { "DesktopMode", "Enable desktop mode" },
@@ -330,6 +334,8 @@ namespace ScrcpyManager
                 { "MsgAppsPhoneError", "Apps konnten nicht vom Telefon geladen werden. ADB-Verbindung prüfen." },
                 { "MsgLoadPopular", "Möchten Sie eine Auswahl von 10 beliebten Apps (YouTube, Spotify, Chrome, WhatsApp usw.) hinzufügen?" },
                 { "MsgEmptyAppsPrompt", "Ihre App-Liste ist leer. Möchten Sie 10 beliebte Apps (YouTube, Spotify, Chrome usw.) laden?" },
+                { "DiscoverTitle", "Apps erkennen" },
+                { "MsgDiscoverPrompt", "Verbundenes Telefon erkannt ({0}).\n\nMöchten Sie, dass scrcpy Manager die auf Ihrem Telefon installierten Apps überprüft und automatisch Kacheln für beliebte Apps hinzufügt (z. B. YouTube, WhatsApp, Chrome, Einstellungen usw.)?" },
 
                 { "SectionDevice", "GERÄTEOPERATIONEN" },
                 { "DesktopMode", "Desktop-Modus aktivieren" },
@@ -450,6 +456,8 @@ namespace ScrcpyManager
                 { "MsgAppsPhoneError", "No se pudieron obtener las aplicaciones del teléfono. Compruebe la conexión ADB." },
                 { "MsgLoadPopular", "¿Desea añadir una selección de 10 aplicaciones populares (YouTube, Spotify, Chrome, WhatsApp, etc.)?" },
                 { "MsgEmptyAppsPrompt", "La lista de aplicaciones está vacía. ¿Desea cargar 10 aplicaciones populares (YouTube, Spotify, Chrome, etc.)?" },
+                { "DiscoverTitle", "Detección de aplicaciones" },
+                { "MsgDiscoverPrompt", "Teléfono conectado detectado ({0}).\n\n¿Desea que scrcpy Manager compruebe las aplicaciones instaladas en su teléfono y añada automáticamente botones para aplicaciones populares (ej. YouTube, WhatsApp, Chrome, Ajustes, etc.)?" },
 
                 { "SectionDevice", "OPERACIONES DEL DISPOSITIVO" },
                 { "DesktopMode", "Activar modo escritorio" },
@@ -652,6 +660,8 @@ namespace ScrcpyManager
             public string MsgAppsInvalid       { get { return Get("MsgAppsInvalid"); } }
             public string MsgAppsPhoneError    { get { return Get("MsgAppsPhoneError"); } }
             public string MsgAppsSaveError     { get { return Get("MsgAppsSaveError"); } }
+            public string DiscoverTitle        { get { return Get("DiscoverTitle"); } }
+            public string MsgDiscoverPrompt    { get { return Get("MsgDiscoverPrompt"); } }
 
             // Auto-update
             public string UpdateBadge          { get { return Get("UpdateBadge"); } }

@@ -36,6 +36,7 @@ namespace ScrcpyManager
         private readonly List<Process> _launchedProcesses = new List<Process>();
         private int _originalTimeout = 30000;
         private string _captureScreenshotLang = null;
+        private bool _hasPromptedForInitialApps = false;
 
         // Czcionki
         private readonly Font _fontRegular = new Font("Segoe UI", 9f, FontStyle.Regular);
@@ -245,11 +246,6 @@ namespace ScrcpyManager
                     }
                 }
                 catch {}
-            }
-
-            if (_appButtons.Count == 0)
-            {
-                _appButtons.AddRange(AppsEditorForm.DefaultPopularApps);
             }
         }
 
@@ -1413,6 +1409,61 @@ namespace ScrcpyManager
         {
             _currentDevice = await _adb.GetDeviceInfoAsync();
             UpdateStatusDisplay();
+
+            if (_currentDevice.IsOnline && _appButtons.Count == 0 && !File.Exists(_appsConfigFile) && !_hasPromptedForInitialApps)
+            {
+                _hasPromptedForInitialApps = true;
+                await CheckAndPromptInitialAppsAsync();
+            }
+        }
+
+        private async Task CheckAndPromptInitialAppsAsync()
+        {
+            try
+            {
+                Localization.Strings t = Localization.Get(_currentLang);
+                string devName = !string.IsNullOrEmpty(_currentDevice.Model) ? _currentDevice.Model : "Android";
+                string prompt = string.Format(t.MsgDiscoverPrompt, devName);
+
+                DialogResult dr = MessageBox.Show(this, prompt, t.DiscoverTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (dr == DialogResult.Yes)
+                {
+                    List<string> installed = await _adb.GetInstalledPackagesAsync();
+                    HashSet<string> installedSet = new HashSet<string>(installed ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
+
+                    List<AppEntry> matched = new List<AppEntry>();
+                    foreach (AppEntry app in AppsEditorForm.DefaultPopularApps)
+                    {
+                        if (installedSet.Contains(app.package))
+                        {
+                            matched.Add(new AppEntry(app.name, app.package, app.flags != null ? new List<string>(app.flags) : null));
+                        }
+                    }
+
+                    if (matched.Count == 0 && installedSet.Contains("com.android.settings"))
+                    {
+                        matched.Add(new AppEntry("Ustawienia", "com.android.settings"));
+                    }
+
+                    if (matched.Count > 0)
+                    {
+                        _appButtons.Clear();
+                        _appButtons.AddRange(matched);
+                        SaveAppsConfigFile();
+                        UpdateAppButtonGrid();
+                        DownloadMissingIconsAsync();
+                    }
+                    else
+                    {
+                        SaveAppsConfigFile();
+                    }
+                }
+                else
+                {
+                    SaveAppsConfigFile();
+                }
+            }
+            catch {}
         }
 
         private async void InitTimeoutSettingsAsync()

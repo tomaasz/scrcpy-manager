@@ -42,7 +42,10 @@ namespace ScrcpyManager
             new AppEntry("Mapy Google", "com.google.android.apps.maps"),
             new AppEntry("Wiadomości", "com.google.android.apps.messaging"),
             new AppEntry("Ustawienia", "com.android.settings"),
-            new AppEntry("Claude", "com.anthropic.claude")
+            new AppEntry("Claude", "com.anthropic.claude"),
+            new AppEntry("Zdjęcia", "com.google.android.apps.photos"),
+            new AppEntry("Facebook", "com.facebook.katana"),
+            new AppEntry("Instagram", "com.instagram.android")
         };
 
         public AppsEditorForm(List<AppEntry> currentApps, AdbService adb, ThemeColors theme, Localization.Strings loc, string appsConfigPath, Icon appIcon)

@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "1.1.1"
+    $script:appVersion = "1.1.2"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
@@ -979,10 +979,6 @@ public static class NativeDwmScreenshot {
         @{ Text = "Ustawienia";              Package = "com.android.settings";                  Flags = @() },
         @{ Text = "Claude";                  Package = "com.anthropic.claude";                  Flags = @() }
     )
-
-    if ($appButtons.Count -eq 0) {
-        $appButtons = @($script:defaultPopularApps)
-    }
 
     $loadedAppButtons = @($appButtons)
     $appButtons = New-Object System.Collections.ArrayList
