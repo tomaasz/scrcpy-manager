@@ -25,7 +25,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Język: Polski (kliknij, aby zmienić na EN / DE / ES)" },
 
                 { "LaunchHero", "▶  Uruchom scrcpy" },
-                { "FullScreenOpt", "Uruchamiaj w trybie pełnoekranowym (-f)" },
+                { "FullScreenOpt", "Pełny ekran (-f)" },
 
                 { "SectionOptions", "OBRAZ, DŹWIĘK I STEROWANIE" },
                 { "ResLabel", "Rozdzielczość wirtualnego ekranu (RDP):" },
@@ -34,6 +34,12 @@ namespace ScrcpyManager
                 { "WifiBtn", "Połącz przez Wi‑Fi" },
                 { "KeyBtn", "Klawiatura fizyczna" },
                 { "ClipBtn", "Naprawa schowka" },
+                { "OptNavBar", "Pasek nawigacji okien" },
+                { "OptNavBarTooltip", "Wyświetla dotykowy pasek nawigacyjny (Cofnij, Home, Ostatnie) pod oknem każdej aplikacji" },
+                { "SectionNavigation", "NAWIGACJA ANDROIDA" },
+                { "NavBack", "◀  Cofnij (Esc)" },
+                { "NavHome", "●  Ekran główny" },
+                { "NavRecents", "▢  Ostatnie aplikacje" },
 
                 { "SectionApps", "APLIKACJE W OKNACH" },
                 { "AppsSubtitle", "Uruchom w oknie lub kliknij [Edytuj], by dostosować listę" },
@@ -139,7 +145,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Language: English (click to switch to DE / ES / PL)" },
 
                 { "LaunchHero", "▶  Launch scrcpy" },
-                { "FullScreenOpt", "Launch in full screen mode (-f)" },
+                { "FullScreenOpt", "Fullscreen (-f)" },
 
                 { "SectionOptions", "DISPLAY, AUDIO & CONTROL" },
                 { "ResLabel", "Virtual display resolution (RDP):" },
@@ -148,6 +154,12 @@ namespace ScrcpyManager
                 { "WifiBtn", "Connect via Wi‑Fi" },
                 { "KeyBtn", "Hardware keyboard" },
                 { "ClipBtn", "Fix clipboard" },
+                { "OptNavBar", "Window navigation bar" },
+                { "OptNavBarTooltip", "Shows bottom navigation bar (Back, Home, Recents) beneath each app window" },
+                { "SectionNavigation", "ANDROID NAVIGATION" },
+                { "NavBack", "◀  Back (Esc)" },
+                { "NavHome", "●  Home" },
+                { "NavRecents", "▢  Recents" },
 
                 { "SectionApps", "WINDOWED APPLICATIONS" },
                 { "AppsSubtitle", "Run in window or click [Edit] to customize your list" },
@@ -253,7 +265,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Sprache: Deutsch (Klicken für Wechsel zu ES / PL / EN)" },
 
                 { "LaunchHero", "▶  scrcpy starten" },
-                { "FullScreenOpt", "Im Vollbildmodus starten (-f)" },
+                { "FullScreenOpt", "Vollbild (-f)" },
 
                 { "SectionOptions", "ANZEIGE, AUDIO & STEUERUNG" },
                 { "ResLabel", "Virtuelle Bildschirmauflösung (RDP):" },
@@ -262,6 +274,12 @@ namespace ScrcpyManager
                 { "WifiBtn", "Über WLAN verbinden" },
                 { "KeyBtn", "Physische Tastatur" },
                 { "ClipBtn", "Zwischenablage reparieren" },
+                { "OptNavBar", "Fenster-Navigationsleiste" },
+                { "OptNavBarTooltip", "Zeigt Navigationsleiste (Zurück, Start, Apps) unter jedem Anwendungsfenster an" },
+                { "SectionNavigation", "ANDROID-NAVIGATION" },
+                { "NavBack", "◀  Zurück (Esc)" },
+                { "NavHome", "●  Start" },
+                { "NavRecents", "▢  Apps" },
 
                 { "SectionApps", "ANWENDUNGEN IN FENSTERN" },
                 { "AppsSubtitle", "Im Fenster starten oder [Bearbeiten] zum Anpassen" },
@@ -367,7 +385,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Idioma: Español (clic para cambiar a PL / EN / DE)" },
 
                 { "LaunchHero", "▶  Iniciar scrcpy" },
-                { "FullScreenOpt", "Iniciar en pantalla completa (-f)" },
+                { "FullScreenOpt", "Pantalla completa (-f)" },
 
                 { "SectionOptions", "PANTALLA, AUDIO Y CONTROL" },
                 { "ResLabel", "Resolución de pantalla virtual (RDP):" },
@@ -376,6 +394,12 @@ namespace ScrcpyManager
                 { "WifiBtn", "Conectar por Wi‑Fi" },
                 { "KeyBtn", "Teclado físico" },
                 { "ClipBtn", "Reparar portapapeles" },
+                { "OptNavBar", "Barra inferior en ventanas" },
+                { "OptNavBarTooltip", "Muestra barra táctil de navegación (Atrás, Inicio, Recientes) debajo de cada ventana de app" },
+                { "SectionNavigation", "NAVEGACIÓN ANDROID" },
+                { "NavBack", "◀  Atrás (Esc)" },
+                { "NavHome", "●  Inicio" },
+                { "NavRecents", "▢  Recientes" },
 
                 { "SectionApps", "APLICACIONES EN VENTANAS" },
                 { "AppsSubtitle", "Abrir en ventana o pulse [Editar] para personalizar" },
@@ -552,6 +576,12 @@ namespace ScrcpyManager
             public string WifiBtn              { get { return Get("WifiBtn"); } }
             public string KeyBtn               { get { return Get("KeyBtn"); } }
             public string ClipBtn              { get { return Get("ClipBtn"); } }
+            public string OptNavBar            { get { return Get("OptNavBar"); } }
+            public string OptNavBarTooltip     { get { return Get("OptNavBarTooltip"); } }
+            public string SectionNavigation    { get { return Get("SectionNavigation"); } }
+            public string NavBack              { get { return Get("NavBack"); } }
+            public string NavHome              { get { return Get("NavHome"); } }
+            public string NavRecents           { get { return Get("NavRecents"); } }
 
             // Apps Section
             public string SectionApps          { get { return Get("SectionApps"); } }

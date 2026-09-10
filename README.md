@@ -49,6 +49,9 @@
   * `2K QHD (2560x1440)` – +77% expanded desktop workspace.
   * `4K UHD (3840x2160)` – Maximum productivity view.
   * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
+* 🔙 **Convenient Navigation & ESC Key**: Pressing `ESC` in any Android app window immediately triggers `Back` (just like clicking the app's top-left `←` arrow).
+* 🧭 **Docked Window Navigation Bar**: Floating bottom bar with `◀` (Back), `●` (Home), and `▢` (Recents) seamlessly attached to scrcpy windows.
+* 📱 **Dashboard Navigation Buttons**: Instant phone control (`◀ Back`, `● Home`, `▢ Recents`) right from the manager window.
 * 📐 **Flexible Tile Layouts**: Switch between 1-column list, 2-column standard, and 3-column compact view with persistent user preferences.
 * 🌓 **Dark & Light Mode**: 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with smooth custom controls.
 * 🌐 **Multilingual Interface**: 4 languages supported out of the box (🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, 🇪🇸 Spanish) with persistent preference.

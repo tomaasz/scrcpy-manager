@@ -49,6 +49,9 @@
   * `2K QHD (2560x1440)` – O 77% większa przestrzeń robocza.
   * `4K UHD (3840x2160)` – Maksymalna rozdzielczość dla dużych ekranów.
   * *Wysoki bitrate (16 Mbps)* gwarantujący żyletkowo ostre czcionki.
+* 🔙 **Wygodna nawigacja i klawisz ESC**: Naciśnięcie klawisza `ESC` w oknie dowolnej aplikacji Androida natychmiast wywołuje `Cofnij` (to samo co strzałka `←` w aplikacji).
+* 🧭 **Zadokowany pasek nawigacyjny okien**: Pływający dolny pasek z przyciskami `◀` (Cofnij), `●` (Ekran główny) i `▢` (Ostatnie aplikacje) przyczepiony do okna scrcpy.
+* 📱 **Przyciski nawigacji w panelu**: Szybkie sterowanie telefonem (`◀ Cofnij`, `● Home`, `▢ Ostatnie`) bezpośrednio z poziomu managera.
 * 📐 **Elastyczny układ kafelków**: Przełączaj jednym kliknięciem między listą (1 kolumna), siatką 2-kolumnową i zwartą siatką 3-kolumnową.
 * 🌓 **Tryb Ciemny i Jasny**: Szybkie przełączanie motywu (`☀️ Jasny` / `🌙 Ciemny`) z dedykowanymi kontrolkami.
 * 🌐 **Wielojęzyczność (4 języki)**: Błyskawiczna zmiana języka (🇵🇱 Polski, 🇬🇧 Angielski, 🇩🇪 Niemiecki, 🇪🇸 Hiszpański) z zapamiętywaniem w preferencjach.

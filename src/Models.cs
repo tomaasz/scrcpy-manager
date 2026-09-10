@@ -28,12 +28,14 @@ namespace ScrcpyManager
         public string theme { get; set; }
         public string lang { get; set; }
         public int layout { get; set; }
+        public bool navBar { get; set; }
 
         public UserPreferences()
         {
             theme = "dark";
             lang = "PL";
             layout = 2;
+            navBar = true;
         }
     }
 

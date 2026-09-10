@@ -87,9 +87,14 @@ namespace ScrcpyManager
             return StartScrcpyProcess(args);
         }
 
-        public Task<Process> StartScrcpyAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize)
+        public Task<Process> StartScrcpyAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true)
         {
-            return LaunchScrcpyForAppAsync(package, title, useUhid, forwardClicks, displaySize);
+            return LaunchScrcpyForAppAsync(package, title, useUhid, forwardClicks, displaySize, audio);
+        }
+
+        public Task SendKeyAsync(int keycode)
+        {
+            return SendKeyEventAsync(keycode);
         }
 
         // Static Implementations
@@ -106,6 +111,7 @@ namespace ScrcpyManager
                         UseShellExecute = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
+                        RedirectStandardInput = true,
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     };
@@ -113,12 +119,14 @@ namespace ScrcpyManager
                     using (Process proc = Process.Start(psi))
                     {
                         if (proc == null) return string.Empty;
+                        try { proc.StandardInput.Close(); } catch { }
+                        string stdout = proc.StandardOutput.ReadToEnd();
                         if (!proc.WaitForExit(timeoutMs))
                         {
                             try { proc.Kill(); } catch { }
-                            return string.Empty;
+                            return stdout;
                         }
-                        return proc.StandardOutput.ReadToEnd();
+                        return stdout;
                     }
                 }
                 catch
@@ -126,6 +134,11 @@ namespace ScrcpyManager
                     return string.Empty;
                 }
             });
+        }
+
+        public static Task SendKeyEventAsync(int keycode)
+        {
+            return ExecuteAdbAsync(string.Format("shell input keyevent {0}", keycode), 1500);
         }
 
         public static async Task<bool> CheckDeviceConnectedAsync()
@@ -282,7 +295,7 @@ namespace ScrcpyManager
             }
         }
 
-        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize)
+        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true)
         {
             if (string.IsNullOrWhiteSpace(package)) return null;
 
@@ -292,12 +305,34 @@ namespace ScrcpyManager
             string winTitle = !string.IsNullOrEmpty(title) ? title : package;
             string disp = !string.IsNullOrWhiteSpace(displaySize) ? displaySize : "1080x2400";
 
-            string extraFlags = "";
-            if (useUhid) extraFlags += " -K";
-            if (forwardClicks) extraFlags += " --forward-all-clicks";
+            List<string> argsList = new List<string>
+            {
+                string.Format("--new-display={0}", disp),
+                string.Format("--start-app={0}", package),
+                string.Format("--window-title=\"{0}\"", winTitle),
+                "-w"
+            };
 
-            string scrcpyArgs = string.Format("--new-display={0} --start-app={1} --window-title=\"{2}\" -S -w -M{3}", disp, package, winTitle, extraFlags).Trim();
+            if (useUhid) argsList.Add("-K");
+            if (!audio) argsList.Add("--no-audio");
 
+            bool isRdc = string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase);
+            if (isRdc)
+            {
+                argsList.Add("-b 16M");
+                argsList.Add("--mouse-bind=++++");
+                if (!useUhid) argsList.Add("-K");
+            }
+            else
+            {
+                argsList.Add("-x");
+                if (forwardClicks)
+                {
+                    argsList.Add("--mouse-bind=++++");
+                }
+            }
+
+            string scrcpyArgs = string.Join(" ", argsList);
             return StartScrcpyProcess(scrcpyArgs);
         }
 

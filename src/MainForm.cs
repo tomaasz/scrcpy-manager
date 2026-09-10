@@ -68,6 +68,7 @@ namespace ScrcpyManager
 
         private Button _btnScrcpy;
         private CheckBox _chkFullScreen;
+        private CheckBox _chkNavBar;
 
         private Label _lblSectionOptions;
         private Label _lblRes;
@@ -96,6 +97,9 @@ namespace ScrcpyManager
         private Button _btnDesktop;
         private Button _btnNormal;
         private Button _btnReboot;
+        private Button _btnNavBack;
+        private Button _btnNavHome;
+        private Button _btnNavRecents;
 
         private ToolTip _tipMain;
         private Timer _keepAwakeTimer;
@@ -160,7 +164,7 @@ namespace ScrcpyManager
         private void InitializeMainWindow()
         {
             Text = "scrcpy Manager";
-            ClientSize = new Size(404, 690);
+            ClientSize = new Size(404, 706);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -380,6 +384,21 @@ namespace ScrcpyManager
                 Font = _fontSmall
             };
             Controls.Add(_chkFullScreen);
+
+            _chkNavBar = new CheckBox
+            {
+                Location = new Point(215, 126),
+                AutoSize = true,
+                Checked = _pref.navBar,
+                Font = _fontSmall
+            };
+            _chkNavBar.CheckedChanged += (s, e) =>
+            {
+                NavBarManager.Enabled = _chkNavBar.Checked;
+                _pref.navBar = _chkNavBar.Checked;
+                SavePreferences();
+            };
+            Controls.Add(_chkNavBar);
 
             // 3. Obraz, dźwięk i sterowanie
             _lblSectionOptions = new Label
@@ -697,6 +716,61 @@ namespace ScrcpyManager
             };
             Controls.Add(_btnReboot);
 
+            // 6. Nawigacja Androida (Cofnij, Home, Ostatnie)
+            _btnNavBack = new Button
+            {
+                Location = new Point(16, 658),
+                Size = new Size(118, 32),
+                Font = _fontSection,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            _btnNavBack.FlatAppearance.BorderSize = 1;
+            _btnNavBack.Click += async (s, e) =>
+            {
+                if (await _adb.IsDeviceConnectedAsync())
+                {
+                    await AdbService.SendKeyEventAsync(4);
+                }
+            };
+            Controls.Add(_btnNavBack);
+
+            _btnNavHome = new Button
+            {
+                Location = new Point(143, 658),
+                Size = new Size(118, 32),
+                Font = _fontSection,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            _btnNavHome.FlatAppearance.BorderSize = 1;
+            _btnNavHome.Click += async (s, e) =>
+            {
+                if (await _adb.IsDeviceConnectedAsync())
+                {
+                    await AdbService.SendKeyEventAsync(3);
+                }
+            };
+            Controls.Add(_btnNavHome);
+
+            _btnNavRecents = new Button
+            {
+                Location = new Point(270, 658),
+                Size = new Size(118, 32),
+                Font = _fontSection,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            _btnNavRecents.FlatAppearance.BorderSize = 1;
+            _btnNavRecents.Click += async (s, e) =>
+            {
+                if (await _adb.IsDeviceConnectedAsync())
+                {
+                    await AdbService.SendKeyEventAsync(187);
+                }
+            };
+            Controls.Add(_btnNavRecents);
+
             Click += (s, e) =>
             {
                 if (_lstCustomSuggestions != null && _lstCustomSuggestions.Visible)
@@ -761,6 +835,7 @@ namespace ScrcpyManager
             _btnScrcpy.ForeColor = c.BtnHeroText;
 
             _chkFullScreen.ForeColor = c.TextMuted;
+            if (_chkNavBar != null) _chkNavBar.ForeColor = c.TextMuted;
             _lblSectionOptions.ForeColor = c.TextMuted;
             _lblRes.ForeColor = c.TextMuted;
             _chkAudio.ForeColor = c.Text;
@@ -817,6 +892,23 @@ namespace ScrcpyManager
             _btnReboot.BackColor = c.BtnReboot;
             _btnReboot.ForeColor = c.BtnRebootText;
             _btnReboot.FlatAppearance.BorderColor = c.BtnRebootBorder;
+
+            if (_btnNavBack != null)
+            {
+                _btnNavBack.BackColor = c.BtnTool;
+                _btnNavBack.ForeColor = c.BtnToolText;
+                _btnNavBack.FlatAppearance.BorderColor = c.BtnToolBorder;
+
+                _btnNavHome.BackColor = c.BtnTool;
+                _btnNavHome.ForeColor = c.BtnToolText;
+                _btnNavHome.FlatAppearance.BorderColor = c.BtnToolBorder;
+
+                _btnNavRecents.BackColor = c.BtnTool;
+                _btnNavRecents.ForeColor = c.BtnToolText;
+                _btnNavRecents.FlatAppearance.BorderColor = c.BtnToolBorder;
+            }
+
+            NavBarManager.SetDarkMode(_isDarkMode);
 
             // Kafelki aplikacji
             foreach (Button b in _createdAppButtons)
@@ -891,6 +983,11 @@ namespace ScrcpyManager
 
             _btnScrcpy.Text = t.LaunchHero;
             _chkFullScreen.Text = t.FullScreenOpt;
+            if (_chkNavBar != null)
+            {
+                _chkNavBar.Text = t.OptNavBar;
+                _tipMain.SetToolTip(_chkNavBar, t.OptNavBarTooltip);
+            }
 
             _lblSectionOptions.Text = t.SectionOptions;
             _lblRes.Text = t.ResLabel;
@@ -918,6 +1015,15 @@ namespace ScrcpyManager
             _btnDesktop.Text = t.DesktopMode;
             _btnNormal.Text = t.RestoreDefault;
             _btnReboot.Text = t.RebootBtn;
+            if (_btnNavBack != null)
+            {
+                _btnNavBack.Text = t.NavBack;
+                _btnNavHome.Text = t.NavHome;
+                _btnNavRecents.Text = t.NavRecents;
+                _tipMain.SetToolTip(_btnNavBack, "Cofnij (ESC / Keycode 4)");
+                _tipMain.SetToolTip(_btnNavHome, "Ekran główny (Home / Keycode 3)");
+                _tipMain.SetToolTip(_btnNavRecents, "Ostatnie aplikacje (Recents / Keycode 187)");
+            }
 
             int currIdx = _cmbRes.SelectedIndex;
             if (currIdx < 0) currIdx = 0;
@@ -1170,7 +1276,18 @@ namespace ScrcpyManager
             curY = _btnDesktop.Bottom + 8;
             _btnReboot.Location = new Point(16, curY);
 
-            curY = _btnReboot.Bottom + 18;
+            if (_btnNavBack != null)
+            {
+                curY = _btnReboot.Bottom + 8;
+                _btnNavBack.Location = new Point(16, curY);
+                _btnNavHome.Location = new Point(143, curY);
+                _btnNavRecents.Location = new Point(270, curY);
+                curY = _btnNavBack.Bottom + 16;
+            }
+            else
+            {
+                curY = _btnReboot.Bottom + 18;
+            }
             ClientSize = new Size(404, curY);
         }
 
@@ -1261,6 +1378,10 @@ namespace ScrcpyManager
             }
 
             // Standardowy rozruch
+            KeyboardHook.Start();
+            NavBarManager.Initialize(_isDarkMode);
+            NavBarManager.Enabled = _chkNavBar != null && _chkNavBar.Checked;
+
             RefreshDeviceStatusAsync();
             InitTimeoutSettingsAsync();
             CheckUpdatesAsync();
@@ -1335,6 +1456,9 @@ namespace ScrcpyManager
 
         private void OnFormClosing(object sender, FormClosingEventArgs e)
         {
+            KeyboardHook.Stop();
+            NavBarManager.CloseAll();
+
             if (_statusTimer != null) { _statusTimer.Stop(); _statusTimer.Dispose(); }
             if (_keepAwakeTimer != null) { _keepAwakeTimer.Stop(); _keepAwakeTimer.Dispose(); }
 
@@ -1401,7 +1525,7 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             string audioArg = _chkAudio.Checked ? "" : "--no-audio";
             string fsArg = _chkFullScreen.Checked ? "-f" : "";
 
-            string argsToRun = string.Format("-S -w -K -M {0} {1} --window-title=\"{2}\"", fsArg, audioArg, title).Trim();
+            string argsToRun = string.Format("-S -w -K {0} {1} --window-title=\"{2}\"", fsArg, audioArg, title).Trim();
 
             try
             {
@@ -1441,7 +1565,7 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
 
             try
             {
-                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, useUhid, forwardClicks, disp);
+                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, useUhid, forwardClicks, disp, _chkAudio.Checked);
                 if (proc != null) _launchedProcesses.Add(proc);
             }
             catch (Exception ex)
@@ -1469,7 +1593,7 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             {
                 try
                 {
-                    Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, false, false, "1080x2400");
+                    Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, false, false, "1080x2400", _chkAudio.Checked);
                     if (proc != null) _launchedProcesses.Add(proc);
                 }
                 catch {}
