@@ -127,6 +127,15 @@ namespace ScrcpyPortable
 
                 // Ustaw zaktualizowany PATH ze scrcpy i adb w procesie potomnym
                 psi.EnvironmentVariables["PATH"] = newPath;
+                try
+                {
+                    string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
+                    if (!string.IsNullOrEmpty(currentExePath))
+                    {
+                        psi.EnvironmentVariables["SCRCPY_MANAGER_EXE"] = currentExePath;
+                    }
+                }
+                catch { }
 
                 Process proc = Process.Start(psi);
                 if (proc == null)

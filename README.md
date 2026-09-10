@@ -52,6 +52,7 @@
 * 📐 **Flexible Tile Layouts**: Switch between 1-column list, 2-column standard, and 3-column compact view with persistent user preferences.
 * 🌓 **Dark & Light Mode**: 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with smooth custom controls.
 * 🌐 **Multilingual Interface**: 4 languages supported out of the box (🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, 🇪🇸 Spanish) with persistent preference.
+* 🔄 **In-App Auto-Updates**: One-click update detection and seamless upgrading of the Portable edition.
 * 🔋 **Real-Time Status Card**: Connection status dot, battery level with charging state, and keep-awake monitor.
 
 ---

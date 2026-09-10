@@ -52,6 +52,7 @@
 * 📐 **Elastyczny układ kafelków**: Przełączaj jednym kliknięciem między listą (1 kolumna), siatką 2-kolumnową i zwartą siatką 3-kolumnową.
 * 🌓 **Tryb Ciemny i Jasny**: Szybkie przełączanie motywu (`☀️ Jasny` / `🌙 Ciemny`) z dedykowanymi kontrolkami.
 * 🌐 **Wielojęzyczność (4 języki)**: Błyskawiczna zmiana języka (🇵🇱 Polski, 🇬🇧 Angielski, 🇩🇪 Niemiecki, 🇪🇸 Hiszpański) z zapamiętywaniem w preferencjach.
+* 🔄 **Automatyczne aktualizacje w aplikacji**: Wykrywanie nowych wydań i aktualizacja wersji Portable 1 kliknięciem bez utraty ustawień.
 * 🔋 **Karta stanu urządzenia**: Wskaźnik połączenia, poziom naładowania baterii ze stanem ładowania oraz status czuwania.
 
 ---

@@ -33,6 +33,8 @@ public static class WinFormsCueBanner {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
+    $script:appVersion = "1.0.0"
+    $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
     $script:appsLayout = 2  # 1 = lista (1 kolumna), 2 = 2 kolumny (standard), 3 = 3 kolumny (zwarty)
@@ -284,7 +286,18 @@ public static class WinFormsCueBanner {
             MsgKeyDone          = "Otwarto ustawienia klawiatury fizycznej w telefonie.`nUpewnij się, że układ klawiatury fizycznej 'scrcpy' ma zaznaczone 'Polski (programisty)'."
             MsgWifiNoIp         = "Nie udało się automatycznie wykryć adresu IP telefonu w sieci Wi‑Fi.`nUpewnij się, że telefon jest połączony z tą samą siecią Wi‑Fi co komputer."
             MsgWifiDone         = "Połączono bezprzewodowo z telefonem:`n{0}:5555`n`nMożesz teraz odłączyć kabel USB!"
-            MsgPkgEmpty         = "Wpisz poprawną nazwę pakietu Androida."
+            UpdateBadge           = "⬆ Dostępna aktualizacja"
+            UpdateDialogTitle     = "Aktualizacja scrcpy Manager"
+            UpdateDialogHeader    = "Dostępna jest nowa wersja programu!"
+            UpdateDialogCurrent   = "Twoja wersja: {0}"
+            UpdateDialogLatest    = "Najnowsza wersja: {0}"
+            UpdateDialogNotes     = "Lista zmian:"
+            UpdateBtnInstall      = "⚡ Zaktualizuj teraz"
+            UpdateBtnDownload     = "🌐 Strona wydania"
+            UpdateBtnLater        = "Później"
+            UpdateDownloading     = "Pobieranie..."
+            UpdateInstallSuccess  = "Pobrano aktualizację. Aplikacja zostanie zrestartowana."
+            UpdateFailed          = "Nie udało się zaktualizować automatycznie: {0}`nCzy chcesz otworzyć stronę wydania w przeglądarce?"
             ResNames            = @(
                 "Full HD 1080p (Natywna 1:1)",
                 "2K QHD (2560x1440)",
@@ -381,8 +394,18 @@ public static class WinFormsCueBanner {
             MsgClipDone         = "Clipboard optimizations applied.`nRemote PC repair command copied to clipboard:`n{0}`n`nWindow Shortcuts:`n• Alt + V : Paste PC clipboard to session`n• Alt + C : Copy session clipboard to PC"
             MsgKeyDone          = "Physical keyboard settings opened on phone.`nEnsure 'scrcpy' hardware keyboard layout is set to your preferred layout."
             MsgWifiNoIp         = "Could not automatically detect phone IP on Wi‑Fi.`nEnsure your phone is connected to the same Wi‑Fi network as this PC."
-            MsgWifiDone         = "Connected wirelessly to phone:`n{0}:5555`n`nYou can now disconnect the USB cable!"
-            MsgPkgEmpty         = "Please enter a valid Android package name."
+            UpdateBadge           = "⬆ Update available"
+            UpdateDialogTitle     = "scrcpy Manager Update"
+            UpdateDialogHeader    = "A new version of scrcpy Manager is available!"
+            UpdateDialogCurrent   = "Current version: {0}"
+            UpdateDialogLatest    = "Latest version: {0}"
+            UpdateDialogNotes     = "Release notes:"
+            UpdateBtnInstall      = "⚡ Update Now"
+            UpdateBtnDownload     = "🌐 Release Page"
+            UpdateBtnLater        = "Later"
+            UpdateDownloading     = "Downloading..."
+            UpdateInstallSuccess  = "Update downloaded. The application will restart."
+            UpdateFailed          = "Automatic update failed: {0}`nWould you like to open the release page in your browser?"
             ResNames            = @(
                 "Full HD 1080p (Native 1:1)",
                 "2K QHD (2560x1440)",
@@ -479,8 +502,18 @@ public static class WinFormsCueBanner {
             MsgClipDone         = "Zwischenablage-Optimierungen angewendet.`nReparaturbefehl für Remote-PC in Zwischenablage kopiert:`n{0}`n`nFenster-Tastenkombinationen:`n• Alt + V : PC-Zwischenablage in Sitzung einfügen`n• Alt + C : Sitzungs-Zwischenablage auf PC kopieren"
             MsgKeyDone          = "Tastatureinstellungen auf dem Telefon geöffnet.`nStellen Sie sicher, dass das Layout der physischen Tastatur 'scrcpy' passend eingestellt ist."
             MsgWifiNoIp         = "Telefon-IP konnte im WLAN nicht automatisch ermittelt werden.`nStellen Sie sicher, dass das Telefon im selben WLAN ist."
-            MsgWifiDone         = "Drahtlos mit Telefon verbunden:`n{0}:5555`n`nSie können das USB-Kabel jetzt trennen!"
-            MsgPkgEmpty         = "Bitte geben Sie einen gültigen Android-Paketnamen ein."
+            UpdateBadge           = "⬆ Update verfügbar"
+            UpdateDialogTitle     = "scrcpy Manager Aktualisierung"
+            UpdateDialogHeader    = "Eine neue Version von scrcpy Manager ist verfügbar!"
+            UpdateDialogCurrent   = "Aktuelle Version: {0}"
+            UpdateDialogLatest    = "Neueste Version: {0}"
+            UpdateDialogNotes     = "Änderungsprotokoll:"
+            UpdateBtnInstall      = "⚡ Jetzt aktualisieren"
+            UpdateBtnDownload     = "🌐 Release-Seite"
+            UpdateBtnLater        = "Später"
+            UpdateDownloading     = "Wird heruntergeladen..."
+            UpdateInstallSuccess  = "Update heruntergeladen. Die Anwendung wird neu gestartet."
+            UpdateFailed          = "Automatisches Update fehlgeschlagen: {0}`nMöchten Sie die Release-Seite im Browser öffnen?"
             ResNames            = @(
                 "Full HD 1080p (Nativ 1:1)",
                 "2K QHD (2560x1440)",
@@ -577,8 +610,18 @@ public static class WinFormsCueBanner {
             MsgClipDone         = "Optimizaciones de portapapeles aplicadas.`nComando de reparación para PC remoto copiado al portapapeles:`n{0}`n`nAtajos de teclado en ventana:`n• Alt + V : Pegar portapapeles de PC a la sesión`n• Alt + C : Copiar portapapeles de sesión al PC"
             MsgKeyDone          = "Ajustes de teclado físico abiertos en el teléfono.`nAsegúrese de que la distribución del teclado 'scrcpy' esté configurada correctamente."
             MsgWifiNoIp         = "No se pudo detectar automáticamente la IP del teléfono en Wi‑Fi.`nAsegúrese de que el teléfono esté en la misma red Wi‑Fi que este PC."
-            MsgWifiDone         = "Conectado de forma inalámbrica al teléfono:`n{0}:5555`n`n¡Ya puede desconectar el cable USB!"
-            MsgPkgEmpty         = "Por favor, introduzca un nombre de paquete Android válido."
+            UpdateBadge           = "⬆ Actualización disponible"
+            UpdateDialogTitle     = "Actualización de scrcpy Manager"
+            UpdateDialogHeader    = "¡Hay una nueva versión de scrcpy Manager disponible!"
+            UpdateDialogCurrent   = "Versión actual: {0}"
+            UpdateDialogLatest    = "Última versión: {0}"
+            UpdateDialogNotes     = "Notas de la versión:"
+            UpdateBtnInstall      = "⚡ Actualizar ahora"
+            UpdateBtnDownload     = "🌐 Página de la versión"
+            UpdateBtnLater        = "Más tarde"
+            UpdateDownloading     = "Descargando..."
+            UpdateInstallSuccess  = "Actualización descargada. La aplicación se reiniciará."
+            UpdateFailed          = "Error en la actualización automática: {0}`n¿Desea abrir la página de la versión en su navegador?"
             ResNames            = @(
                 "Full HD 1080p (Nativa 1:1)",
                 "2K QHD (2560x1440)",
@@ -965,6 +1008,313 @@ public static class WinFormsCueBanner {
         return $script:cachedInstalledPackages
     }
 
+    # --- OBSŁUGA AKTUALIZACJI (AUTO-UPDATE) ---
+
+    function Get-AppUpdateTarget {
+        if ($env:SCRCPY_MANAGER_EXE -and (Test-Path $env:SCRCPY_MANAGER_EXE)) {
+            return @{ Type = "PortableExe"; Path = $env:SCRCPY_MANAGER_EXE }
+        }
+        $procModule = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+        if ($procModule -like "*ScrcpyManager-Portable.exe*") {
+            return @{ Type = "PortableExe"; Path = $procModule }
+        }
+        $localExe = Join-Path $scriptDir "ScrcpyManager-Portable.exe"
+        if (Test-Path $localExe) {
+            return @{ Type = "PortableExe"; Path = $localExe }
+        }
+        $desktopExe = Join-Path ([Environment]::GetFolderPath("Desktop")) "ScrcpyManager-Portable.exe"
+        if (Test-Path $desktopExe) {
+            return @{ Type = "PortableExe"; Path = $desktopExe }
+        }
+        $currentScript = Join-Path $scriptDir "ScrcpyApp.ps1"
+        if (Test-Path $currentScript) {
+            return @{ Type = "Script"; Path = $currentScript }
+        }
+        return $null
+    }
+
+    function Invoke-AppUpdate {
+        param(
+            $Release,
+            $ParentDialog
+        )
+        $t = $i18n[$script:currentLang]
+        $target = Get-AppUpdateTarget
+
+        if (-not $target) {
+            $htmlUrl = if ($Release.html_url) { $Release.html_url } else { "https://github.com/tomaasz/scrcpy-manager/releases/latest" }
+            [System.Diagnostics.Process]::Start($htmlUrl)
+            if ($ParentDialog) { $ParentDialog.Close() }
+            return
+        }
+
+        $exeAsset = $Release.assets | Where-Object { $_.name -like "*Portable.exe" -or $_.name -like "*.exe" } | Select-Object -First 1
+
+        try {
+            $tempDir = [System.IO.Path]::GetTempPath()
+            if ($target.Type -eq "PortableExe" -and $exeAsset) {
+                $downloadUrl = $exeAsset.browser_download_url
+                $tempDownload = Join-Path $tempDir ("ScrcpyManager_update_" + [guid]::NewGuid().ToString() + ".exe")
+
+                [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                $wc = New-Object System.Net.WebClient
+                $wc.Headers.Add("User-Agent", "scrcpy-manager-desktop")
+                $wc.DownloadFile($downloadUrl, $tempDownload)
+                $wc.Dispose()
+
+                if (-not (Test-Path $tempDownload) -or (Get-Item $tempDownload).Length -lt 100000) {
+                    throw "Pobrany plik aktualizacji jest niekompletny."
+                }
+
+                $targetPath = $target.Path
+                $updaterCmd = @"
+Start-Sleep -Milliseconds 800
+`$count = 0
+while (`$count -lt 30) {
+    try {
+        Move-Item -LiteralPath '$tempDownload' -Destination '$targetPath' -Force -ErrorAction Stop
+        break
+    } catch {
+        Start-Sleep -Milliseconds 500
+        `$count++
+    }
+}
+Start-Process -FilePath '$targetPath'
+"@
+                $bytes = [System.Text.Encoding]::Unicode.GetBytes($updaterCmd)
+                $enc = [Convert]::ToBase64String($bytes)
+                Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-EncodedCommand", $enc
+
+                if ($ParentDialog) { $ParentDialog.Close() }
+                $form.Close()
+                return
+            }
+            elseif ($target.Type -eq "Script") {
+                $scriptUrl = "https://raw.githubusercontent.com/tomaasz/scrcpy-manager/main/ScrcpyApp.ps1"
+                $tempDownload = Join-Path $tempDir ("ScrcpyApp_update_" + [guid]::NewGuid().ToString() + ".ps1")
+
+                [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                $wc = New-Object System.Net.WebClient
+                $wc.Headers.Add("User-Agent", "scrcpy-manager-desktop")
+                $wc.DownloadFile($scriptUrl, $tempDownload)
+                $wc.Dispose()
+
+                if (-not (Test-Path $tempDownload) -or (Get-Item $tempDownload).Length -lt 10000) {
+                    throw "Pobrany skrypt aktualizacji jest niekompletny."
+                }
+
+                $targetPath = $target.Path
+                $updaterCmd = @"
+Start-Sleep -Milliseconds 800
+`$count = 0
+while (`$count -lt 30) {
+    try {
+        Move-Item -LiteralPath '$tempDownload' -Destination '$targetPath' -Force -ErrorAction Stop
+        break
+    } catch {
+        Start-Sleep -Milliseconds 500
+        `$count++
+    }
+}
+Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', '$targetPath'
+"@
+                $bytes = [System.Text.Encoding]::Unicode.GetBytes($updaterCmd)
+                $enc = [Convert]::ToBase64String($bytes)
+                Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-EncodedCommand", $enc
+
+                if ($ParentDialog) { $ParentDialog.Close() }
+                $form.Close()
+                return
+            }
+            else {
+                $htmlUrl = if ($Release.html_url) { $Release.html_url } else { "https://github.com/tomaasz/scrcpy-manager/releases/latest" }
+                [System.Diagnostics.Process]::Start($htmlUrl)
+                if ($ParentDialog) { $ParentDialog.Close() }
+            }
+        }
+        catch {
+            $msg = $t.UpdateFailed -f $_.Exception.Message
+            $res = [System.Windows.Forms.MessageBox]::Show(
+                $msg,
+                $t.UpdateDialogTitle,
+                [System.Windows.Forms.MessageBoxButtons]::YesNo,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            )
+            if ($res -eq [System.Windows.Forms.DialogResult]::Yes) {
+                $htmlUrl = if ($Release.html_url) { $Release.html_url } else { "https://github.com/tomaasz/scrcpy-manager/releases/latest" }
+                [System.Diagnostics.Process]::Start($htmlUrl)
+            }
+        }
+    }
+
+    function Show-UpdateDialog {
+        $rel = $script:latestReleaseInfo
+        if (-not $rel) { return }
+
+        $t = $i18n[$script:currentLang]
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+
+        $dlg = New-Object System.Windows.Forms.Form
+        $dlg.Text = $t.UpdateDialogTitle
+        $dlg.Size = New-Object System.Drawing.Size(460, 420)
+        $dlg.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent
+        $dlg.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+        $dlg.MaximizeBox = $false
+        $dlg.MinimizeBox = $false
+        $dlg.BackColor = $c.Bg
+        $dlg.ForeColor = $c.Text
+
+        $lblTitle = New-Object System.Windows.Forms.Label
+        $lblTitle.Text = $t.UpdateDialogHeader
+        $lblTitle.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+        $lblTitle.Location = New-Object System.Drawing.Point(20, 16)
+        $lblTitle.Size = New-Object System.Drawing.Size(400, 26)
+        $lblTitle.ForeColor = $c.Text
+        $dlg.Controls.Add($lblTitle)
+
+        $verCurrent = $script:appVersion
+        $verLatest = $rel.tag_name
+        $lblVersions = New-Object System.Windows.Forms.Label
+        $lblVersions.Text = ("{0}  ➜  {1}" -f ($t.UpdateDialogCurrent -f "v$verCurrent"), ($t.UpdateDialogLatest -f $verLatest))
+        $lblVersions.Font = $fontRegular
+        $lblVersions.Location = New-Object System.Drawing.Point(20, 46)
+        $lblVersions.Size = New-Object System.Drawing.Size(400, 20)
+        $lblVersions.ForeColor = $c.TextMuted
+        $dlg.Controls.Add($lblVersions)
+
+        $lblNotesTitle = New-Object System.Windows.Forms.Label
+        $lblNotesTitle.Text = $t.UpdateDialogNotes
+        $lblNotesTitle.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+        $lblNotesTitle.Location = New-Object System.Drawing.Point(20, 74)
+        $lblNotesTitle.Size = New-Object System.Drawing.Size(400, 20)
+        $lblNotesTitle.ForeColor = $c.Text
+        $dlg.Controls.Add($lblNotesTitle)
+
+        $txtNotes = New-Object System.Windows.Forms.TextBox
+        $txtNotes.Multiline = $true
+        $txtNotes.ReadOnly = $true
+        $txtNotes.ScrollBars = [System.Windows.Forms.ScrollBars]::Vertical
+        $txtNotes.Location = New-Object System.Drawing.Point(20, 98)
+        $txtNotes.Size = New-Object System.Drawing.Size(404, 210)
+        $txtNotes.BackColor = $c.Card
+        $txtNotes.ForeColor = $c.Text
+        $txtNotes.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+        $txtNotes.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+        $txtNotes.Text = if ($rel.body) { [string]$rel.body } else { "scrcpy Manager $verLatest" }
+        $dlg.Controls.Add($txtNotes)
+
+        $pnlButtons = New-Object System.Windows.Forms.Panel
+        $pnlButtons.Location = New-Object System.Drawing.Point(20, 320)
+        $pnlButtons.Size = New-Object System.Drawing.Size(404, 46)
+        $dlg.Controls.Add($pnlButtons)
+
+        $btnDownload = New-Object System.Windows.Forms.Button
+        $btnDownload.Text = $t.UpdateBtnDownload
+        $btnDownload.Location = New-Object System.Drawing.Point(0, 8)
+        $btnDownload.Size = New-Object System.Drawing.Size(125, 30)
+        $btnDownload.Font = $fontSmall
+        $btnDownload.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btnDownload.FlatAppearance.BorderSize = 1
+        $btnDownload.BackColor = $c.BtnTool
+        $btnDownload.ForeColor = $c.BtnToolText
+        $btnDownload.FlatAppearance.BorderColor = $c.BtnToolBorder
+        $btnDownload.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $btnDownload.Add_Click({
+            $htmlUrl = if ($rel.html_url) { $rel.html_url } else { "https://github.com/tomaasz/scrcpy-manager/releases/latest" }
+            [System.Diagnostics.Process]::Start($htmlUrl)
+            $dlg.Close()
+        })
+        $pnlButtons.Controls.Add($btnDownload)
+
+        $btnLater = New-Object System.Windows.Forms.Button
+        $btnLater.Text = $t.UpdateBtnLater
+        $btnLater.Location = New-Object System.Drawing.Point(135, 8)
+        $btnLater.Size = New-Object System.Drawing.Size(80, 30)
+        $btnLater.Font = $fontSmall
+        $btnLater.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btnLater.FlatAppearance.BorderSize = 1
+        $btnLater.BackColor = $c.BtnMode
+        $btnLater.ForeColor = $c.BtnModeText
+        $btnLater.FlatAppearance.BorderColor = $c.BtnModeBorder
+        $btnLater.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $btnLater.Add_Click({ $dlg.Close() })
+        $pnlButtons.Controls.Add($btnLater)
+
+        $btnInstall = New-Object System.Windows.Forms.Button
+        $btnInstall.Text = $t.UpdateBtnInstall
+        $btnInstall.Location = New-Object System.Drawing.Point(230, 8)
+        $btnInstall.Size = New-Object System.Drawing.Size(174, 30)
+        $btnInstall.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+        $btnInstall.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btnInstall.FlatAppearance.BorderSize = 0
+        $btnInstall.BackColor = $c.BtnHero
+        $btnInstall.ForeColor = $c.BtnHeroText
+        $btnInstall.Cursor = [System.Windows.Forms.Cursors]::Hand
+        $btnInstall.Add_Click({
+            $btnInstall.Enabled = $false
+            $btnLater.Enabled = $false
+            $btnInstall.Text = $t.UpdateDownloading
+            $dlg.Update()
+            Invoke-AppUpdate -Release $rel -ParentDialog $dlg
+            $btnInstall.Enabled = $true
+            $btnLater.Enabled = $true
+            $btnInstall.Text = $t.UpdateBtnInstall
+        })
+        $pnlButtons.Controls.Add($btnInstall)
+
+        $dlg.ShowDialog($form) | Out-Null
+    }
+
+    function Start-AsyncUpdateCheck {
+        $bw = New-Object System.ComponentModel.BackgroundWorker
+        $bw.DoWork += {
+            param($sender, $e)
+            try {
+                [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+                $apiUrl = "https://api.github.com/repos/tomaasz/scrcpy-manager/releases/latest"
+                $req = [System.Net.WebRequest]::Create($apiUrl)
+                $req.UserAgent = "scrcpy-manager-desktop"
+                $req.Timeout = 5000
+                $resp = $req.GetResponse()
+                $reader = New-Object System.IO.StreamReader($resp.GetResponseStream())
+                $raw = $reader.ReadToEnd()
+                $reader.Dispose()
+                $resp.Dispose()
+                $e.Result = $raw
+            }
+            catch {
+                $e.Result = $null
+            }
+        }
+        $bw.RunWorkerCompleted += {
+            param($sender, $e)
+            if ($e.Result) {
+                try {
+                    $rel = $e.Result | ConvertFrom-Json
+                    if ($rel -and $rel.tag_name) {
+                        $latestClean = ($rel.tag_name -replace '^v','' -replace '-.*$','').Trim()
+                        $curClean = ($script:appVersion -replace '^v','' -replace '-.*$','').Trim()
+                        if ($latestClean -match '^\d+(\.\d+)+$' -and $curClean -match '^\d+(\.\d+)+$') {
+                            $vLat = [version]$latestClean
+                            $vCur = [version]$curClean
+                            if ($vLat -gt $vCur) {
+                                $script:latestReleaseInfo = $rel
+                                $form.BeginInvoke([Action]{
+                                    $btnUpdateBadge.Visible = $true
+                                    $t = $i18n[$script:currentLang]
+                                    $btnUpdateBadge.Text = $t.UpdateBadge
+                                    Apply-Theme
+                                })
+                            }
+                        }
+                    }
+                }
+                catch {}
+            }
+        }
+        $bw.RunWorkerAsync()
+    }
+
     # --- PALETA KOLORÓW DLA MOTYWÓW ---
 
     $themeColors = @{
@@ -995,6 +1345,9 @@ public static class WinFormsCueBanner {
             ToggleBg         = [System.Drawing.Color]::FromArgb(44, 48, 62)
             ToggleChecked    = [System.Drawing.Color]::FromArgb(48, 70, 104)
             ToggleText       = [System.Drawing.Color]::FromArgb(230, 235, 245)
+            BadgeUpdate      = [System.Drawing.Color]::FromArgb(16, 185, 129)
+            BadgeUpdateText  = [System.Drawing.Color]::White
+            BadgeUpdateBorder= [System.Drawing.Color]::FromArgb(52, 211, 153)
         }
         Light = @{
             Bg               = [System.Drawing.Color]::FromArgb(245, 246, 250)
@@ -1023,6 +1376,9 @@ public static class WinFormsCueBanner {
             ToggleBg         = [System.Drawing.Color]::FromArgb(232, 235, 245)
             ToggleChecked    = [System.Drawing.Color]::FromArgb(214, 225, 246)
             ToggleText       = [System.Drawing.Color]::FromArgb(35, 40, 55)
+            BadgeUpdate      = [System.Drawing.Color]::FromArgb(209, 250, 229)
+            BadgeUpdateText  = [System.Drawing.Color]::FromArgb(6, 95, 70)
+            BadgeUpdateBorder= [System.Drawing.Color]::FromArgb(52, 211, 153)
         }
     }
 
@@ -1570,6 +1926,19 @@ public static class WinFormsCueBanner {
     }
     $btnLang.ContextMenuStrip = $ctxLang
     $tipLang = New-Object System.Windows.Forms.ToolTip
+
+    $btnUpdateBadge = New-Object System.Windows.Forms.Button
+    $btnUpdateBadge.Location = New-Object System.Drawing.Point(260, 34)
+    $btnUpdateBadge.Size = New-Object System.Drawing.Size(104, 21)
+    $btnUpdateBadge.Font = New-Object System.Drawing.Font("Segoe UI", [float]7.5, [System.Drawing.FontStyle]::Bold)
+    $btnUpdateBadge.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnUpdateBadge.FlatAppearance.BorderSize = 1
+    $btnUpdateBadge.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $btnUpdateBadge.Visible = $false
+    $btnUpdateBadge.Add_Click({
+        Show-UpdateDialog
+    })
+    $pnlStatus.Controls.Add($btnUpdateBadge)
 
     # 2. GŁÓWNA AKCJA: URUCHOM SCRCPY
     $btnScrcpy = New-Object System.Windows.Forms.Button
@@ -2801,6 +3170,12 @@ public static class WinFormsCueBanner {
         $btnReboot.ForeColor = $c.BtnRebootText
         $btnReboot.FlatAppearance.BorderColor = $c.BtnRebootBorder
 
+        if ($btnUpdateBadge) {
+            $btnUpdateBadge.BackColor = $c.BadgeUpdate
+            $btnUpdateBadge.ForeColor = $c.BadgeUpdateText
+            $btnUpdateBadge.FlatAppearance.BorderColor = $c.BadgeUpdateBorder
+        }
+
         Update-StatusDisplay
         $pnlStatus.Invalidate()
         $cmbRes.Invalidate()
@@ -2813,6 +3188,7 @@ public static class WinFormsCueBanner {
         $btnTheme.Text = if ($script:isDarkMode) { $t.ThemeDark } else { $t.ThemeLight }
         $btnLang.Text = $script:currentLang
         if ($tipLang) { $tipLang.SetToolTip($btnLang, $t.LangTooltip) }
+        if ($btnUpdateBadge) { $btnUpdateBadge.Text = $t.UpdateBadge }
         $btnScrcpy.Text = $t.LaunchHero
         $chkFullScreen.Text = $t.FullScreenOpt
 
@@ -2944,6 +3320,7 @@ public static class WinFormsCueBanner {
 
             Update-StatusDisplay
             Start-AsyncIconDownload
+            Start-AsyncUpdateCheck
             $keepAwakeTimer.Start()
         }
         catch {}

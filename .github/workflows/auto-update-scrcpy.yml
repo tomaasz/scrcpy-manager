@@ -1,0 +1,142 @@
+name: Auto-Update scrcpy & Build Portable
+
+on:
+  schedule:
+    # Run every Monday at 04:00 UTC
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: 'Force build and release regardless of upstream version check'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check upstream scrcpy release
+        id: check_upstream
+        shell: pwsh
+        run: |
+          $headers = @{ "User-Agent" = "scrcpy-manager-ci" }
+          if ($env:GITHUB_TOKEN) {
+            $headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
+          }
+
+          Write-Host "Fetching latest scrcpy release from Genymobile/scrcpy..." -ForegroundColor Cyan
+          $scrcpyRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/Genymobile/scrcpy/releases/latest" -Headers $headers
+          $upstreamTag = $scrcpyRelease.tag_name
+          Write-Host "Latest upstream scrcpy tag: $upstreamTag" -ForegroundColor Green
+
+          $zipAsset = $scrcpyRelease.assets | Where-Object { $_.name -like "scrcpy-win64-*.zip" } | Select-Object -First 1
+          if (-not $zipAsset) {
+            throw "Could not find scrcpy-win64-*.zip in release $upstreamTag!"
+          }
+          Write-Host "Found upstream asset: $($zipAsset.name)" -ForegroundColor Green
+
+          $ourTag = ""
+          $ourRelease = $null
+          try {
+            $ourRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/latest" -Headers $headers
+            $ourTag = $ourRelease.tag_name
+          } catch {
+            Write-Host "No existing release found or could not fetch: $($_.Exception.Message)"
+          }
+          Write-Host "Current scrcpy-manager release: $ourTag" -ForegroundColor Yellow
+
+          "upstream_tag=$upstreamTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "zip_url=$($zipAsset.browser_download_url)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "zip_name=$($zipAsset.name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "current_tag=$ourTag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          $force = "${{ inputs.force_build }}" -eq "true"
+          $needsBuild = $force
+          if (-not $force) {
+            if ($null -eq $ourRelease) {
+              $needsBuild = $true
+            } elseif ($ourRelease.body -notmatch [regex]::Escape($upstreamTag) -and $ourRelease.name -notmatch [regex]::Escape($upstreamTag)) {
+              $needsBuild = $true
+            }
+          }
+          "needs_build=$($needsBuild.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Needs build: $needsBuild (force: $force)" -ForegroundColor Cyan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download and unpack scrcpy
+        if: steps.check_upstream.outputs.needs_build == 'true'
+        shell: pwsh
+        run: |
+          $zipUrl = "${{ steps.check_upstream.outputs.zip_url }}"
+          $zipName = "${{ steps.check_upstream.outputs.zip_name }}"
+          Write-Host "Downloading $zipUrl..."
+          Invoke-WebRequest -Uri $zipUrl -OutFile $zipName
+
+          $targetExtract = "scrcpy_extracted"
+          Expand-Archive -Path $zipName -DestinationPath $targetExtract -Force
+          $subDir = Get-ChildItem -Path $targetExtract -Directory | Select-Object -First 1
+          Write-Host "Extracted scrcpy to: $($subDir.FullName)"
+
+          "SCRCPY_DIR=$($subDir.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build ScrcpyManager-Portable.exe
+        if: steps.check_upstream.outputs.needs_build == 'true'
+        shell: pwsh
+        run: |
+          & .\build-portable.ps1
+
+          if (-not (Test-Path "ScrcpyManager-Portable.exe")) {
+            throw "Build failed: ScrcpyManager-Portable.exe was not created!"
+          }
+          Write-Host "Build successful! Size: $((Get-Item ScrcpyManager-Portable.exe).Length / 1MB) MB"
+
+      - name: Calculate new version and publish release
+        if: steps.check_upstream.outputs.needs_build == 'true'
+        shell: pwsh
+        run: |
+          $curTag = "${{ steps.check_upstream.outputs.current_tag }}"
+          if ([string]::IsNullOrWhiteSpace($curTag)) {
+            $newTag = "v1.0.0"
+          } else {
+            $cur = $curTag.TrimStart('v')
+            $parts = $cur.Split('.')
+            $major = [int]$parts[0]
+            $minor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
+            $patch = if ($parts.Length -gt 2) { [int]$parts[2] + 1 } else { 1 }
+            $newTag = "v$major.$minor.$patch"
+          }
+          $upstreamTag = "${{ steps.check_upstream.outputs.upstream_tag }}"
+
+          Write-Host "Publishing new release: $newTag with scrcpy $upstreamTag" -ForegroundColor Green
+
+          $notes = @(
+            "## 🚀 scrcpy Manager $newTag (Portable Edition)",
+            "",
+            "Automated release bundling the latest **scrcpy $upstreamTag** and ADB.",
+            "",
+            "### 📦 Highlights",
+            "* Updated bundled core to **scrcpy $upstreamTag**.",
+            "* Multi-Window floating Android applications.",
+            "* Real-time package search with official app icons.",
+            "* One-click Wireless ADB (Wi-Fi).",
+            "* Multilingual interface (PL / EN / DE / ES).",
+            "* Zero setup: standalone executable, runs anywhere without installation.",
+            "",
+            "### 📥 Download",
+            "Download **ScrcpyManager-Portable.exe** below to get started!"
+          ) -join "`n"
+
+          $notes | Out-File -FilePath "release_notes.md" -Encoding UTF8
+          gh release create $newTag ScrcpyManager-Portable.exe --title "scrcpy Manager $newTag - Portable Edition (scrcpy $upstreamTag)" --notes-file "release_notes.md"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

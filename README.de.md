@@ -47,6 +47,7 @@
 * 📐 **Flexible Kachel-Layouts**: Wählen Sie zwischen 1-spaltiger Liste, 2-spaltigem Standard und 3-spaltiger Kompaktansicht.
 * 🌓 **Dunkel- und Hellmodus**: Schneller Wechsel des Erscheinungsbildes mit einem Klick.
 * 🌐 **Mehrsprachig (4 Sprachen)**: Sofortiges Umschalten zwischen Polnisch, Englisch, Deutsch und Spanisch.
+* 🔄 **In-App-Aktualisierungen**: 1-Klick-Erkennung neuer Versionen und nahtloses Upgrade der Portable-Edition.
 
 ---
 

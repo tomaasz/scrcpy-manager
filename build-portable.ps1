@@ -10,16 +10,20 @@ if (-not $repoDir) { $repoDir = (Get-Location).Path }
 Write-Host "Rozpoczynanie budowy ScrcpyManager-Portable.exe..." -ForegroundColor Cyan
 
 # 1. Znajdź pliki scrcpy i adb
-$scrcpyCmd = Get-Command scrcpy.exe -ErrorAction SilentlyContinue
 $scrcpyDir = $null
 
-if ($scrcpyCmd) {
-    $scrcpyDir = Split-Path -Parent $scrcpyCmd.Source
+if ($env:SCRCPY_DIR -and (Test-Path (Join-Path $env:SCRCPY_DIR "scrcpy.exe"))) {
+    $scrcpyDir = $env:SCRCPY_DIR
 } else {
-    $wingetPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Genymobile.scrcpy_Microsoft.Winget.Source_8wekyb3d8bbwe"
-    if (Test-Path $wingetPath) {
-        $sub = Get-ChildItem $wingetPath -Directory | Where-Object { $_.Name -like "scrcpy*" } | Select-Object -First 1
-        if ($sub) { $scrcpyDir = $sub.FullName }
+    $scrcpyCmd = Get-Command scrcpy.exe -ErrorAction SilentlyContinue
+    if ($scrcpyCmd) {
+        $scrcpyDir = Split-Path -Parent $scrcpyCmd.Source
+    } else {
+        $wingetPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Genymobile.scrcpy_Microsoft.Winget.Source_8wekyb3d8bbwe"
+        if (Test-Path $wingetPath) {
+            $sub = Get-ChildItem $wingetPath -Directory | Where-Object { $_.Name -like "scrcpy*" } | Select-Object -First 1
+            if ($sub) { $scrcpyDir = $sub.FullName }
+        }
     }
 }
 

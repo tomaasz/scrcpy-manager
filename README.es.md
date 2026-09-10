@@ -47,6 +47,7 @@
 * 📐 **Diseños de botones flexibles**: Cambie entre lista de 1 columna, vista de 2 columnas o modo compacto de 3 columnas.
 * 🌓 **Modo Oscuro y Claro**: Cambio rápido de tema visual con un solo clic.
 * 🌐 **Multilingüe (4 idiomas)**: Interfaz disponible en polaco, inglés, alemán y español con persistencia de preferencias.
+* 🔄 **Actualizaciones automáticas integradas**: Detección de versiones y actualización en 1 clic de la edición portátil.
 
 ---
 
