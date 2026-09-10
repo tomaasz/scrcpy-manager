@@ -2,6 +2,18 @@
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
+    if (-not ("WinFormsCueBanner" -as [type])) {
+        Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class WinFormsCueBanner {
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+}
+"@
+    }
+
     $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
     if (-not $scriptDir) { $scriptDir = (Get-Location).Path }
 
@@ -74,8 +86,31 @@
 
             SectionApps         = "APLIKACJE W OKNACH"
             AppsSubtitle        = "Uruchom wybraną aplikację w oddzielnym oknie scrcpy"
+            AppsEdit            = "Edytuj"
             CustomLabel         = "Inny pakiet Androida (np. com.spotify.music):"
+            CustomPlaceholder   = "np. com.spotify.music"
             CustomBtn           = "Uruchom"
+
+            AppsEditorTitle               = "Edytuj aplikacje w oknach"
+            AppsEditorIntro               = "Twój układ przycisków jest zapisywany osobno dla użytkownika Windows."
+            AppsEditorPhoneList           = "Wybierz aplikację pobraną z telefonu"
+            AppsEditorSearchPlaceholder   = "Szukaj pakietu (np. spotify, vivaldi, messenger)..."
+            AppsEditorNoMatches           = "Brak pasujących pakietów"
+            AppsEditorRefresh             = "Odśwież"
+            AppsEditorName                = "Nazwa"
+            AppsEditorPackage             = "Pakiet Androida"
+            AppsEditorUhid                = "Klawiatura"
+            AppsEditorClicks              = "Wszystkie kliknięcia"
+            AppsEditorAdd                 = "+ Dodaj"
+            AppsEditorRemove              = "Usuń"
+            AppsEditorUp                  = "W górę"
+            AppsEditorDown                = "W dół"
+            AppsEditorSave                = "Zapisz"
+            AppsEditorCancel              = "Anuluj"
+            MsgAppsInvalid                = "Każdy wpis musi mieć nazwę i poprawny pakiet Androida (np. com.spotify.music)."
+            MsgAppsEmpty                  = "Lista musi zawierać co najmniej jedną aplikację."
+            MsgAppsSaveError              = "Nie udało się zapisać układu użytkownika:`n{0}"
+            MsgAppsPhoneError             = "Nie udało się pobrać aplikacji z telefonu. Sprawdź połączenie ADB."
 
             SectionDevice       = "OPERACJE NA URZĄDZENIU"
             DesktopMode         = "Włącz tryb pulpitu"
@@ -126,8 +161,31 @@
 
             SectionApps         = "WINDOWED APPLICATIONS"
             AppsSubtitle        = "Launch selected app in a dedicated scrcpy window"
+            AppsEdit            = "Edit"
             CustomLabel         = "Custom Android package (e.g. com.spotify.music):"
+            CustomPlaceholder   = "e.g. com.spotify.music"
             CustomBtn           = "Launch"
+
+            AppsEditorTitle               = "Edit windowed applications"
+            AppsEditorIntro               = "Your button layout is stored separately for each Windows user."
+            AppsEditorPhoneList           = "Select an application loaded from the phone"
+            AppsEditorSearchPlaceholder   = "Search package (e.g. spotify, vivaldi, messenger)..."
+            AppsEditorNoMatches           = "No matching packages"
+            AppsEditorRefresh             = "Refresh"
+            AppsEditorName                = "Name"
+            AppsEditorPackage             = "Android package"
+            AppsEditorUhid                = "Keyboard"
+            AppsEditorClicks              = "All clicks"
+            AppsEditorAdd                 = "+ Add"
+            AppsEditorRemove              = "Remove"
+            AppsEditorUp                  = "Move up"
+            AppsEditorDown                = "Move down"
+            AppsEditorSave                = "Save"
+            AppsEditorCancel              = "Cancel"
+            MsgAppsInvalid                = "Every entry needs a name and a valid Android package (e.g. com.spotify.music)."
+            MsgAppsEmpty                  = "The list must contain at least one application."
+            MsgAppsSaveError              = "Could not save the user layout:`n{0}"
+            MsgAppsPhoneError             = "Could not load applications from the phone. Check the ADB connection."
 
             SectionDevice       = "DEVICE OPERATIONS"
             DesktopMode         = "Enable desktop mode"
@@ -150,33 +208,33 @@
                 "2K QHD (2560x1440)",
                 "2K QHD Compact (DPI 140)",
                 "4K UHD (3840x2160)",
-                "Device Native"
+                "Phone Default"
             )
         }
     }
 
-    # Wartości techniczne rozdzielczości dla scrcpy
+    # Wartości techniczne rozdzielczości sesji RDP
     $resValues = @(
         "1920x1080/160",
         "2560x1440/160",
         "2560x1440/140",
-        "3840x2160/200",
+        "3840x2160/240",
         "AUTO"
     )
 
     # --- FUNKCJE POMOCNICZE ADB ---
 
     function Test-AdbDeviceSilent {
-        $devices = adb devices 2>$null | Select-String "device$"
-        return [bool]$devices
+        $adbOut = adb devices 2>$null
+        return [bool]($adbOut | Select-String -Pattern "\bdevice\b(?!\s*unauthorized)")
     }
 
     function Test-AdbDevice {
+        $t = $i18n[$script:currentLang]
         if (-not (Test-AdbDeviceSilent)) {
-            $t = $i18n[$script:currentLang]
             [System.Windows.Forms.MessageBox]::Show(
                 $t.MsgNoDevice,
-                $t.StatusNoPhone,
+                $t.NoDevice,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             )
@@ -187,78 +245,72 @@
 
     function Update-DeviceInfo {
         if (-not (Test-AdbDeviceSilent)) {
-            $script:deviceModel = ""
+            $script:deviceModel = "Android"
+            $script:deviceManufacturer = ""
+            $script:isWifiConnected = $false
             return
         }
 
         try {
-            $model = (adb shell getprop ro.product.model 2>$null)
-            $mfg = (adb shell getprop ro.product.manufacturer 2>$null)
-            if ($model) { $script:deviceModel = $model.Trim() }
-            if ($mfg) { $script:deviceManufacturer = $mfg.Trim() }
+            $model = (adb shell getprop ro.product.model 2>$null).Trim()
+            $mfg = (adb shell getprop ro.product.manufacturer 2>$null).Trim()
+            if ($model) { $script:deviceModel = $model }
+            if ($mfg) { $script:deviceManufacturer = $mfg }
 
-            $wmSize = ((adb shell wm size 2>$null) -join "`n")
-            if ($wmSize -match "Physical size:\s*(\d+)x(\d+)") {
-                $script:appDisplaySize = "$($Matches[1])x$($Matches[2])"
-            }
+            $devs = adb devices 2>$null
+            $script:isWifiConnected = [bool]($devs | Select-String -Pattern "\b\d{1,3}(\.\d{1,3}){3}:\d+\b\s+device")
         }
         catch {}
     }
 
     function Get-DeviceBatteryStatus {
-        if (-not (Test-AdbDeviceSilent)) { return "--" }
+        if (-not (Test-AdbDeviceSilent)) { return "---" }
         try {
-            $dump = ((adb shell dumpsys battery 2>$null) -join "`n")
-            $level = 0
-            $charging = $false
-
-            if ($dump -match "(?m)^\s*level:\s*(\d+)") { $level = [int]$Matches[1] }
-            if ($dump -match "(?m)^\s*(USB|AC|Wireless) powered:\s*true") { $charging = $true }
+            $dump = adb shell dumpsys battery 2>$null
+            $level = ($dump | Select-String "level:\s*(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+            $status = ($dump | Select-String "status:\s*(\d+)" | ForEach-Object { $_.Matches.Groups[1].Value })
 
             $t = $i18n[$script:currentLang]
-            $chargeStr = if ($charging) { $t.ChargingStr } else { "" }
-            return "$level%$chargeStr"
+            $isCharging = ($status -eq "2" -or $status -eq "5")
+            $chg = if ($isCharging) { $t.ChargingStr } else { "" }
+
+            if ($level) { return "$level%$chg" }
+            return "---"
         }
         catch {
-            return "--"
+            return "---"
         }
     }
 
     function Initialize-ScreenTimeoutSettings {
-        if (Test-Path $stateFile) {
-            $saved = Get-Content $stateFile -ErrorAction SilentlyContinue
-            if ($saved -as [int] -and [int]$saved -gt 0 -and [int]$saved -lt 2147483647) {
-                $script:originalTimeout = [int]$saved
-                return
-            }
-        }
-
-        if (Test-AdbDeviceSilent) {
-            $current = (adb shell settings get system screen_off_timeout 2>$null)
-            if ($current -and $current.Trim() -as [int]) {
-                $val = [int]$current.Trim()
-                if ($val -gt 0 -and $val -lt 2147483647) {
+        if (-not (Test-AdbDeviceSilent)) { return }
+        try {
+            $currentTimeout = (adb shell settings get system screen_off_timeout 2>$null).Trim()
+            if ($currentTimeout -match "^\d+$") {
+                $val = [int]$currentTimeout
+                if ($val -ne 2147483647 -and $val -gt 0) {
                     $script:originalTimeout = $val
-                    Set-Content -Path $stateFile -Value $script:originalTimeout -ErrorAction SilentlyContinue
+                    Set-Content -Path $stateFile -Value $val -Encoding UTF8 -ErrorAction SilentlyContinue
                 }
             }
         }
+        catch {}
     }
 
     function Invoke-AdbUnlock {
-        if (-not (Test-AdbDeviceSilent)) { return }
+        try {
+            adb shell input keyevent 224 2>$null
+            Start-Sleep -Milliseconds 150
+            adb shell wm dismiss-keyguard 2>$null
 
-        adb shell input keyevent 224 2>$null
-
-        $isLocked = [bool](adb shell dumpsys window 2>$null | Select-String "isKeyguardShowing=true|mShowing=true")
-        if ($isLocked -and -not [string]::IsNullOrWhiteSpace($adbPin)) {
-            Start-Sleep -Milliseconds 350
-            adb shell input swipe 500 1500 500 300 200 2>$null
-            Start-Sleep -Milliseconds 350
-            adb shell input text $adbPin 2>$null
-            adb shell input keyevent 66 2>$null
-            Start-Sleep -Milliseconds 200
+            if ($adbPin) {
+                Start-Sleep -Milliseconds 200
+                adb shell input text "$adbPin" 2>$null
+                Start-Sleep -Milliseconds 100
+                adb shell input keyevent 66 2>$null
+            }
         }
+        catch {}
     }
 
     function Enable-ScreenLockPrevention {
@@ -270,11 +322,9 @@
 
     function Restore-ScreenLockSettings {
         if (-not (Test-AdbDeviceSilent)) { return }
-
-        $timeoutToRestore = if ($script:originalTimeout -gt 0) { $script:originalTimeout } else { 30000 }
-        adb shell settings put system screen_off_timeout $timeoutToRestore 2>$null
+        $timeoutVal = if ($script:originalTimeout -gt 0) { $script:originalTimeout } else { 30000 }
+        adb shell settings put system screen_off_timeout $timeoutVal 2>$null
         adb shell svc power stayon false 2>$null
-
         if (Test-Path $stateFile) {
             Remove-Item $stateFile -Force -ErrorAction SilentlyContinue
         }
@@ -282,66 +332,67 @@
 
     function Start-Taskbar {
         if (-not (Test-AdbDeviceSilent)) { return }
-        adb shell settings put global enable_freeform_support 1 2>$null
-        adb shell settings put secure force_resizable_activities 1 2>$null
-        adb shell am start -n com.farmerbb.taskbar/.activity.StartTaskbarActivity 2>$null | Out-Null
+        adb shell am start -n com.farmerbb.taskbar/.activity.MainActivity 2>$null | Out-Null
     }
 
     function Stop-Taskbar {
         if (-not (Test-AdbDeviceSilent)) { return }
         adb shell am force-stop com.farmerbb.taskbar 2>$null | Out-Null
-        adb shell input keyevent 3 2>$null
     }
 
     function Optimize-RdcClipboard {
         if (-not (Test-AdbDeviceSilent)) { return }
-        adb shell cmd appops set com.microsoft.rdc.androidx READ_CLIPBOARD allow 2>$null
-        adb shell cmd appops set com.microsoft.rdc.androidx SYSTEM_ALERT_WINDOW allow 2>$null
+        adb shell settings put system clipboard_format_priority 1 2>$null
     }
 
     function Register-ScrcpyProcess {
-        param([System.Diagnostics.Process]$Process)
+        param($Process)
         if ($Process -and -not $Process.HasExited) {
             $script:launchedProcesses.Add($Process)
         }
     }
 
     function Clean-ExitedProcesses {
-        $alive = New-Object 'System.Collections.Generic.List[System.Diagnostics.Process]'
-        foreach ($proc in $script:launchedProcesses) {
-            if ($proc -and -not $proc.HasExited) {
-                $alive.Add($proc)
+        $active = New-Object 'System.Collections.Generic.List[System.Diagnostics.Process]'
+        foreach ($p in $script:launchedProcesses) {
+            if ($p -and -not $p.HasExited) {
+                $active.Add($p)
             }
         }
-        $script:launchedProcesses = $alive
+        $script:launchedProcesses = $active
     }
 
     function Switch-ToWirelessAdb {
-        if (-not (Test-AdbDevice)) { return }
         $t = $i18n[$script:currentLang]
+        if (-not (Test-AdbDeviceSilent)) {
+            [System.Windows.Forms.MessageBox]::Show(
+                $t.MsgNoDevice,
+                $t.WifiBtn,
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            )
+            return
+        }
 
         $ip = $null
-        $ipRoute = ((adb shell ip route 2>$null) -join "`n")
-        if ($ipRoute -match "src\s+(\d+\.\d+\.\d+\.\d+)") {
-            $ip = $Matches[1]
-        }
-        if (-not $ip) {
-            $ipAddr = ((adb shell ip addr show wlan0 2>$null) -join "`n")
-            if ($ipAddr -match "inet\s+(\d+\.\d+\.\d+\.\d+)") {
+        try {
+            $ipRaw = adb shell ip route 2>$null | Select-String -Pattern "src\s+(\d{1,3}(\.\d{1,3}){3})"
+            if ($ipRaw -match "src\s+(\d{1,3}(\.\d{1,3}){3})") {
                 $ip = $Matches[1]
             }
-        }
-        if (-not $ip) {
-            $ipProp = ((adb shell getprop dhcp.wlan0.ipaddress 2>$null) -join "`n")
-            if ($ipProp -match "\d+\.\d+\.\d+\.\d+") {
-                $ip = $Matches[0].Trim()
+            if (-not $ip) {
+                $wlanRaw = adb shell ifconfig wlan0 2>$null | Select-String -Pattern "inet\s+addr:(\d{1,3}(\.\d{1,3}){3})"
+                if ($wlanRaw -match "inet\s+addr:(\d{1,3}(\.\d{1,3}){3})") {
+                    $ip = $Matches[1]
+                }
             }
         }
+        catch {}
 
-        if (-not $ip) {
+        if (-not $ip -or $ip -eq "127.0.0.1") {
             [System.Windows.Forms.MessageBox]::Show(
                 $t.MsgWifiNoIp,
-                "Wi‑Fi",
+                $t.WifiBtn,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             )
@@ -349,36 +400,39 @@
         }
 
         adb tcpip 5555 2>$null | Out-Null
-        Start-Sleep -Milliseconds 500
-        $connectRes = (adb connect "$($ip):5555" 2>$null)
+        Start-Sleep -Seconds 1
+        $connectOut = adb connect "$($ip):5555" 2>$null
 
-        if ($connectRes -match "connected") {
+        if ($connectOut -match "connected to") {
             $script:isWifiConnected = $true
+            Update-DeviceInfo
+            Update-StatusDisplay
             [System.Windows.Forms.MessageBox]::Show(
                 ($t.MsgWifiDone -f $ip),
-                "Wi‑Fi",
+                $t.WifiBtn,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Information
             )
         }
         else {
             [System.Windows.Forms.MessageBox]::Show(
-                "Result: $connectRes",
-                "Wi‑Fi",
+                "ADB connection to $ip:5555 failed.`n$connectOut",
+                $t.WifiBtn,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
-                [System.Windows.Forms.MessageBoxIcon]::Warning
+                [System.Windows.Forms.MessageBoxIcon]::Error
             )
         }
     }
 
     function Restart-DeviceWithConfirmation {
-        if (-not (Test-AdbDevice)) { return }
         $t = $i18n[$script:currentLang]
+        if (-not (Test-AdbDevice)) { return }
+
         $res = [System.Windows.Forms.MessageBox]::Show(
             $t.MsgRestartConfirm,
             $t.TitleRestartConfirm,
             [System.Windows.Forms.MessageBoxButtons]::YesNo,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
+            [System.Windows.Forms.MessageBoxIcon]::Question
         )
         if ($res -eq [System.Windows.Forms.DialogResult]::Yes) {
             adb reboot 2>$null | Out-Null
@@ -393,9 +447,9 @@
 
     function Start-ScrcpyApp {
         param(
-            [Parameter(Mandatory = $true)][string]$PackageName,
+            [string]$PackageName,
             [string]$WindowTitle = "",
-            [string]$DisplaySize = $script:appDisplaySize,
+            [string]$DisplaySize = "1920x1080/160",
             [switch]$UseUhidKeyboard,
             [switch]$ForwardAllClicks
         )
@@ -453,12 +507,15 @@
 
     # --- WCZYTYWANIE APLIKACJI (apps.json) ---
 
-    $appsConfigFile = Join-Path $scriptDir "apps.json"
+    $userConfigRoot = Join-Path $env:APPDATA "scrcpy-manager"
+    $defaultAppsConfigFile = Join-Path $scriptDir "apps.json"
+    $appsConfigFile = Join-Path $userConfigRoot "apps.json"
+    $appsSourceFile = if (Test-Path $appsConfigFile) { $appsConfigFile } else { $defaultAppsConfigFile }
     $appButtons = @()
 
-    if (Test-Path $appsConfigFile) {
+    if (Test-Path $appsSourceFile) {
         try {
-            $rawJson = Get-Content $appsConfigFile -Raw -Encoding UTF8 -ErrorAction Stop
+            $rawJson = Get-Content $appsSourceFile -Raw -Encoding UTF8 -ErrorAction Stop
             $parsed = $rawJson | ConvertFrom-Json
             foreach ($item in $parsed) {
                 $flagsArray = if ($item.flags) { @($item.flags) } else { @() }
@@ -487,7 +544,32 @@
         )
     }
 
-    $appButtons = @($appButtons | Sort-Object { $_.Text })
+    $loadedAppButtons = @($appButtons)
+    $appButtons = New-Object System.Collections.ArrayList
+    foreach ($app in $loadedAppButtons) { [void]$appButtons.Add($app) }
+
+    function Get-InstalledAndroidPackages {
+        if (-not (Test-AdbDeviceSilent)) { return @() }
+
+        $packages = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+        try {
+            $launcherDump = adb shell cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER 2>$null
+            foreach ($line in $launcherDump) {
+                if ([string]$line -match '^\s*([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+)/') {
+                    [void]$packages.Add($Matches[1])
+                }
+            }
+
+            if ($packages.Count -eq 0) {
+                foreach ($line in (adb shell pm list packages -3 2>$null)) {
+                    if ([string]$line -match '^package:(.+)$') { [void]$packages.Add($Matches[1].Trim()) }
+                }
+            }
+        }
+        catch {}
+
+        return @($packages | Sort-Object)
+    }
 
     # --- PALETA KOLORÓW DLA MOTYWÓW ---
 
@@ -517,6 +599,7 @@
             InputBg          = [System.Drawing.Color]::FromArgb(28, 30, 38)
             InputText        = [System.Drawing.Color]::FromArgb(240, 242, 248)
             ToggleBg         = [System.Drawing.Color]::FromArgb(44, 48, 62)
+            ToggleChecked    = [System.Drawing.Color]::FromArgb(48, 70, 104)
             ToggleText       = [System.Drawing.Color]::FromArgb(230, 235, 245)
         }
         Light = @{
@@ -544,6 +627,7 @@
             InputBg          = [System.Drawing.Color]::White
             InputText        = [System.Drawing.Color]::FromArgb(25, 28, 36)
             ToggleBg         = [System.Drawing.Color]::FromArgb(232, 235, 245)
+            ToggleChecked    = [System.Drawing.Color]::FromArgb(214, 225, 246)
             ToggleText       = [System.Drawing.Color]::FromArgb(35, 40, 55)
         }
     }
@@ -556,6 +640,401 @@
     $fontSection   = New-Object System.Drawing.Font("Segoe UI", [float]8.2, [System.Drawing.FontStyle]::Bold)
     $fontSmall     = New-Object System.Drawing.Font("Segoe UI", [float]8.2, [System.Drawing.FontStyle]::Regular)
     $fontDot       = New-Object System.Drawing.Font("Segoe UI", [float]11, [System.Drawing.FontStyle]::Bold)
+
+    # --- EDYTOR APLIKACJI W OKNACH ---
+
+    function Show-AppsEditor {
+        $t = $i18n[$script:currentLang]
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+
+        $editor = New-Object System.Windows.Forms.Form
+        $editor.Text = $t.AppsEditorTitle
+        $editor.ClientSize = New-Object System.Drawing.Size(760, 506)
+        $editor.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent
+        $editor.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+        $editor.MaximizeBox = $false
+        $editor.MinimizeBox = $false
+        $editor.ShowInTaskbar = $false
+        $editor.Font = $fontRegular
+        $editor.BackColor = $c.Bg
+        $editor.ForeColor = $c.Text
+
+        $lblIntro = New-Object System.Windows.Forms.Label
+        $lblIntro.Text = $t.AppsEditorIntro
+        $lblIntro.Location = New-Object System.Drawing.Point(16, 12)
+        $lblIntro.Size = New-Object System.Drawing.Size(728, 20)
+        $lblIntro.ForeColor = $c.TextMuted
+        $editor.Controls.Add($lblIntro)
+
+        $txtSearch = New-Object System.Windows.Forms.TextBox
+        $txtSearch.Location = New-Object System.Drawing.Point(16, 36)
+        $txtSearch.Size = New-Object System.Drawing.Size(692, 26)
+        $txtSearch.Font = $fontRegular
+        $txtSearch.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+        $txtSearch.BackColor = $c.InputBg
+        $txtSearch.ForeColor = $c.InputText
+        [WinFormsCueBanner]::SendMessage($txtSearch.Handle, 0x1501, [IntPtr]::Zero, $t.AppsEditorSearchPlaceholder) | Out-Null
+        $editor.Controls.Add($txtSearch)
+
+        $btnClearSearch = New-Object System.Windows.Forms.Button
+        $btnClearSearch.Text = "✕"
+        $btnClearSearch.Location = New-Object System.Drawing.Point(714, 35)
+        $btnClearSearch.Size = New-Object System.Drawing.Size(30, 28)
+        $btnClearSearch.Font = $fontSmall
+        $btnClearSearch.Add_Click({
+            $txtSearch.Text = ""
+            $txtSearch.Focus()
+        })
+        $editor.Controls.Add($btnClearSearch)
+
+        $allPhonePackages = New-Object 'System.Collections.Generic.List[string]'
+
+        $cmbPhoneApps = New-Object System.Windows.Forms.ComboBox
+        $cmbPhoneApps.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+        $cmbPhoneApps.Location = New-Object System.Drawing.Point(16, 70)
+        $cmbPhoneApps.Size = New-Object System.Drawing.Size(500, 28)
+        $cmbPhoneApps.DropDownWidth = 520
+        $cmbPhoneApps.Font = $fontRegular
+        $cmbPhoneApps.BackColor = $c.InputBg
+        $cmbPhoneApps.ForeColor = $c.InputText
+        [void]$cmbPhoneApps.Items.Add($t.AppsEditorPhoneList)
+        $cmbPhoneApps.SelectedIndex = 0
+        $editor.Controls.Add($cmbPhoneApps)
+
+        $applyFilter = {
+            $query = $txtSearch.Text.Trim()
+            $cmbPhoneApps.BeginUpdate()
+            try {
+                $cmbPhoneApps.Items.Clear()
+                if ($allPhonePackages.Count -eq 0) {
+                    [void]$cmbPhoneApps.Items.Add($t.AppsEditorPhoneList)
+                    $cmbPhoneApps.SelectedIndex = 0
+                    return
+                }
+
+                $tokens = @($query -split '\s+' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+                $filtered = if ($tokens.Count -eq 0) {
+                    @($allPhonePackages)
+                } else {
+                    @($allPhonePackages | Where-Object {
+                        $pkg = $_
+                        $allMatch = $true
+                        foreach ($tok in $tokens) {
+                            if ($pkg -notlike "*$tok*") {
+                                $allMatch = $false
+                                break
+                            }
+                        }
+                        $allMatch
+                    })
+                }
+
+                if ($filtered.Count -gt 0) {
+                    $headerText = if ($tokens.Count -eq 0) {
+                        $t.AppsEditorPhoneList
+                    } else {
+                        "$($t.AppsEditorPhoneList) ($($filtered.Count))"
+                    }
+                    [void]$cmbPhoneApps.Items.Add($headerText)
+                    foreach ($pkg in $filtered) {
+                        [void]$cmbPhoneApps.Items.Add($pkg)
+                    }
+
+                    if ($tokens.Count -gt 0) {
+                        $cmbPhoneApps.SelectedIndex = 1
+                    } else {
+                        $cmbPhoneApps.SelectedIndex = 0
+                    }
+                } else {
+                    [void]$cmbPhoneApps.Items.Add($t.AppsEditorNoMatches)
+                    $cmbPhoneApps.SelectedIndex = 0
+                }
+            }
+            finally {
+                $cmbPhoneApps.EndUpdate()
+            }
+        }
+
+        $txtSearch.Add_TextChanged({ & $applyFilter })
+
+        $loadPhoneApps = {
+            $editor.UseWaitCursor = $true
+            try {
+                $allPhonePackages.Clear()
+                foreach ($package in @(Get-InstalledAndroidPackages)) {
+                    [void]$allPhonePackages.Add($package)
+                }
+                & $applyFilter
+                if ($allPhonePackages.Count -eq 0) {
+                    [System.Windows.Forms.MessageBox]::Show($t.MsgAppsPhoneError, $t.AppsEditorTitle, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+                }
+            }
+            finally {
+                $editor.UseWaitCursor = $false
+            }
+        }
+
+        $btnRefreshApps = New-Object System.Windows.Forms.Button
+        $btnRefreshApps.Text = $t.AppsEditorRefresh
+        $btnRefreshApps.Location = New-Object System.Drawing.Point(522, 69)
+        $btnRefreshApps.Size = New-Object System.Drawing.Size(104, 30)
+        $btnRefreshApps.Add_Click({ & $loadPhoneApps })
+        $editor.Controls.Add($btnRefreshApps)
+
+        $grid = New-Object System.Windows.Forms.DataGridView
+        $grid.Location = New-Object System.Drawing.Point(16, 108)
+        $grid.Size = New-Object System.Drawing.Size(728, 334)
+        $grid.AllowUserToAddRows = $false
+        $grid.AllowUserToDeleteRows = $false
+        $grid.AllowUserToResizeRows = $false
+        $grid.RowHeadersVisible = $false
+        $grid.MultiSelect = $false
+        $grid.SelectionMode = [System.Windows.Forms.DataGridViewSelectionMode]::FullRowSelect
+        $grid.AutoSizeRowsMode = [System.Windows.Forms.DataGridViewAutoSizeRowsMode]::None
+        $grid.RowTemplate.Height = 28
+        $grid.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+        $grid.BackgroundColor = $c.Card
+        $grid.GridColor = $c.CardBorder
+        $grid.EnableHeadersVisualStyles = $false
+        $grid.ColumnHeadersDefaultCellStyle.BackColor = $c.ToggleBg
+        $grid.ColumnHeadersDefaultCellStyle.ForeColor = $c.Text
+        $grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = if ($c.ToggleBg) { $c.ToggleBg } else { $grid.ColumnHeadersDefaultCellStyle.BackColor }
+        $grid.DefaultCellStyle.BackColor = $c.InputBg
+        $grid.DefaultCellStyle.ForeColor = $c.InputText
+        $grid.DefaultCellStyle.SelectionBackColor = if ($c.ToggleChecked) { $c.ToggleChecked } else { $c.ToggleBg }
+        $grid.DefaultCellStyle.SelectionForeColor = $c.InputText
+
+        $colName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colName.Name = "AppName"
+        $colName.HeaderText = $t.AppsEditorName
+        $colName.Width = 180
+        [void]$grid.Columns.Add($colName)
+
+        $colPackage = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colPackage.Name = "Package"
+        $colPackage.HeaderText = $t.AppsEditorPackage
+        $colPackage.Width = 280
+        [void]$grid.Columns.Add($colPackage)
+
+        $colUhid = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
+        $colUhid.Name = "UseUhid"
+        $colUhid.HeaderText = $t.AppsEditorUhid
+        $colUhid.Width = 105
+        $colUhid.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        [void]$grid.Columns.Add($colUhid)
+
+        $colClicks = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
+        $colClicks.Name = "ForwardClicks"
+        $colClicks.HeaderText = $t.AppsEditorClicks
+        $colClicks.AutoSizeMode = [System.Windows.Forms.DataGridViewAutoSizeColumnMode]::Fill
+        $colClicks.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        [void]$grid.Columns.Add($colClicks)
+
+        foreach ($app in $appButtons) {
+            $rowIndex = $grid.Rows.Add(
+                $app.Text,
+                $app.Package,
+                ($app.Flags -contains "-UseUhidKeyboard"),
+                ($app.Flags -contains "-ForwardAllClicks")
+            )
+            $grid.Rows[$rowIndex].Tag = @($app.Flags | Where-Object { $_ -notin @("-UseUhidKeyboard", "-ForwardAllClicks") })
+        }
+        $editor.Controls.Add($grid)
+
+        $btnAddApp = New-Object System.Windows.Forms.Button
+        $btnAddApp.Text = $t.AppsEditorAdd
+        $btnAddApp.Location = New-Object System.Drawing.Point(634, 69)
+        $btnAddApp.Size = New-Object System.Drawing.Size(110, 30)
+
+        $addSelectedApp = {
+            $package = ""
+            if ($cmbPhoneApps.SelectedIndex -gt 0) {
+                $package = [string]$cmbPhoneApps.SelectedItem
+            }
+            elseif (-not [string]::IsNullOrWhiteSpace($txtSearch.Text)) {
+                $candidate = $txtSearch.Text.Trim()
+                if ($candidate -match '^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)+$') {
+                    $package = $candidate
+                }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($package)) { return }
+
+            $defaultName = ($package -split '\.')[-1]
+            $rowIndex = $grid.Rows.Add($defaultName, $package, $false, $false)
+            $grid.Rows[$rowIndex].Tag = @()
+            $grid.CurrentCell = $grid.Rows[$rowIndex].Cells[0]
+            $grid.BeginEdit($true)
+        }
+
+        $btnAddApp.Add_Click({ & $addSelectedApp })
+        $editor.Controls.Add($btnAddApp)
+
+        $txtSearch.Add_KeyDown({
+            param($s, $e)
+            if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
+                $e.SuppressKeyPress = $true
+                & $addSelectedApp
+            }
+            elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Down) {
+                $e.SuppressKeyPress = $true
+                $cmbPhoneApps.Focus()
+                if ($cmbPhoneApps.Items.Count -gt 1) {
+                    if ($cmbPhoneApps.SelectedIndex -le 0) {
+                        $cmbPhoneApps.SelectedIndex = 1
+                    }
+                    $cmbPhoneApps.DroppedDown = $true
+                }
+            }
+            elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Escape) {
+                if (-not [string]::IsNullOrWhiteSpace($txtSearch.Text)) {
+                    $txtSearch.Text = ""
+                    $e.SuppressKeyPress = $true
+                }
+            }
+        })
+
+        $cmbPhoneApps.Add_KeyDown({
+            param($s, $e)
+            if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
+                $e.SuppressKeyPress = $true
+                & $addSelectedApp
+            }
+            elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Up -and $cmbPhoneApps.SelectedIndex -le 1) {
+                $txtSearch.Focus()
+            }
+        })
+
+        $btnRemoveApp = New-Object System.Windows.Forms.Button
+        $btnRemoveApp.Text = $t.AppsEditorRemove
+        $btnRemoveApp.Location = New-Object System.Drawing.Point(16, 458)
+        $btnRemoveApp.Size = New-Object System.Drawing.Size(90, 32)
+        $btnRemoveApp.Add_Click({
+            if ($null -ne $grid.CurrentRow) {
+                $grid.Rows.RemoveAt($grid.CurrentRow.Index)
+            }
+        })
+        $editor.Controls.Add($btnRemoveApp)
+
+        $moveSelectedRow = {
+            param([int]$Offset)
+            if ($null -eq $grid.CurrentRow) { return }
+            [void]$grid.EndEdit()
+            $sourceIndex = $grid.CurrentRow.Index
+            $targetIndex = $sourceIndex + $Offset
+            if ($targetIndex -lt 0 -or $targetIndex -ge $grid.Rows.Count) { return }
+
+            $sourceValues = @($grid.Rows[$sourceIndex].Cells | ForEach-Object { $_.Value })
+            $sourceTag = @($grid.Rows[$sourceIndex].Tag)
+            for ($columnIndex = 0; $columnIndex -lt $grid.Columns.Count; $columnIndex++) {
+                $grid.Rows[$sourceIndex].Cells[$columnIndex].Value = $grid.Rows[$targetIndex].Cells[$columnIndex].Value
+                $grid.Rows[$targetIndex].Cells[$columnIndex].Value = $sourceValues[$columnIndex]
+            }
+            $grid.Rows[$sourceIndex].Tag = @($grid.Rows[$targetIndex].Tag)
+            $grid.Rows[$targetIndex].Tag = $sourceTag
+            $grid.CurrentCell = $grid.Rows[$targetIndex].Cells[0]
+        }
+
+        $btnMoveUp = New-Object System.Windows.Forms.Button
+        $btnMoveUp.Text = $t.AppsEditorUp
+        $btnMoveUp.Location = New-Object System.Drawing.Point(112, 458)
+        $btnMoveUp.Size = New-Object System.Drawing.Size(90, 32)
+        $btnMoveUp.Add_Click({ & $moveSelectedRow -Offset -1 })
+        $editor.Controls.Add($btnMoveUp)
+
+        $btnMoveDown = New-Object System.Windows.Forms.Button
+        $btnMoveDown.Text = $t.AppsEditorDown
+        $btnMoveDown.Location = New-Object System.Drawing.Point(208, 458)
+        $btnMoveDown.Size = New-Object System.Drawing.Size(90, 32)
+        $btnMoveDown.Add_Click({ & $moveSelectedRow -Offset 1 })
+        $editor.Controls.Add($btnMoveDown)
+
+        $btnCancelEditor = New-Object System.Windows.Forms.Button
+        $btnCancelEditor.Text = $t.AppsEditorCancel
+        $btnCancelEditor.Location = New-Object System.Drawing.Point(550, 458)
+        $btnCancelEditor.Size = New-Object System.Drawing.Size(92, 32)
+        $btnCancelEditor.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+        $editor.CancelButton = $btnCancelEditor
+        $editor.Controls.Add($btnCancelEditor)
+
+        $btnSaveApps = New-Object System.Windows.Forms.Button
+        $btnSaveApps.Text = $t.AppsEditorSave
+        $btnSaveApps.Location = New-Object System.Drawing.Point(652, 458)
+        $btnSaveApps.Size = New-Object System.Drawing.Size(92, 32)
+        $btnSaveApps.Font = $fontBold
+        $btnSaveApps.Add_Click({
+            [void]$grid.EndEdit()
+            if ($grid.Rows.Count -eq 0) {
+                [System.Windows.Forms.MessageBox]::Show($t.MsgAppsEmpty, $t.AppsEditorTitle, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+                return
+            }
+
+            $updatedApps = @()
+            foreach ($row in $grid.Rows) {
+                $name = ([string]$row.Cells["AppName"].Value).Trim()
+                $package = ([string]$row.Cells["Package"].Value).Trim()
+                if ([string]::IsNullOrWhiteSpace($name) -or $package -notmatch '^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)+$') {
+                    $grid.CurrentCell = $row.Cells[0]
+                    [System.Windows.Forms.MessageBox]::Show($t.MsgAppsInvalid, $t.AppsEditorTitle, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+                    return
+                }
+
+                $flags = @($row.Tag)
+                if ([bool]$row.Cells["UseUhid"].Value) { $flags += "-UseUhidKeyboard" }
+                if ([bool]$row.Cells["ForwardClicks"].Value) { $flags += "-ForwardAllClicks" }
+                $updatedApps += @{
+                    Text = $name
+                    Package = $package
+                    Flags = @($flags)
+                }
+            }
+
+            try {
+                $jsonApps = @(
+                    foreach ($app in $updatedApps) {
+                        [pscustomobject]@{
+                            name = $app.Text
+                            package = $app.Package
+                            flags = @($app.Flags)
+                        }
+                    }
+                )
+                $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
+                if (-not (Test-Path $userConfigRoot)) { [void](New-Item -ItemType Directory -Path $userConfigRoot -Force -ErrorAction Stop) }
+                Set-Content -LiteralPath $appsConfigFile -Value $json -Encoding UTF8 -ErrorAction Stop
+
+                $appButtons.Clear()
+                foreach ($app in $updatedApps) {
+                    [void]$appButtons.Add($app)
+                }
+                Update-AppButtonGrid
+                $editor.DialogResult = [System.Windows.Forms.DialogResult]::OK
+                $editor.Close()
+            }
+            catch {
+                [System.Windows.Forms.MessageBox]::Show(($t.MsgAppsSaveError -f $_.Exception.Message), $t.AppsEditorTitle, [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+        })
+        $editor.Controls.Add($btnSaveApps)
+
+        foreach ($button in @($btnAddApp, $btnRefreshApps, $btnClearSearch, $btnRemoveApp, $btnMoveUp, $btnMoveDown, $btnCancelEditor, $btnSaveApps)) {
+            $button.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+            $button.FlatAppearance.BorderSize = 1
+            $button.FlatAppearance.BorderColor = $c.BtnAppBorder
+            $button.BackColor = $c.BtnApp
+            $button.ForeColor = $c.BtnAppText
+        }
+        $btnSaveApps.BackColor = $c.BtnHero
+        $btnSaveApps.ForeColor = $c.BtnHeroText
+        $btnSaveApps.FlatAppearance.BorderColor = $c.BtnHero
+
+        $editor.Add_Shown({
+            & $loadPhoneApps
+            $txtSearch.Focus()
+        })
+        [void]$editor.ShowDialog($form)
+        $editor.Dispose()
+    }
 
     # --- OKNO FORMULARZA ---
 
@@ -800,62 +1279,83 @@
     $form.Controls.Add($lblSectionApps)
 
     $lblAppsSubtitle = New-Object System.Windows.Forms.Label
-    $lblAppsSubtitle.Location = New-Object System.Drawing.Point(16, 300)
-    $lblAppsSubtitle.Size = New-Object System.Drawing.Size(372, 16)
+    $lblAppsSubtitle.Location = New-Object System.Drawing.Point(16, 302)
+    $lblAppsSubtitle.Size = New-Object System.Drawing.Size(286, 18)
     $lblAppsSubtitle.Font = $fontSmall
     $form.Controls.Add($lblAppsSubtitle)
 
-    $colWidth = 180
-    $btnHeight = 30
-    $rowPitch = 36
-    $colPitch = 192
-    $startX = 16
-    $startY = 320
+    $btnEditApps = New-Object System.Windows.Forms.Button
+    $btnEditApps.Location = New-Object System.Drawing.Point(312, 298)
+    $btnEditApps.Size = New-Object System.Drawing.Size(76, 24)
+    $btnEditApps.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnEditApps.FlatAppearance.BorderSize = 1
+    $btnEditApps.Font = $fontSection
+    $btnEditApps.Add_Click({ Show-AppsEditor })
+    $form.Controls.Add($btnEditApps)
+
+    $flowAppButtons = New-Object System.Windows.Forms.FlowLayoutPanel
+    $flowAppButtons.Location = New-Object System.Drawing.Point(14, 326)
+    $flowAppButtons.Size = New-Object System.Drawing.Size(376, 166)
+    $flowAppButtons.FlowDirection = [System.Windows.Forms.FlowDirection]::LeftToRight
+    $flowAppButtons.WrapContents = $true
+    $flowAppButtons.AutoScroll = $true
+    $flowAppButtons.BackColor = [System.Drawing.Color]::Transparent
+    $form.Controls.Add($flowAppButtons)
 
     $createdAppButtons = New-Object 'System.Collections.Generic.List[System.Windows.Forms.Button]'
 
-    for ($i = 0; $i -lt $appButtons.Count; $i++) {
-        $app = $appButtons[$i]
-        $row = [int][math]::Floor($i / 2)
-        $col = [int]($i % 2)
-
-        $posX = [int]($startX + $col * $colPitch)
-        $posY = [int]($startY + $row * $rowPitch)
-
-        $btn = New-Object System.Windows.Forms.Button
-        $btn.Text = $app.Text
-        $btn.Font = $fontSmall
-        $btn.Location = New-Object System.Drawing.Point($posX, $posY)
-        $btn.Size = New-Object System.Drawing.Size($colWidth, $btnHeight)
-        $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-        $btn.FlatAppearance.BorderSize = 1
-
-        $pkg = $app.Package
-        $appName = $app.Text
-        $useUhid = $app.Flags -contains "-UseUhidKeyboard"
-        $forwardClicks = $app.Flags -contains "-ForwardAllClicks"
-
-        $btn.Add_Click({
-            if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-            $disp = $script:appDisplaySize
-
-            if ($pkg -eq "com.microsoft.rdc.androidx") {
-                $idx = $cmbRes.SelectedIndex
-                if ($idx -ge 0 -and $idx -lt $resValues.Count) {
-                    $val = $resValues[$idx]
-                    $disp = if ($val -eq "AUTO") { $script:appDisplaySize } else { $val }
-                }
-                else {
-                    $disp = "1920x1080/160"
-                }
+    function Update-AppButtonGrid {
+        $flowAppButtons.SuspendLayout()
+        try {
+            foreach ($button in @($createdAppButtons)) {
+                $flowAppButtons.Controls.Remove($button)
+                $button.Dispose()
             }
+            $createdAppButtons.Clear()
+            $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
 
-            Start-ScrcpyApp -PackageName $pkg -WindowTitle $appName -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
-        }.GetNewClosure())
+            foreach ($app in $appButtons) {
+                $btn = New-Object System.Windows.Forms.Button
+                $btn.Text = $app.Text
+                $btn.Size = New-Object System.Drawing.Size(172, 30)
+                $btn.Margin = New-Object System.Windows.Forms.Padding(3)
+                $btn.Font = $fontSmall
+                $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                $btn.FlatAppearance.BorderSize = 1
+                $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
+                $btn.BackColor = $c.BtnApp
+                $btn.ForeColor = $c.BtnAppText
 
-        $form.Controls.Add($btn)
-        $createdAppButtons.Add($btn)
+                $selectedApp = $app
+                $btn.Add_Click({
+                    if ($chkAutoTaskbar.Checked) { Start-Taskbar }
+                    $disp = $script:appDisplaySize
+
+                    if ($selectedApp.Package -eq "com.microsoft.rdc.androidx") {
+                        $idx = $cmbRes.SelectedIndex
+                        if ($idx -ge 0 -and $idx -lt $resValues.Count) {
+                            $val = $resValues[$idx]
+                            $disp = if ($val -eq "AUTO") { $script:appDisplaySize } else { $val }
+                        }
+                        else {
+                            $disp = "1920x1080/160"
+                        }
+                    }
+
+                    $useUhid = $selectedApp.Flags -contains "-UseUhidKeyboard"
+                    $forwardClicks = $selectedApp.Flags -contains "-ForwardAllClicks"
+                    Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
+                }.GetNewClosure())
+
+                [void]$flowAppButtons.Controls.Add($btn)
+                $createdAppButtons.Add($btn)
+            }
+        }
+        finally {
+            $flowAppButtons.ResumeLayout()
+        }
     }
+    Update-AppButtonGrid
 
     # Własny pakiet (bezpośrednio pod siatką aplikacji)
     $lblCustom = New-Object System.Windows.Forms.Label
@@ -1010,6 +1510,10 @@
         $lblSectionApps.ForeColor = $c.TextMuted
         $lblAppsSubtitle.ForeColor = $c.TextMuted
 
+        $btnEditApps.BackColor = $c.BtnApp
+        $btnEditApps.ForeColor = $c.BtnAppText
+        $btnEditApps.FlatAppearance.BorderColor = $c.BtnAppBorder
+
         foreach ($btn in $createdAppButtons) {
             $btn.BackColor = $c.BtnApp
             $btn.ForeColor = $c.BtnAppText
@@ -1049,7 +1553,6 @@
 
         $btnTheme.Text = if ($script:isDarkMode) { $t.ThemeDark } else { $t.ThemeLight }
         $btnLang.Text = $t.LangSwitch
-
         $btnScrcpy.Text = $t.LaunchHero
         $chkFullScreen.Text = $t.FullScreenOpt
 
@@ -1057,16 +1560,16 @@
         $lblRes.Text = $t.ResLabel
         $chkAudio.Text = $t.AudioPass
         $chkAutoTaskbar.Text = $t.AutoTaskbar
-
         $btnWifi.Text = $t.WifiBtn
         $btnKeyFix.Text = $t.KeyBtn
         $btnClipFix.Text = $t.ClipBtn
 
         $lblSectionApps.Text = $t.SectionApps
         $lblAppsSubtitle.Text = $t.AppsSubtitle
-
+        $btnEditApps.Text = $t.AppsEdit
         $lblCustom.Text = $t.CustomLabel
         $btnCustom.Text = $t.CustomBtn
+        [WinFormsCueBanner]::SendMessage($txtCustom.Handle, 0x1501, [IntPtr]::Zero, $t.CustomPlaceholder) | Out-Null
 
         $lblSectionDevice.Text = $t.SectionDevice
         $btnDesktop.Text = $t.DesktopMode
@@ -1092,7 +1595,7 @@
             $lblStatusDot.ForeColor = $c.StatusDotOnline
             $connType = if ($script:isWifiConnected) { $t.StatusConnectedWifi } else { $t.StatusConnectedUsb }
             $devName = if ($script:deviceModel) { $script:deviceModel } else { "Android" }
-            $lblDeviceTitle.Text = "$devName — $connType"
+            $lblDeviceTitle.Text = "$devName - $connType"
             $bat = Get-DeviceBatteryStatus
             $lblStatusDetail.Text = "$($t.BatteryLabel) $bat  |  $($t.StatusActive)"
         }

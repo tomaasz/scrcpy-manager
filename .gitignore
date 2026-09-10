@@ -10,3 +10,9 @@ local.env
 .idea/
 # Local user preferences
 preferences.json
+
+# Build and release artifacts
+ScrcpyManager-Portable.exe
+temp_portable_stage/
+bundle.zip
+
