@@ -85,8 +85,10 @@ public static class WinFormsCueBanner {
             ClipBtn             = "Naprawa schowka"
 
             SectionApps         = "APLIKACJE W OKNACH"
-            AppsSubtitle        = "Uruchom wybraną aplikację w oddzielnym oknie scrcpy"
+            AppsSubtitle        = "Uruchom w oknie lub kliknij [Edytuj], by dostosować listę"
             AppsEdit            = "Edytuj"
+            AppsEditTooltip     = "Dostosuj listę: dodawaj aplikacje z telefonu, zmieniaj kolejność i wczytuj popularne szablony"
+            AppsAddPrompt       = "+ Dodaj aplikacje z telefonu (kliknij tutaj lub [Edytuj])"
             CustomLabel         = "Inny pakiet Androida (np. com.spotify.music):"
             CustomPlaceholder   = "Szukaj pakietu (np. spotify, maps)..."
             CustomBtn           = "Uruchom"
@@ -105,12 +107,15 @@ public static class WinFormsCueBanner {
             AppsEditorRemove              = "Usuń"
             AppsEditorUp                  = "W górę"
             AppsEditorDown                = "W dół"
+            AppsEditorPopular             = "★ Popularne aplikacje"
             AppsEditorSave                = "Zapisz"
             AppsEditorCancel              = "Anuluj"
             MsgAppsInvalid                = "Każdy wpis musi mieć nazwę i poprawny pakiet Androida (np. com.spotify.music)."
             MsgAppsEmpty                  = "Lista musi zawierać co najmniej jedną aplikację."
             MsgAppsSaveError              = "Nie udało się zapisać układu użytkownika:`n{0}"
             MsgAppsPhoneError             = "Nie udało się pobrać aplikacji z telefonu. Sprawdź połączenie ADB."
+            MsgLoadPopular                = "Czy chcesz dodać zestaw 10 popularnych aplikacji (YouTube, Spotify, Chrome, WhatsApp, Messenger, Mapy itp.) do swojej listy?"
+            MsgEmptyAppsPrompt            = "Twoja lista aplikacji jest pusta. Czy chcesz wczytać zestaw 10 popularnych aplikacji (YouTube, Spotify, Chrome itp.)?"
 
             SectionDevice       = "OPERACJE NA URZĄDZENIU"
             DesktopMode         = "Włącz tryb pulpitu"
@@ -160,8 +165,10 @@ public static class WinFormsCueBanner {
             ClipBtn             = "Fix clipboard"
 
             SectionApps         = "WINDOWED APPLICATIONS"
-            AppsSubtitle        = "Launch selected app in a dedicated scrcpy window"
+            AppsSubtitle        = "Run in window or click [Edit] to customize your list"
             AppsEdit            = "Edit"
+            AppsEditTooltip     = "Customize list: add apps from phone, reorder, or load popular presets"
+            AppsAddPrompt       = "+ Add apps from phone (click here or [Edit])"
             CustomLabel         = "Custom Android package (e.g. com.spotify.music):"
             CustomPlaceholder   = "Search package (e.g. spotify, maps)..."
             CustomBtn           = "Launch"
@@ -180,12 +187,15 @@ public static class WinFormsCueBanner {
             AppsEditorRemove              = "Remove"
             AppsEditorUp                  = "Move up"
             AppsEditorDown                = "Move down"
+            AppsEditorPopular             = "★ Popular Apps"
             AppsEditorSave                = "Save"
             AppsEditorCancel              = "Cancel"
             MsgAppsInvalid                = "Every entry needs a name and a valid Android package (e.g. com.spotify.music)."
             MsgAppsEmpty                  = "The list must contain at least one application."
             MsgAppsSaveError              = "Could not save the user layout:`n{0}"
             MsgAppsPhoneError             = "Could not load applications from the phone. Check the ADB connection."
+            MsgLoadPopular                = "Do you want to add a set of 10 popular apps (YouTube, Spotify, Chrome, WhatsApp, Messenger, Maps, etc.) to your list?"
+            MsgEmptyAppsPrompt            = "Your app list is empty. Would you like to load a set of 10 popular apps (YouTube, Spotify, Chrome, etc.)?"
 
             SectionDevice       = "DEVICE OPERATIONS"
             DesktopMode         = "Enable desktop mode"
@@ -529,19 +539,21 @@ public static class WinFormsCueBanner {
         catch {}
     }
 
+    $script:defaultPopularApps = @(
+        @{ Text = "YouTube";                 Package = "com.google.android.youtube";            Flags = @() },
+        @{ Text = "Spotify";                 Package = "com.spotify.music";                     Flags = @() },
+        @{ Text = "Chrome";                  Package = "com.android.chrome";                    Flags = @("-ForwardAllClicks") },
+        @{ Text = "WhatsApp";                Package = "com.whatsapp";                          Flags = @() },
+        @{ Text = "Messenger";               Package = "com.facebook.orca";                     Flags = @() },
+        @{ Text = "Gmail";                   Package = "com.google.android.gm";                 Flags = @() },
+        @{ Text = "Mapy Google";             Package = "com.google.android.apps.maps";          Flags = @() },
+        @{ Text = "Wiadomości";              Package = "com.google.android.apps.messaging";     Flags = @() },
+        @{ Text = "Ustawienia";              Package = "com.android.settings";                  Flags = @() },
+        @{ Text = "Claude";                  Package = "com.anthropic.claude";                  Flags = @() }
+    )
+
     if ($appButtons.Count -eq 0) {
-        $appButtons = @(
-            @{ Text = "Claude";                  Package = "com.anthropic.claude";                  Flags = @() },
-            @{ Text = "ConneckBot";              Package = "org.connectbot";                        Flags = @("-UseUhidKeyboard") },
-            @{ Text = "Gmail (Wszystkie)";       Package = "com.google.android.gm";                 Flags = @() },
-            @{ Text = "Messenger";               Package = "com.facebook.orca";                     Flags = @() },
-            @{ Text = "TurboTel";                Package = "ellipi.messenger";                      Flags = @() },
-            @{ Text = "Ustawienia";              Package = "com.android.settings";                  Flags = @() },
-            @{ Text = "Vivaldi";                 Package = "com.vivaldi.browser";                   Flags = @("-ForwardAllClicks") },
-            @{ Text = "WhatsApp";                Package = "com.whatsapp";                          Flags = @() },
-            @{ Text = "Wiadomości (Google)";     Package = "com.google.android.apps.messaging";     Flags = @() },
-            @{ Text = "Windows App (RDP)";       Package = "com.microsoft.rdc.androidx";           Flags = @("-UseUhidKeyboard", "-ForwardAllClicks") }
-        )
+        $appButtons = @($script:defaultPopularApps)
     }
 
     $loadedAppButtons = @($appButtons)
@@ -968,6 +980,43 @@ public static class WinFormsCueBanner {
         $btnMoveDown.Add_Click({ & $moveSelectedRow -Offset 1 })
         $editor.Controls.Add($btnMoveDown)
 
+        $btnPopularApps = New-Object System.Windows.Forms.Button
+        $btnPopularApps.Text = $t.AppsEditorPopular
+        $btnPopularApps.Location = New-Object System.Drawing.Point(308, 458)
+        $btnPopularApps.Size = New-Object System.Drawing.Size(150, 32)
+        $btnPopularApps.Add_Click({
+            $existingPkgs = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($row in $grid.Rows) {
+                $p = [string]$row.Cells["Package"].Value
+                if (-not [string]::IsNullOrWhiteSpace($p)) { [void]$existingPkgs.Add($p.Trim()) }
+            }
+
+            if ($grid.Rows.Count -gt 0) {
+                $res = [System.Windows.Forms.MessageBox]::Show(
+                    $t.MsgLoadPopular,
+                    $t.AppsEditorPopular,
+                    [System.Windows.Forms.MessageBoxButtons]::YesNo,
+                    [System.Windows.Forms.MessageBoxIcon]::Question
+                )
+                if ($res -ne [System.Windows.Forms.DialogResult]::Yes) { return }
+            }
+
+            $addedCount = 0
+            foreach ($app in $script:defaultPopularApps) {
+                if (-not $existingPkgs.Contains($app.Package)) {
+                    $uhid = ($app.Flags -contains "-UseUhidKeyboard")
+                    $clicks = ($app.Flags -contains "-ForwardAllClicks")
+                    $ri = $grid.Rows.Add($app.Text, $app.Package, $uhid, $clicks)
+                    $grid.Rows[$ri].Tag = @($app.Flags | Where-Object { $_ -notin @("-UseUhidKeyboard", "-ForwardAllClicks") })
+                    $addedCount++
+                }
+            }
+            if ($grid.Rows.Count -gt 0) {
+                $grid.CurrentCell = $grid.Rows[$grid.Rows.Count - 1].Cells[0]
+            }
+        })
+        $editor.Controls.Add($btnPopularApps)
+
         $btnCancelEditor = New-Object System.Windows.Forms.Button
         $btnCancelEditor.Text = $t.AppsEditorCancel
         $btnCancelEditor.Location = New-Object System.Drawing.Point(550, 458)
@@ -1036,7 +1085,7 @@ public static class WinFormsCueBanner {
         })
         $editor.Controls.Add($btnSaveApps)
 
-        foreach ($button in @($btnAddApp, $btnRefreshApps, $btnClearSearch, $btnRemoveApp, $btnMoveUp, $btnMoveDown, $btnCancelEditor, $btnSaveApps)) {
+        foreach ($button in @($btnAddApp, $btnRefreshApps, $btnClearSearch, $btnRemoveApp, $btnMoveUp, $btnMoveDown, $btnPopularApps, $btnCancelEditor, $btnSaveApps)) {
             $button.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
             $button.FlatAppearance.BorderSize = 1
             $button.FlatAppearance.BorderColor = $c.BtnAppBorder
@@ -1050,6 +1099,18 @@ public static class WinFormsCueBanner {
         $editor.Add_Shown({
             & $loadPhoneApps
             $txtSearch.Focus()
+
+            if ($grid.Rows.Count -eq 0) {
+                $res = [System.Windows.Forms.MessageBox]::Show(
+                    $t.MsgEmptyAppsPrompt,
+                    $t.AppsEditorTitle,
+                    [System.Windows.Forms.MessageBoxButtons]::YesNo,
+                    [System.Windows.Forms.MessageBoxIcon]::Question
+                )
+                if ($res -eq [System.Windows.Forms.DialogResult]::Yes) {
+                    $btnPopularApps.PerformClick()
+                }
+            }
         })
         [void]$editor.ShowDialog($form)
         $editor.Dispose()
@@ -1306,7 +1367,7 @@ public static class WinFormsCueBanner {
 
     $lblAppsSubtitle = New-Object System.Windows.Forms.Label
     $lblAppsSubtitle.Location = New-Object System.Drawing.Point(16, 302)
-    $lblAppsSubtitle.Size = New-Object System.Drawing.Size(286, 18)
+    $lblAppsSubtitle.Size = New-Object System.Drawing.Size(292, 18)
     $lblAppsSubtitle.Font = $fontSmall
     $form.Controls.Add($lblAppsSubtitle)
 
@@ -1319,12 +1380,15 @@ public static class WinFormsCueBanner {
     $btnEditApps.Add_Click({ Show-AppsEditor })
     $form.Controls.Add($btnEditApps)
 
+    $tipEdit = New-Object System.Windows.Forms.ToolTip
+    $tipEdit.SetToolTip($btnEditApps, $i18n[$script:currentLang].AppsEditTooltip)
+
     $flowAppButtons = New-Object System.Windows.Forms.FlowLayoutPanel
     $flowAppButtons.Location = New-Object System.Drawing.Point(14, 326)
-    $flowAppButtons.Size = New-Object System.Drawing.Size(376, 166)
+    $flowAppButtons.Size = New-Object System.Drawing.Size(376, 186)
     $flowAppButtons.FlowDirection = [System.Windows.Forms.FlowDirection]::LeftToRight
     $flowAppButtons.WrapContents = $true
-    $flowAppButtons.AutoScroll = $true
+    $flowAppButtons.AutoScroll = $false
     $flowAppButtons.BackColor = [System.Drawing.Color]::Transparent
     $form.Controls.Add($flowAppButtons)
 
@@ -1339,49 +1403,112 @@ public static class WinFormsCueBanner {
             }
             $createdAppButtons.Clear()
             $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+            $t = $i18n[$script:currentLang]
 
-            foreach ($app in $appButtons) {
-                $btn = New-Object System.Windows.Forms.Button
-                $btn.Text = $app.Text
-                $btn.Size = New-Object System.Drawing.Size(172, 30)
-                $btn.Margin = New-Object System.Windows.Forms.Padding(3)
-                $btn.Font = $fontSmall
-                $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-                $btn.FlatAppearance.BorderSize = 1
-                $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
-                $btn.BackColor = $c.BtnApp
-                $btn.ForeColor = $c.BtnAppText
+            if ($appButtons.Count -eq 0) {
+                $btnEmpty = New-Object System.Windows.Forms.Button
+                $btnEmpty.Text = if ($t.AppsAddPrompt) { $t.AppsAddPrompt } else { "+ Dodaj aplikacje z telefonu (kliknij tutaj)" }
+                $btnEmpty.Size = New-Object System.Drawing.Size(350, 40)
+                $btnEmpty.Margin = New-Object System.Windows.Forms.Padding(12, 3, 3, 3)
+                $btnEmpty.Font = $fontSection
+                $btnEmpty.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                $btnEmpty.FlatAppearance.BorderSize = 1
+                $btnEmpty.FlatAppearance.BorderColor = $c.CardBorder
+                $btnEmpty.BackColor = $c.Card
+                $btnEmpty.ForeColor = $c.TextMuted
+                $btnEmpty.Cursor = [System.Windows.Forms.Cursors]::Hand
+                $btnEmpty.Add_Click({ Show-AppsEditor })
+                [void]$flowAppButtons.Controls.Add($btnEmpty)
+                $createdAppButtons.Add($btnEmpty)
+            }
+            else {
+                foreach ($app in $appButtons) {
+                    $btn = New-Object System.Windows.Forms.Button
+                    $btn.Text = $app.Text
+                    $btn.Size = New-Object System.Drawing.Size(172, 30)
+                    $btn.Margin = New-Object System.Windows.Forms.Padding(3)
+                    $btn.Font = $fontSmall
+                    $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                    $btn.FlatAppearance.BorderSize = 1
+                    $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
+                    $btn.BackColor = $c.BtnApp
+                    $btn.ForeColor = $c.BtnAppText
 
-                $selectedApp = $app
-                $btn.Add_Click({
-                    if ($chkAutoTaskbar.Checked) { Start-Taskbar }
-                    $disp = $script:appDisplaySize
+                    $selectedApp = $app
+                    $btn.Add_Click({
+                        if ($chkAutoTaskbar.Checked) { Start-Taskbar }
+                        $disp = $script:appDisplaySize
 
-                    if ($selectedApp.Package -eq "com.microsoft.rdc.androidx") {
-                        $idx = $cmbRes.SelectedIndex
-                        if ($idx -ge 0 -and $idx -lt $resValues.Count) {
-                            $val = $resValues[$idx]
-                            $disp = if ($val -eq "AUTO") { $script:appDisplaySize } else { $val }
+                        if ($selectedApp.Package -eq "com.microsoft.rdc.androidx") {
+                            $idx = $cmbRes.SelectedIndex
+                            if ($idx -ge 0 -and $idx -lt $resValues.Count) {
+                                $val = $resValues[$idx]
+                                $disp = if ($val -eq "AUTO") { $script:appDisplaySize } else { $val }
+                            }
+                            else {
+                                $disp = "1920x1080/160"
+                            }
                         }
-                        else {
-                            $disp = "1920x1080/160"
-                        }
-                    }
 
-                    $useUhid = $selectedApp.Flags -contains "-UseUhidKeyboard"
-                    $forwardClicks = $selectedApp.Flags -contains "-ForwardAllClicks"
-                    Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
-                }.GetNewClosure())
+                        $useUhid = $selectedApp.Flags -contains "-UseUhidKeyboard"
+                        $forwardClicks = $selectedApp.Flags -contains "-ForwardAllClicks"
+                        Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
+                    }.GetNewClosure())
 
-                [void]$flowAppButtons.Controls.Add($btn)
-                $createdAppButtons.Add($btn)
+                    [void]$flowAppButtons.Controls.Add($btn)
+                    $createdAppButtons.Add($btn)
+                }
             }
         }
         finally {
             $flowAppButtons.ResumeLayout()
         }
+
+        # Dynamiczne dostosowanie wysokości sekcji Aplikacje w oknach i płynne przesunięcie kontrolek poniżej
+        if ($lblCustom -and $txtCustom -and $btnCustom -and $lblSectionDevice -and $btnDesktop -and $btnNormal -and $btnReboot) {
+            $rowCount = if ($appButtons.Count -eq 0) { 1 } else { [Math]::Ceiling($appButtons.Count / 2.0) }
+            $neededFlowH = ($rowCount * 36) + 6
+
+            $screenH = 900
+            try {
+                $screenH = [System.Windows.Forms.Screen]::FromControl($form).WorkingArea.Height
+            } catch {}
+            $maxFlowH = [Math]::Max(186, $screenH - 520)
+
+            if ($neededFlowH -gt $maxFlowH) {
+                $flowAppButtons.Height = $maxFlowH
+                $flowAppButtons.AutoScroll = $true
+            }
+            else {
+                $flowAppButtons.Height = $neededFlowH
+                $flowAppButtons.AutoScroll = $false
+            }
+
+            $curY = $flowAppButtons.Bottom + 10
+            $lblCustom.Location = New-Object System.Drawing.Point(16, $curY)
+
+            $curY = $lblCustom.Bottom + 4
+            $txtCustom.Location = New-Object System.Drawing.Point(16, $curY)
+            $btnCustom.Location = New-Object System.Drawing.Point(306, ($curY - 1))
+
+            if ($lstCustomSuggestions) {
+                $lstCustomSuggestions.Location = New-Object System.Drawing.Point($txtCustom.Left, ($txtCustom.Bottom + 1))
+            }
+
+            $curY = $txtCustom.Bottom + 12
+            $lblSectionDevice.Location = New-Object System.Drawing.Point(16, $curY)
+
+            $curY = $lblSectionDevice.Bottom + 6
+            $btnDesktop.Location = New-Object System.Drawing.Point(16, $curY)
+            $btnNormal.Location = New-Object System.Drawing.Point(208, $curY)
+
+            $curY = $btnDesktop.Bottom + 8
+            $btnReboot.Location = New-Object System.Drawing.Point(16, $curY)
+
+            $curY = $btnReboot.Bottom + 18
+            $form.ClientSize = New-Object System.Drawing.Size(404, $curY)
+        }
     }
-    Update-AppButtonGrid
 
     # Własny pakiet (bezpośrednio pod siatką aplikacji)
     $lblCustom = New-Object System.Windows.Forms.Label
@@ -1649,6 +1776,8 @@ public static class WinFormsCueBanner {
     $btnReboot.Add_Click({ Restart-DeviceWithConfirmation })
     $form.Controls.Add($btnReboot)
 
+    Update-AppButtonGrid
+
     # --- FUNKCJE STYLIZACJI MOTYWU I JĘZYKA ---
 
     function Apply-Theme {
@@ -1701,9 +1830,15 @@ public static class WinFormsCueBanner {
         $btnEditApps.FlatAppearance.BorderColor = $c.BtnAppBorder
 
         foreach ($btn in $createdAppButtons) {
-            $btn.BackColor = $c.BtnApp
-            $btn.ForeColor = $c.BtnAppText
-            $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
+            if ($appButtons.Count -eq 0) {
+                $btn.BackColor = $c.Card
+                $btn.ForeColor = $c.TextMuted
+                $btn.FlatAppearance.BorderColor = $c.CardBorder
+            } else {
+                $btn.BackColor = $c.BtnApp
+                $btn.ForeColor = $c.BtnAppText
+                $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
+            }
         }
 
         $lblCustom.ForeColor = $c.TextMuted
@@ -1757,6 +1892,10 @@ public static class WinFormsCueBanner {
         $lblSectionApps.Text = $t.SectionApps
         $lblAppsSubtitle.Text = $t.AppsSubtitle
         $btnEditApps.Text = $t.AppsEdit
+        if ($tipEdit) { $tipEdit.SetToolTip($btnEditApps, $t.AppsEditTooltip) }
+        if ($appButtons.Count -eq 0 -and $createdAppButtons.Count -gt 0) {
+            $createdAppButtons[0].Text = $t.AppsAddPrompt
+        }
         $lblCustom.Text = $t.CustomLabel
         $btnCustom.Text = $t.CustomBtn
         [WinFormsCueBanner]::SendMessage($txtCustom.Handle, 0x1501, [IntPtr]::Zero, $t.CustomPlaceholder) | Out-Null
