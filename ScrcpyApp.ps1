@@ -1397,49 +1397,59 @@ public static class WinFormsCueBanner {
     $txtCustom.Font = $fontRegular
     $form.Controls.Add($txtCustom)
 
-    # Dynamiczna wyszukiwarka / podpowiedzi pakietów w rozwijanym dymku
-    $popupCustom = New-Object System.Windows.Forms.ToolStripDropDown
-    $popupCustom.AutoClose = $true
-    $popupCustom.DropShadowEnabled = $true
-    $popupCustom.Margin = [System.Windows.Forms.Padding]::Empty
-    $popupCustom.Padding = [System.Windows.Forms.Padding]::Empty
-
+    # Dynamiczna wyszukiwarka / podpowiedzi pakietów (nakładana lista bez utraty fokusu)
     $lstCustomSuggestions = New-Object System.Windows.Forms.ListBox
     $lstCustomSuggestions.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
     $lstCustomSuggestions.Font = $fontRegular
     $lstCustomSuggestions.IntegralHeight = $false
+    $lstCustomSuggestions.Location = New-Object System.Drawing.Point($txtCustom.Left, ($txtCustom.Bottom + 1))
     $lstCustomSuggestions.Width = $txtCustom.Width
-
-    $hostCustom = New-Object System.Windows.Forms.ToolStripControlHost($lstCustomSuggestions)
-    $hostCustom.Margin = [System.Windows.Forms.Padding]::Empty
-    $hostCustom.Padding = [System.Windows.Forms.Padding]::Empty
-    $hostCustom.AutoSize = $false
-    $hostCustom.Size = New-Object System.Drawing.Size($txtCustom.Width, 120)
-    [void]$popupCustom.Items.Add($hostCustom)
+    $lstCustomSuggestions.Height = 118
+    $lstCustomSuggestions.Visible = $false
+    $lstCustomSuggestions.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $form.Controls.Add($lstCustomSuggestions)
 
     $applyCustomFilter = {
         Ensure-InstalledAndroidPackages | Out-Null
         $query = $txtCustom.Text.Trim()
-        if ($query.Length -lt 1 -or $script:cachedInstalledPackages.Count -eq 0) {
-            if ($popupCustom.Visible) { $popupCustom.Close() }
+        if ($query.Length -lt 1) {
+            if ($lstCustomSuggestions.Visible) { $lstCustomSuggestions.Visible = $false }
+            return
+        }
+
+        # Pula pakietów: skonfigurowane kafelki + pakiety pobrane z podłączonego telefonu
+        $pool = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+        foreach ($app in $appButtons) {
+            if ($app -and -not [string]::IsNullOrWhiteSpace($app.Package)) {
+                [void]$pool.Add($app.Package.Trim())
+            }
+        }
+        foreach ($pkg in $script:cachedInstalledPackages) {
+            if (-not [string]::IsNullOrWhiteSpace($pkg)) {
+                [void]$pool.Add($pkg.Trim())
+            }
+        }
+
+        if ($pool.Count -eq 0) {
+            if ($lstCustomSuggestions.Visible) { $lstCustomSuggestions.Visible = $false }
             return
         }
 
         $tokens = @($query -split '\s+' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-        $matches = @($script:cachedInstalledPackages | Where-Object {
+        $matches = @($pool | Where-Object {
             $pkg = $_
             $allMatch = $true
             foreach ($tok in $tokens) {
-                if ($pkg -notlike "*$tok*") {
+                if ($pkg.IndexOf($tok, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
                     $allMatch = $false
                     break
                 }
             }
             $allMatch
-        })
+        } | Sort-Object)
 
         if ($matches.Count -eq 0) {
-            if ($popupCustom.Visible) { $popupCustom.Close() }
+            if ($lstCustomSuggestions.Visible) { $lstCustomSuggestions.Visible = $false }
             return
         }
 
@@ -1450,23 +1460,19 @@ public static class WinFormsCueBanner {
             for ($i = 0; $i -lt $maxCount; $i++) {
                 [void]$lstCustomSuggestions.Items.Add($matches[$i])
             }
-            if ($lstCustomSuggestions.Items.Count -gt 0) {
-                $lstCustomSuggestions.SelectedIndex = 0
-            }
+            $lstCustomSuggestions.SelectedIndex = -1
         }
         finally {
             $lstCustomSuggestions.EndUpdate()
         }
 
-        $itemH = [Math]::Max($lstCustomSuggestions.ItemHeight, 22)
+        $itemH = [Math]::Max($lstCustomSuggestions.ItemHeight, 20)
         $visibleCount = [Math]::Min($matches.Count, 6)
-        $popupH = ($visibleCount * $itemH) + 6
-        $lstCustomSuggestions.Height = $popupH
-        $hostCustom.Size = New-Object System.Drawing.Size($txtCustom.Width, $popupH)
-        $popupCustom.Size = $hostCustom.Size
-
-        if (-not $popupCustom.Visible -and $txtCustom.Focused) {
-            $popupCustom.Show($txtCustom, 0, $txtCustom.Height)
+        $h = ($visibleCount * $itemH) + 4
+        $lstCustomSuggestions.Height = [Math]::Min($h, 118)
+        $lstCustomSuggestions.BringToFront()
+        if (-not $lstCustomSuggestions.Visible) {
+            $lstCustomSuggestions.Visible = $true
         }
     }
 
@@ -1474,37 +1480,53 @@ public static class WinFormsCueBanner {
 
     $txtCustom.Add_KeyDown({
         param($s, $e)
-        if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Down -and $popupCustom.Visible) {
-            if ($lstCustomSuggestions.SelectedIndex -lt ($lstCustomSuggestions.Items.Count - 1)) {
-                $lstCustomSuggestions.SelectedIndex++
+        if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Down -and $lstCustomSuggestions.Visible) {
+            if ($lstCustomSuggestions.Items.Count -gt 0) {
+                if ($lstCustomSuggestions.SelectedIndex -lt ($lstCustomSuggestions.Items.Count - 1)) {
+                    $lstCustomSuggestions.SelectedIndex++
+                } else {
+                    $lstCustomSuggestions.SelectedIndex = 0
+                }
             }
             $e.Handled = $true
         }
-        elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Up -and $popupCustom.Visible) {
-            if ($lstCustomSuggestions.SelectedIndex -gt 0) {
-                $lstCustomSuggestions.SelectedIndex--
+        elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Up -and $lstCustomSuggestions.Visible) {
+            if ($lstCustomSuggestions.Items.Count -gt 0) {
+                if ($lstCustomSuggestions.SelectedIndex -gt 0) {
+                    $lstCustomSuggestions.SelectedIndex--
+                } else {
+                    $lstCustomSuggestions.SelectedIndex = $lstCustomSuggestions.Items.Count - 1
+                }
             }
             $e.Handled = $true
         }
         elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
-            if ($popupCustom.Visible -and $lstCustomSuggestions.SelectedItem) {
+            if ($lstCustomSuggestions.Visible -and $lstCustomSuggestions.SelectedIndex -ge 0) {
                 $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
                 $txtCustom.SelectionStart = $txtCustom.Text.Length
-                $popupCustom.Close()
+                $lstCustomSuggestions.Visible = $false
                 $e.Handled = $true
                 $e.SuppressKeyPress = $true
             }
             else {
+                $lstCustomSuggestions.Visible = $false
                 $btnCustom.PerformClick()
                 $e.Handled = $true
                 $e.SuppressKeyPress = $true
             }
         }
         elseif ($e.KeyCode -eq [System.Windows.Forms.Keys]::Escape) {
-            if ($popupCustom.Visible) {
-                $popupCustom.Close()
+            if ($lstCustomSuggestions.Visible) {
+                $lstCustomSuggestions.Visible = $false
                 $e.Handled = $true
             }
+        }
+    })
+
+    $txtCustom.Add_LostFocus({
+        $pt = $lstCustomSuggestions.PointToClient([System.Windows.Forms.Cursor]::Position)
+        if (-not $lstCustomSuggestions.ClientRectangle.Contains($pt)) {
+            $lstCustomSuggestions.Visible = $false
         }
     })
 
@@ -1512,7 +1534,7 @@ public static class WinFormsCueBanner {
         if ($lstCustomSuggestions.SelectedItem) {
             $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
             $txtCustom.SelectionStart = $txtCustom.Text.Length
-            $popupCustom.Close()
+            $lstCustomSuggestions.Visible = $false
             $txtCustom.Focus()
         }
     })
@@ -1520,8 +1542,18 @@ public static class WinFormsCueBanner {
     $lstCustomSuggestions.Add_DoubleClick({
         if ($lstCustomSuggestions.SelectedItem) {
             $txtCustom.Text = [string]$lstCustomSuggestions.SelectedItem
-            $popupCustom.Close()
+            $lstCustomSuggestions.Visible = $false
             $btnCustom.PerformClick()
+        }
+    })
+
+    $lstCustomSuggestions.Add_LostFocus({
+        $lstCustomSuggestions.Visible = $false
+    })
+
+    $form.Add_Click({
+        if ($lstCustomSuggestions.Visible) {
+            $lstCustomSuggestions.Visible = $false
         }
     })
 
@@ -1681,9 +1713,6 @@ public static class WinFormsCueBanner {
             $lstCustomSuggestions.BackColor = $c.InputBg
             $lstCustomSuggestions.ForeColor = $c.InputText
         }
-        if ($popupCustom) {
-            $popupCustom.BackColor = $c.CardBorder
-        }
 
         $btnCustom.BackColor = $c.BtnApp
         $btnCustom.ForeColor = $c.BtnAppText
@@ -1828,7 +1857,6 @@ public static class WinFormsCueBanner {
     # Zdarzenie zamknięcia okna
     $form.Add_FormClosing({
         $keepAwakeTimer.Stop()
-        if ($popupCustom) { $popupCustom.Dispose() }
         Clean-ExitedProcesses
 
         $runningPids = @($script:launchedProcesses | Where-Object { -not $_.HasExited } | Select-Object -ExpandProperty Id)
