@@ -27,16 +27,22 @@ public static class WinFormsCueBanner {
     $script:deviceManufacturer = ""
     $script:isWifiConnected = $false
 
-    # Preferencje użytkownika (Motyw, Język)
-    $prefFile = Join-Path $scriptDir "preferences.json"
+    # Preferencje użytkownika (Motyw, Język, Układ kafelków)
+    $userConfigRoot = Join-Path $env:APPDATA "scrcpy-manager"
+    $userPrefFile = Join-Path $userConfigRoot "preferences.json"
+    $defaultPrefFile = Join-Path $scriptDir "preferences.json"
+    $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
+
     $script:isDarkMode = $true
     $script:currentLang = "PL"
+    $script:appsLayout = 2  # 1 = lista (1 kolumna), 2 = 2 kolumny (standard), 3 = 3 kolumny (zwarty)
 
     if (Test-Path $prefFile) {
         try {
             $pref = Get-Content $prefFile -Raw -Encoding UTF8 | ConvertFrom-Json
             if ($pref.theme -eq "light") { $script:isDarkMode = $false }
             if ($pref.lang -eq "EN") { $script:currentLang = "EN" }
+            if ($pref.layout -in @(1, 2, 3)) { $script:appsLayout = [int]$pref.layout }
         }
         catch {}
     }
@@ -44,11 +50,16 @@ public static class WinFormsCueBanner {
     function Save-Preferences {
         try {
             $prefObj = @{
-                theme = if ($script:isDarkMode) { "dark" } else { "light" }
-                lang  = $script:currentLang
+                theme  = if ($script:isDarkMode) { "dark" } else { "light" }
+                lang   = $script:currentLang
+                layout = $script:appsLayout
             }
             $json = $prefObj | ConvertTo-Json
-            Set-Content -Path $prefFile -Value $json -Encoding UTF8 -ErrorAction SilentlyContinue
+            if (-not (Test-Path $userConfigRoot)) {
+                [void](New-Item -ItemType Directory -Path $userConfigRoot -Force -ErrorAction SilentlyContinue)
+            }
+            Set-Content -Path $userPrefFile -Value $json -Encoding UTF8 -ErrorAction SilentlyContinue
+            Set-Content -Path $defaultPrefFile -Value $json -Encoding UTF8 -ErrorAction SilentlyContinue
         }
         catch {}
     }
@@ -95,10 +106,19 @@ public static class WinFormsCueBanner {
             CustomAddBtn        = "+ Dodaj"
             CustomAddTooltip    = "Dodaj wpisany/wybrany pakiet jako stały kafelek na liście aplikacji"
             AppsRemoveTooltip   = "Usuń kafelek '{0}' z listy"
+            AppsRenameTooltip   = "Zmień nazwę kafelka '{0}'"
             MsgConfirmRemoveApp = "Czy na pewno chcesz usunąć kafelek '{0}' z listy aplikacji?"
             AddAppDialogTitle   = "Dodaj kafelek aplikacji"
             AddAppDialogLabel   = "Podaj nazwę dla nowego kafelka:"
             AddAppDialogAdd     = "+ Dodaj kafelek"
+            RenameAppDialogTitle = "Zmień nazwę kafelka"
+            RenameAppDialogLabel = "Podaj nową nazwę dla kafelka:"
+            RenameAppDialogSave = "Zapisz"
+            AppsRenameItem      = "✎ Zmień nazwę..."
+            AppsDeleteItem      = "✕ Usuń kafelek"
+            Layout1Tooltip      = "Układ: Lista (1 kolumna)"
+            Layout2Tooltip      = "Układ: Dwukolumnowy (standard)"
+            Layout3Tooltip      = "Układ: Trzykolumnowy (zwarty)"
             MsgAppAlreadyExists = "Pakiet '{0}' znajduje się już na liście pod nazwą '{1}'!"
 
             AppsEditorTitle               = "Edytuj aplikacje w oknach"
@@ -183,10 +203,19 @@ public static class WinFormsCueBanner {
             CustomAddBtn        = "+ Add"
             CustomAddTooltip    = "Add the typed/selected package as a permanent tile in the app list"
             AppsRemoveTooltip   = "Remove '{0}' tile from the list"
+            AppsRenameTooltip   = "Rename '{0}' tile"
             MsgConfirmRemoveApp = "Are you sure you want to remove the '{0}' tile from the application list?"
             AddAppDialogTitle   = "Add Application Tile"
             AddAppDialogLabel   = "Enter a name for the new tile:"
             AddAppDialogAdd     = "+ Add Tile"
+            RenameAppDialogTitle = "Rename Application Tile"
+            RenameAppDialogLabel = "Enter a new name for the tile:"
+            RenameAppDialogSave = "Save"
+            AppsRenameItem      = "✎ Rename..."
+            AppsDeleteItem      = "✕ Delete tile"
+            Layout1Tooltip      = "Layout: List (1 column)"
+            Layout2Tooltip      = "Layout: Two columns (standard)"
+            Layout3Tooltip      = "Layout: Three columns (compact)"
             MsgAppAlreadyExists = "Package '{0}' is already in the list as '{1}'!"
 
             AppsEditorTitle               = "Edit windowed applications"
@@ -1377,9 +1406,88 @@ public static class WinFormsCueBanner {
     # 4. URUCHAMIANIE APLIKACJI W OKNACH
     $lblSectionApps = New-Object System.Windows.Forms.Label
     $lblSectionApps.Location = New-Object System.Drawing.Point(16, 282)
-    $lblSectionApps.Size = New-Object System.Drawing.Size(372, 16)
+    $lblSectionApps.Size = New-Object System.Drawing.Size(260, 16)
     $lblSectionApps.Font = $fontSection
     $form.Controls.Add($lblSectionApps)
+
+    $tipLayout = New-Object System.Windows.Forms.ToolTip
+
+    $btnLayout1 = New-Object System.Windows.Forms.Button
+    $btnLayout1.Location = New-Object System.Drawing.Point(284, 276)
+    $btnLayout1.Size = New-Object System.Drawing.Size(32, 22)
+    $btnLayout1.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnLayout1.FlatAppearance.BorderSize = 1
+    $btnLayout1.Text = "1"
+    $btnLayout1.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $form.Controls.Add($btnLayout1)
+
+    $btnLayout2 = New-Object System.Windows.Forms.Button
+    $btnLayout2.Location = New-Object System.Drawing.Point(320, 276)
+    $btnLayout2.Size = New-Object System.Drawing.Size(32, 22)
+    $btnLayout2.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnLayout2.FlatAppearance.BorderSize = 1
+    $btnLayout2.Text = "2"
+    $btnLayout2.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $form.Controls.Add($btnLayout2)
+
+    $btnLayout3 = New-Object System.Windows.Forms.Button
+    $btnLayout3.Location = New-Object System.Drawing.Point(356, 276)
+    $btnLayout3.Size = New-Object System.Drawing.Size(32, 22)
+    $btnLayout3.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnLayout3.FlatAppearance.BorderSize = 1
+    $btnLayout3.Text = "3"
+    $btnLayout3.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $form.Controls.Add($btnLayout3)
+
+    $updateLayoutButtons = {
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+        $activeBg = if ($c.ToggleChecked) { $c.ToggleChecked } else { $c.BtnHero }
+        $activeFg = if ($c.ToggleText) { $c.ToggleText } else { $c.BtnHeroText }
+        $activeBorder = if ($c.ToggleBorder) { $c.ToggleBorder } else { $c.CardBorder }
+
+        foreach ($pair in @(@($btnLayout1, 1), @($btnLayout2, 2), @($btnLayout3, 3))) {
+            $b = $pair[0]
+            $val = $pair[1]
+            if ($script:appsLayout -eq $val) {
+                $b.BackColor = $activeBg
+                $b.ForeColor = $activeFg
+                $b.FlatAppearance.BorderColor = $activeBorder
+                $b.Font = $fontSection
+            } else {
+                $b.BackColor = $c.ToggleBg
+                $b.ForeColor = $c.TextMuted
+                $b.FlatAppearance.BorderColor = $c.CardBorder
+                $b.Font = $fontSmall
+            }
+        }
+    }
+
+    $btnLayout1.Add_Click({
+        if ($script:appsLayout -ne 1) {
+            $script:appsLayout = 1
+            Save-Preferences
+            & $updateLayoutButtons
+            Update-AppButtonGrid
+        }
+    })
+
+    $btnLayout2.Add_Click({
+        if ($script:appsLayout -ne 2) {
+            $script:appsLayout = 2
+            Save-Preferences
+            & $updateLayoutButtons
+            Update-AppButtonGrid
+        }
+    })
+
+    $btnLayout3.Add_Click({
+        if ($script:appsLayout -ne 3) {
+            $script:appsLayout = 3
+            Save-Preferences
+            & $updateLayoutButtons
+            Update-AppButtonGrid
+        }
+    })
 
     $lblAppsSubtitle = New-Object System.Windows.Forms.Label
     $lblAppsSubtitle.Location = New-Object System.Drawing.Point(16, 302)
@@ -1500,7 +1608,98 @@ public static class WinFormsCueBanner {
         return $null
     }
 
+    function Show-RenameAppDialog {
+        param(
+            [string]$CurrentName,
+            [string]$Package
+        )
+        $t = $i18n[$script:currentLang]
+        $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
+
+        $dlg = New-Object System.Windows.Forms.Form
+        $dlg.Text = $t.RenameAppDialogTitle
+        $dlg.ClientSize = New-Object System.Drawing.Size(360, 156)
+        $dlg.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterParent
+        $dlg.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+        $dlg.MaximizeBox = $false
+        $dlg.MinimizeBox = $false
+        $dlg.ShowInTaskbar = $false
+        if ($form -and $form.Icon) { $dlg.Icon = $form.Icon }
+        $dlg.Font = $fontRegular
+        $dlg.BackColor = $c.Bg
+        $dlg.ForeColor = $c.Text
+
+        $lblPrompt = New-Object System.Windows.Forms.Label
+        $lblPrompt.Location = New-Object System.Drawing.Point(16, 14)
+        $lblPrompt.Size = New-Object System.Drawing.Size(328, 18)
+        $lblPrompt.Text = $t.RenameAppDialogLabel
+        $lblPrompt.Font = $fontSection
+        $dlg.Controls.Add($lblPrompt)
+
+        $txtName = New-Object System.Windows.Forms.TextBox
+        $txtName.Location = New-Object System.Drawing.Point(16, 36)
+        $txtName.Size = New-Object System.Drawing.Size(328, 26)
+        $txtName.Text = $CurrentName
+        $txtName.Font = $fontRegular
+        $txtName.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+        $txtName.BackColor = $c.InputBg
+        $txtName.ForeColor = $c.InputText
+        $dlg.Controls.Add($txtName)
+
+        $lblPkg = New-Object System.Windows.Forms.Label
+        $lblPkg.Location = New-Object System.Drawing.Point(16, 68)
+        $lblPkg.Size = New-Object System.Drawing.Size(328, 16)
+        $lblPkg.Text = "Pakiet: $Package"
+        $lblPkg.Font = $fontSmall
+        $lblPkg.ForeColor = $c.TextMuted
+        $dlg.Controls.Add($lblPkg)
+
+        $btnOk = New-Object System.Windows.Forms.Button
+        $btnOk.Text = $t.RenameAppDialogSave
+        $btnOk.Location = New-Object System.Drawing.Point(140, 106)
+        $btnOk.Size = New-Object System.Drawing.Size(110, 30)
+        $btnOk.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btnOk.FlatAppearance.BorderSize = 1
+        $btnOk.FlatAppearance.BorderColor = $c.BtnHero
+        $btnOk.BackColor = $c.BtnHero
+        $btnOk.ForeColor = $c.BtnHeroText
+        $btnOk.Font = $fontSection
+        $btnOk.DialogResult = [System.Windows.Forms.DialogResult]::OK
+        $dlg.AcceptButton = $btnOk
+        $dlg.Controls.Add($btnOk)
+
+        $btnCancel = New-Object System.Windows.Forms.Button
+        $btnCancel.Text = $t.AppsEditorCancel
+        $btnCancel.Location = New-Object System.Drawing.Point(258, 106)
+        $btnCancel.Size = New-Object System.Drawing.Size(86, 30)
+        $btnCancel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+        $btnCancel.FlatAppearance.BorderSize = 1
+        $btnCancel.FlatAppearance.BorderColor = $c.BtnAppBorder
+        $btnCancel.BackColor = $c.BtnApp
+        $btnCancel.ForeColor = $c.BtnAppText
+        $btnCancel.Font = $fontSection
+        $btnCancel.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+        $dlg.CancelButton = $btnCancel
+        $dlg.Controls.Add($btnCancel)
+
+        $dlg.Add_Shown({
+            $txtName.Focus()
+            $txtName.SelectAll()
+        })
+
+        if ($dlg.ShowDialog($form) -eq [System.Windows.Forms.DialogResult]::OK) {
+            $chosen = $txtName.Text.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($chosen)) {
+                $dlg.Dispose()
+                return $chosen
+            }
+        }
+        $dlg.Dispose()
+        return $null
+    }
+
     $createdAppButtons = New-Object 'System.Collections.Generic.List[System.Windows.Forms.Button]'
+    $createdRenameButtons = New-Object 'System.Collections.Generic.List[System.Windows.Forms.Button]'
     $createdDelButtons = New-Object 'System.Collections.Generic.List[System.Windows.Forms.Button]'
 
     function Update-AppButtonGrid {
@@ -1512,9 +1711,12 @@ public static class WinFormsCueBanner {
                 $ctrl.Dispose()
             }
             $createdAppButtons.Clear()
+            $createdRenameButtons.Clear()
             $createdDelButtons.Clear()
             $c = if ($script:isDarkMode) { $themeColors.Dark } else { $themeColors.Light }
             $t = $i18n[$script:currentLang]
+
+            $layout = if ($script:appsLayout -in @(1, 2, 3)) { $script:appsLayout } else { 2 }
 
             if ($appButtons.Count -eq 0) {
                 $btnEmpty = New-Object System.Windows.Forms.Button
@@ -1533,25 +1735,64 @@ public static class WinFormsCueBanner {
                 $createdAppButtons.Add($btnEmpty)
             }
             else {
+                if ($layout -eq 1) {
+                    $tileW = 360
+                    $tileMargin = New-Object System.Windows.Forms.Padding(6, 3, 6, 3)
+                    $btnW = 310
+                    $renX = 309
+                    $renW = 26
+                    $delX = 334
+                    $delW = 26
+                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+                    $btnPad = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
+                }
+                elseif ($layout -eq 3) {
+                    $tileW = 118
+                    $tileMargin = New-Object System.Windows.Forms.Padding(2, 3, 2, 3)
+                    $btnW = 74
+                    $renX = 73
+                    $renW = 23
+                    $delX = 95
+                    $delW = 23
+                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+                    $btnPad = New-Object System.Windows.Forms.Padding(0)
+                }
+                else {
+                    $tileW = 178
+                    $tileMargin = New-Object System.Windows.Forms.Padding(3)
+                    $btnW = 130
+                    $renX = 129
+                    $renW = 25
+                    $delX = 153
+                    $delW = 25
+                    $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+                    $btnPad = New-Object System.Windows.Forms.Padding(0)
+                }
+
                 foreach ($app in $appButtons) {
                     $selectedApp = $app
 
                     $pnlTile = New-Object System.Windows.Forms.Panel
-                    $pnlTile.Size = New-Object System.Drawing.Size(172, 30)
-                    $pnlTile.Margin = New-Object System.Windows.Forms.Padding(3)
+                    $pnlTile.Size = New-Object System.Drawing.Size($tileW, 30)
+                    $pnlTile.Margin = $tileMargin
                     $pnlTile.BackColor = [System.Drawing.Color]::Transparent
 
                     $btn = New-Object System.Windows.Forms.Button
                     $btn.Text = $app.Text
                     $btn.Location = New-Object System.Drawing.Point(0, 0)
-                    $btn.Size = New-Object System.Drawing.Size(148, 30)
+                    $btn.Size = New-Object System.Drawing.Size($btnW, 30)
                     $btn.Font = $fontSmall
+                    $btn.TextAlign = $btnAlign
+                    $btn.Padding = $btnPad
                     $btn.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
                     $btn.FlatAppearance.BorderSize = 1
                     $btn.FlatAppearance.BorderColor = $c.BtnAppBorder
                     $btn.BackColor = $c.BtnApp
                     $btn.ForeColor = $c.BtnAppText
                     $btn.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+                    $btnTip = New-Object System.Windows.Forms.ToolTip
+                    $btnTip.SetToolTip($btn, "$($selectedApp.Text)`n$($selectedApp.Package)")
 
                     $btn.Add_Click({
                         if ($chkAutoTaskbar.Checked) { Start-Taskbar }
@@ -1573,11 +1814,67 @@ public static class WinFormsCueBanner {
                         Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
                     }.GetNewClosure())
 
+                    # Mały przycisk zmiany nazwy kafelka (✎)
+                    $btnRename = New-Object System.Windows.Forms.Button
+                    $btnRename.Text = "✎"
+                    $btnRename.Location = New-Object System.Drawing.Point($renX, 0)
+                    $btnRename.Size = New-Object System.Drawing.Size($renW, 30)
+                    $btnRename.Font = $fontSmall
+                    $btnRename.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+                    $btnRename.FlatAppearance.BorderSize = 1
+                    $btnRename.FlatAppearance.BorderColor = $c.BtnAppBorder
+                    $btnRename.BackColor = $c.BtnApp
+                    $btnRename.ForeColor = $c.TextMuted
+                    $btnRename.Cursor = [System.Windows.Forms.Cursors]::Hand
+
+                    $renTip = New-Object System.Windows.Forms.ToolTip
+                    $renTip.SetToolTip($btnRename, ($t.AppsRenameTooltip -f $selectedApp.Text))
+
+                    $btnRename.Add_MouseEnter({
+                        param($s, $e)
+                        $s.ForeColor = [System.Drawing.Color]::FromArgb(100, 180, 255)
+                    })
+                    $btnRename.Add_MouseLeave({
+                        param($s, $e)
+                        $col = if ($script:isDarkMode) { $themeColors.Dark.TextMuted } else { $themeColors.Light.TextMuted }
+                        $s.ForeColor = $col
+                    })
+
+                    $btnRename.Add_Click({
+                        $appToRename = $selectedApp
+                        $newName = Show-RenameAppDialog -CurrentName $appToRename.Text -Package $appToRename.Package
+                        if (-not [string]::IsNullOrWhiteSpace($newName) -and $newName -ne $appToRename.Text) {
+                            $match = @($appButtons | Where-Object { $_.Package -eq $appToRename.Package -and $_.Text -eq $appToRename.Text })
+                            if ($match.Count -gt 0) {
+                                $match[0].Text = $newName
+                            } else {
+                                $appToRename.Text = $newName
+                            }
+                            try {
+                                $jsonApps = @(
+                                    foreach ($a in $appButtons) {
+                                        [pscustomobject]@{
+                                            name = $a.Text
+                                            package = $a.Package
+                                            flags = @($a.Flags)
+                                        }
+                                    }
+                                )
+                                $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
+                                if (-not (Test-Path $userConfigRoot)) { [void](New-Item -ItemType Directory -Path $userConfigRoot -Force -ErrorAction Stop) }
+                                Set-Content -LiteralPath $appsConfigFile -Value $json -Encoding UTF8 -ErrorAction Stop
+                            }
+                            catch {}
+
+                            Update-AppButtonGrid
+                        }
+                    }.GetNewClosure())
+
                     # Mały przycisk usuwania kafelka (✕)
                     $btnDel = New-Object System.Windows.Forms.Button
                     $btnDel.Text = "✕"
-                    $btnDel.Location = New-Object System.Drawing.Point(147, 0)
-                    $btnDel.Size = New-Object System.Drawing.Size(25, 30)
+                    $btnDel.Location = New-Object System.Drawing.Point($delX, 0)
+                    $btnDel.Size = New-Object System.Drawing.Size($delW, 30)
                     $btnDel.Font = $fontSmall
                     $btnDel.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
                     $btnDel.FlatAppearance.BorderSize = 1
@@ -1632,11 +1929,21 @@ public static class WinFormsCueBanner {
                         }
                     }.GetNewClosure())
 
+                    # Menu kontekstowe pod prawym przyciskiem myszy
+                    $ctxMenu = New-Object System.Windows.Forms.ContextMenuStrip
+                    $itemRename = $ctxMenu.Items.Add($t.AppsRenameItem)
+                    $itemRename.Add_Click({ $btnRename.PerformClick() }.GetNewClosure())
+                    $itemDel = $ctxMenu.Items.Add($t.AppsDeleteItem)
+                    $itemDel.Add_Click({ $btnDel.PerformClick() }.GetNewClosure())
+                    $btn.ContextMenuStrip = $ctxMenu
+
                     [void]$pnlTile.Controls.Add($btn)
+                    [void]$pnlTile.Controls.Add($btnRename)
                     [void]$pnlTile.Controls.Add($btnDel)
                     [void]$flowAppButtons.Controls.Add($pnlTile)
 
                     $createdAppButtons.Add($btn)
+                    $createdRenameButtons.Add($btnRename)
                     $createdDelButtons.Add($btnDel)
                 }
             }
@@ -1647,7 +1954,9 @@ public static class WinFormsCueBanner {
 
         # Dynamiczne dostosowanie wysokości sekcji Aplikacje w oknach i płynne przesunięcie kontrolek poniżej
         if ($lblCustom -and $txtCustom -and $btnCustom -and $btnAddCustom -and $lblSectionDevice -and $btnDesktop -and $btnNormal -and $btnReboot) {
-            $rowCount = if ($appButtons.Count -eq 0) { 1 } else { [Math]::Ceiling($appButtons.Count / 2.0) }
+            $layout = if ($script:appsLayout -in @(1, 2, 3)) { $script:appsLayout } else { 2 }
+            $cols = if ($layout -eq 1) { 1 } elseif ($layout -eq 3) { 3 } else { 2 }
+            $rowCount = if ($appButtons.Count -eq 0) { 1 } else { [Math]::Ceiling($appButtons.Count / [double]$cols) }
             $neededFlowH = ($rowCount * 36) + 6
 
             $screenH = 900
@@ -2075,11 +2384,19 @@ public static class WinFormsCueBanner {
             }
         }
 
+        foreach ($btnRen in $createdRenameButtons) {
+            $btnRen.BackColor = $c.BtnApp
+            $btnRen.ForeColor = $c.TextMuted
+            $btnRen.FlatAppearance.BorderColor = $c.BtnAppBorder
+        }
+
         foreach ($btnDel in $createdDelButtons) {
             $btnDel.BackColor = $c.BtnApp
             $btnDel.ForeColor = $c.TextMuted
             $btnDel.FlatAppearance.BorderColor = $c.BtnAppBorder
         }
+
+        if ($updateLayoutButtons) { & $updateLayoutButtons }
 
         $lblCustom.ForeColor = $c.TextMuted
         $txtCustom.BackColor = $c.InputBg
@@ -2139,6 +2456,11 @@ public static class WinFormsCueBanner {
         $lblAppsSubtitle.Text = $t.AppsSubtitle
         $btnEditApps.Text = $t.AppsEdit
         if ($tipEdit) { $tipEdit.SetToolTip($btnEditApps, $t.AppsEditTooltip) }
+        if ($tipLayout) {
+            $tipLayout.SetToolTip($btnLayout1, $t.Layout1Tooltip)
+            $tipLayout.SetToolTip($btnLayout2, $t.Layout2Tooltip)
+            $tipLayout.SetToolTip($btnLayout3, $t.Layout3Tooltip)
+        }
         if ($appButtons.Count -eq 0 -and $createdAppButtons.Count -gt 0) {
             $createdAppButtons[0].Text = $t.AppsAddPrompt
         }
@@ -2199,6 +2521,7 @@ public static class WinFormsCueBanner {
         Save-Preferences
         Apply-Language
         Apply-Theme
+        Update-AppButtonGrid
     })
 
     # Timer czuwania oraz odświeżania paska stanu
