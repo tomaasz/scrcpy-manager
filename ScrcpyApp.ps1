@@ -655,6 +655,9 @@ public static class WinFormsCueBanner {
         $editor.MaximizeBox = $false
         $editor.MinimizeBox = $false
         $editor.ShowInTaskbar = $false
+        if ($form -and $form.Icon) {
+            $editor.Icon = $form.Icon
+        }
         $editor.Font = $fontRegular
         $editor.BackColor = $c.Bg
         $editor.ForeColor = $c.Text
@@ -1044,6 +1047,13 @@ public static class WinFormsCueBanner {
     $form.StartPosition = "CenterScreen"
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
+
+    $appIconPath = Join-Path $scriptDir "app.ico"
+    if (Test-Path $appIconPath) {
+        try {
+            $form.Icon = New-Object System.Drawing.Icon($appIconPath)
+        } catch {}
+    }
 
     # 1. KARTA STATUSU I URZĄDZENIA (NA GÓRZE)
     $pnlStatus = New-Object System.Windows.Forms.Panel

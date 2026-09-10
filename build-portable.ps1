@@ -49,6 +49,10 @@ try {
     # 4. Skopiuj pliki aplikacji
     Copy-Item -LiteralPath (Join-Path $repoDir "ScrcpyApp.ps1") -Destination $tempStage -Force
     Copy-Item -LiteralPath (Join-Path $repoDir "apps.json") -Destination $tempStage -Force
+    $appIco = Join-Path $repoDir "app.ico"
+    if (Test-Path $appIco) {
+        Copy-Item -LiteralPath $appIco -Destination $tempStage -Force
+    }
 
     Write-Host "Spakowano pliki do stagingu: $( (Get-ChildItem $tempStage).Count ) plików" -ForegroundColor Green
 
@@ -67,7 +71,8 @@ try {
 
     Write-Host "Kompilacja przez csc.exe..." -ForegroundColor Cyan
 
-    & $csc /nologo /target:winexe /optimize+ /platform:x64 "/out:$outputExe" "/resource:$bundleZip,bundle.zip" "/r:$refs" "$launcherCs"
+    $iconArg = if (Test-Path $appIco) { "/win32icon:$appIco" } else { "" }
+    & $csc /nologo /target:winexe /optimize+ /platform:x64 $iconArg "/out:$outputExe" "/resource:$bundleZip,bundle.zip" "/r:$refs" "$launcherCs"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Błąd kompilacji csc.exe! Kod wyjścia: $LASTEXITCODE"
