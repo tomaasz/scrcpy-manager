@@ -1,4 +1,8 @@
-﻿try {
+﻿param(
+    [string]$CaptureScreenshotLang = $null
+)
+
+try {
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
@@ -10,6 +14,21 @@ using System.Runtime.InteropServices;
 public static class WinFormsCueBanner {
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+}
+"@
+    }
+
+    if (-not ("NativeDwmScreenshot" -as [type])) {
+        Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class NativeDwmScreenshot {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 }
 "@
     }
@@ -1847,6 +1866,11 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
 
+    $form.Add_HandleCreated({
+        $darkVal = if ($script:isDarkMode) { 1 } else { 0 }
+        try { [NativeDwmScreenshot]::DwmSetWindowAttribute($form.Handle, 20, [ref]$darkVal, 4) | Out-Null } catch {}
+    })
+
     $appIconPath = Join-Path $scriptDir "app.ico"
     if (Test-Path $appIconPath) {
         try {
@@ -3307,6 +3331,52 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
     # Zdarzenie po załadowaniu okna na ekranie
     $form.Add_Shown({
         try {
+            if ($CaptureScreenshotLang) {
+                Update-DeviceInfo
+                Set-AppLanguage -langCode $CaptureScreenshotLang
+                Apply-Theme
+                if ($CaptureScreenshotLang -eq "EN") {
+                    foreach ($btn in $createdAppButtons) {
+                        if ($btn.Text -eq "Ustawienia") { $btn.Text = "Settings" }
+                        if ($btn.Text -like "Gmail*") { $btn.Text = "Gmail (All)" }
+                        if ($btn.Text -like "Wiadomości*") { $btn.Text = "Messages (Google)" }
+                    }
+                } elseif ($CaptureScreenshotLang -eq "DE") {
+                    foreach ($btn in $createdAppButtons) {
+                        if ($btn.Text -eq "Ustawienia") { $btn.Text = "Einstellungen" }
+                        if ($btn.Text -like "Gmail*") { $btn.Text = "Gmail (Alle)" }
+                        if ($btn.Text -like "Wiadomości*") { $btn.Text = "Nachrichten (Google)" }
+                    }
+                } elseif ($CaptureScreenshotLang -eq "ES") {
+                    foreach ($btn in $createdAppButtons) {
+                        if ($btn.Text -eq "Ustawienia") { $btn.Text = "Ajustes" }
+                        if ($btn.Text -like "Gmail*") { $btn.Text = "Gmail (Todas)" }
+                        if ($btn.Text -like "Wiadomości*") { $btn.Text = "Mensajes (Google)" }
+                    }
+                }
+                Update-StatusDisplay
+                $form.Refresh()
+                [System.Windows.Forms.Application]::DoEvents()
+                Start-Sleep -Milliseconds 800
+                [System.Windows.Forms.Application]::DoEvents()
+
+                $bmp = New-Object System.Drawing.Bitmap($form.Width, $form.Height)
+                $g = [System.Drawing.Graphics]::FromImage($bmp)
+                $hdc = $g.GetHdc()
+                [NativeDwmScreenshot]::PrintWindow($form.Handle, $hdc, 2) | Out-Null
+                $g.ReleaseHdc($hdc)
+                $g.Dispose()
+
+                $outDir = Join-Path $scriptDir "docs"
+                if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir -Force | Out-Null }
+                $outPath = Join-Path $outDir ("screenshot." + $CaptureScreenshotLang.ToLower() + ".png")
+                $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
+                $bmp.Dispose()
+                Write-Host "Captured screenshot to $outPath"
+                $form.Close()
+                return
+            }
+
             Update-DeviceInfo
             Apply-Language
             Apply-Theme

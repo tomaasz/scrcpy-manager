@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="Captura de pantalla de scrcpy Manager" width="360" />
+  <img src="docs/screenshot.es.png" alt="Captura de pantalla de scrcpy Manager" width="360" />
 </p>
 
 ---

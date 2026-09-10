@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="scrcpy Manager Screenshot" width="360" />
+  <img src="docs/screenshot.en.png" alt="scrcpy Manager Screenshot" width="360" />
 </p>
 
 ---

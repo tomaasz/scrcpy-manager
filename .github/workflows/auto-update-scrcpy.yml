@@ -140,3 +140,4 @@ jobs:
           gh release create $newTag ScrcpyManager-Portable.exe --title "scrcpy Manager $newTag - Portable Edition (scrcpy $upstreamTag)" --notes-file "release_notes.md"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
