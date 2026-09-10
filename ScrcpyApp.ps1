@@ -41,7 +41,7 @@ public static class WinFormsCueBanner {
         try {
             $pref = Get-Content $prefFile -Raw -Encoding UTF8 | ConvertFrom-Json
             if ($pref.theme -eq "light") { $script:isDarkMode = $false }
-            if ($pref.lang -eq "EN") { $script:currentLang = "EN" }
+            if ($pref.lang -in @("PL", "EN", "DE", "ES")) { $script:currentLang = [string]$pref.lang }
             if ($pref.layout -in @(1, 2, 3)) { $script:appsLayout = [int]$pref.layout }
         }
         catch {}
@@ -206,6 +206,7 @@ public static class WinFormsCueBanner {
             ThemeDark           = "☀ Jasny"
             ThemeLight          = "☾ Ciemny"
             LangSwitch          = "EN"
+            LangTooltip         = "Język: Polski (kliknij, aby zmienić na EN / DE / ES)"
 
             LaunchHero          = "▶  Uruchom scrcpy"
             FullScreenOpt       = "Uruchamiaj w trybie pełnoekranowym (-f)"
@@ -302,7 +303,8 @@ public static class WinFormsCueBanner {
             StatusActive        = "Keep-awake active"
             ThemeDark           = "☀ Light"
             ThemeLight          = "☾ Dark"
-            LangSwitch          = "PL"
+            LangSwitch          = "DE"
+            LangTooltip         = "Language: English (click to switch to DE / ES / PL)"
 
             LaunchHero          = "▶  Launch scrcpy"
             FullScreenOpt       = "Launch in full screen mode (-f)"
@@ -387,6 +389,202 @@ public static class WinFormsCueBanner {
                 "2K QHD Compact (DPI 140)",
                 "4K UHD (3840x2160)",
                 "Phone Default"
+            )
+        }
+        DE = @{
+            StatusConnectedUsb  = "über USB verbunden"
+            StatusConnectedWifi = "über WLAN verbunden"
+            StatusNoPhone       = "Kein Telefon verbunden"
+            StatusCheckConn     = "USB-Kabel anschließen oder WLAN prüfen"
+            BatteryLabel        = "Akku:"
+            ChargingStr         = " (lädt)"
+            StatusActive        = "Wachmodus aktiv"
+            ThemeDark           = "☀ Hell"
+            ThemeLight          = "☾ Dunkel"
+            LangSwitch          = "ES"
+            LangTooltip         = "Sprache: Deutsch (Klicken für Wechsel zu ES / PL / EN)"
+
+            LaunchHero          = "▶  scrcpy starten"
+            FullScreenOpt       = "Im Vollbildmodus starten (-f)"
+
+            SectionOptions      = "ANZEIGE, AUDIO & STEUERUNG"
+            ResLabel            = "Virtuelle Bildschirmauflösung (RDP):"
+            AudioPass           = "Audio an PC übertragen"
+            AutoTaskbar         = "Taskbar starten"
+            WifiBtn             = "Über WLAN verbinden"
+            KeyBtn              = "Physische Tastatur"
+            ClipBtn             = "Zwischenablage reparieren"
+
+            SectionApps         = "ANWENDUNGEN IN FENSTERN"
+            AppsSubtitle        = "Im Fenster starten oder [Bearbeiten] zum Anpassen"
+            AppsEdit            = "Bearbeiten"
+            AppsEditTooltip     = "Liste anpassen: Apps vom Telefon hinzufügen, sortieren oder Vorlagen laden"
+            AppsAddPrompt       = "+ Apps vom Telefon hinzufügen (hier oder [Bearbeiten] klicken)"
+            CustomLabel         = "Anderes Android-Paket (z. B. com.spotify.music):"
+            CustomPlaceholder   = "Paket suchen (z. B. spotify, maps)..."
+            CustomBtn           = "Starten"
+            CustomAddBtn        = "+ Hinzufügen"
+            CustomAddTooltip    = "Eingegebenes/ausgewähltes Paket als Kachel zur App-Liste hinzufügen"
+            AppsRemoveTooltip   = "Kachel '{0}' aus der Liste entfernen"
+            AppsRenameTooltip   = "Kachel '{0}' umbenennen"
+            MsgConfirmRemoveApp = "Möchten Sie die Kachel '{0}' wirklich aus der App-Liste entfernen?"
+            AddAppDialogTitle   = "App-Kachel hinzufügen"
+            AddAppDialogLabel   = "Geben Sie einen Namen für die neue Kachel ein:"
+            AddAppDialogAdd     = "+ Kachel hinzufügen"
+            RenameAppDialogTitle = "App-Kachel umbenennen"
+            RenameAppDialogLabel = "Geben Sie einen neuen Namen für die Kachel ein:"
+            RenameAppDialogSave = "Speichern"
+            AppsRenameItem      = "✎ Umbenennen..."
+            AppsDeleteItem      = "✕ Kachel löschen"
+            Layout1Tooltip      = "Layout: Liste (1 Spalte)"
+            Layout2Tooltip      = "Layout: Zweispaltig (Standard)"
+            Layout3Tooltip      = "Layout: Dreispaltig (Kompakt)"
+            MsgAppAlreadyExists = "Das Paket '{0}' ist bereits in der Liste als '{1}' vorhanden!"
+
+            AppsEditorTitle               = "Fenster-Apps bearbeiten"
+            AppsEditorIntro               = "Ihr Tastenlayout wird separat für jeden Windows-Benutzer gespeichert."
+            AppsEditorPhoneList           = "Vom Telefon geladene App auswählen"
+            AppsEditorSearchPlaceholder   = "Paket suchen (z. B. spotify, vivaldi, messenger)..."
+            AppsEditorNoMatches           = "Keine passenden Pakete gefunden"
+            AppsEditorRefresh             = "Aktualisieren"
+            AppsEditorName                = "Name"
+            AppsEditorPackage             = "Android-Paket"
+            AppsEditorUhid                = "Tastatur"
+            AppsEditorClicks              = "Alle Klicks"
+            AppsEditorAdd                 = "+ Hinzufügen"
+            AppsEditorRemove              = "Entfernen"
+            AppsEditorUp                  = "Nach oben"
+            AppsEditorDown                = "Nach unten"
+            AppsEditorPopular             = "★ Beliebte Apps"
+            AppsEditorSave                = "Speichern"
+            AppsEditorCancel              = "Abbrechen"
+            MsgAppsInvalid                = "Jeder Eintrag benötigt einen Namen und ein gültiges Android-Paket (z. B. com.spotify.music)."
+            MsgAppsEmpty                  = "Die Liste muss mindestens eine Anwendung enthalten."
+            MsgAppsSaveError              = "Benutzerlayout konnte nicht gespeichert werden:`n{0}"
+            MsgAppsPhoneError             = "Apps konnten nicht vom Telefon geladen werden. ADB-Verbindung prüfen."
+            MsgLoadPopular                = "Möchten Sie eine Auswahl von 10 beliebten Apps (YouTube, Spotify, Chrome, WhatsApp usw.) hinzufügen?"
+            MsgEmptyAppsPrompt            = "Ihre App-Liste ist leer. Möchten Sie 10 beliebte Apps (YouTube, Spotify, Chrome usw.) laden?"
+
+            SectionDevice       = "GERÄTEOPERATIONEN"
+            DesktopMode         = "Desktop-Modus aktivieren"
+            RestoreDefault      = "Standardansicht wiederherstellen"
+            RebootBtn           = "⚠  Telefon neu starten"
+
+            TitleRestartConfirm = "Neustart bestätigen"
+            MsgRestartConfirm   = "Möchten Sie das Telefon wirklich neu starten?"
+            MsgRestartSent      = "Neustartbefehl wurde an das Telefon gesendet."
+            MsgNoDevice         = "Kein Android-Gerät erkannt.`nBitte USB-Kabel, USB-Debugging oder WLAN-Verbindung prüfen."
+            MsgDesktopOn        = "Niedrige DPI (250) angewendet, Animationen beschleunigt und Fenstermodus aktiviert."
+            MsgResetDone        = "Standard-DPI wiederhergestellt, Animationen zurückgesetzt und Taskbar geschlossen."
+            MsgClipDone         = "Zwischenablage-Optimierungen angewendet.`nReparaturbefehl für Remote-PC in Zwischenablage kopiert:`n{0}`n`nFenster-Tastenkombinationen:`n• Alt + V : PC-Zwischenablage in Sitzung einfügen`n• Alt + C : Sitzungs-Zwischenablage auf PC kopieren"
+            MsgKeyDone          = "Tastatureinstellungen auf dem Telefon geöffnet.`nStellen Sie sicher, dass das Layout der physischen Tastatur 'scrcpy' passend eingestellt ist."
+            MsgWifiNoIp         = "Telefon-IP konnte im WLAN nicht automatisch ermittelt werden.`nStellen Sie sicher, dass das Telefon im selben WLAN ist."
+            MsgWifiDone         = "Drahtlos mit Telefon verbunden:`n{0}:5555`n`nSie können das USB-Kabel jetzt trennen!"
+            MsgPkgEmpty         = "Bitte geben Sie einen gültigen Android-Paketnamen ein."
+            ResNames            = @(
+                "Full HD 1080p (Nativ 1:1)",
+                "2K QHD (2560x1440)",
+                "2K QHD Kompakt (DPI 140)",
+                "4K UHD (3840x2160)",
+                "Telefon-Standard"
+            )
+        }
+        ES = @{
+            StatusConnectedUsb  = "conectado por USB"
+            StatusConnectedWifi = "conectado por Wi‑Fi"
+            StatusNoPhone       = "Sin conexión con el teléfono"
+            StatusCheckConn     = "Conecte el cable USB o compruebe la red Wi‑Fi"
+            BatteryLabel        = "Batería:"
+            ChargingStr         = " (cargando)"
+            StatusActive        = "Modo activo"
+            ThemeDark           = "☀ Claro"
+            ThemeLight          = "☾ Oscuro"
+            LangSwitch          = "PL"
+            LangTooltip         = "Idioma: Español (clic para cambiar a PL / EN / DE)"
+
+            LaunchHero          = "▶  Iniciar scrcpy"
+            FullScreenOpt       = "Iniciar en pantalla completa (-f)"
+
+            SectionOptions      = "PANTALLA, AUDIO Y CONTROL"
+            ResLabel            = "Resolución de pantalla virtual (RDP):"
+            AudioPass           = "Transmitir audio al PC"
+            AutoTaskbar         = "Iniciar Taskbar"
+            WifiBtn             = "Conectar por Wi‑Fi"
+            KeyBtn              = "Teclado físico"
+            ClipBtn             = "Reparar portapapeles"
+
+            SectionApps         = "APLICACIONES EN VENTANAS"
+            AppsSubtitle        = "Abrir en ventana o pulse [Editar] para personalizar"
+            AppsEdit            = "Editar"
+            AppsEditTooltip     = "Personalizar lista: añadir apps del teléfono, reordenar o cargar populares"
+            AppsAddPrompt       = "+ Añadir aplicaciones del teléfono (clic aquí o [Editar])"
+            CustomLabel         = "Otro paquete de Android (ej. com.spotify.music):"
+            CustomPlaceholder   = "Buscar paquete (ej. spotify, maps)..."
+            CustomBtn           = "Iniciar"
+            CustomAddBtn        = "+ Añadir"
+            CustomAddTooltip    = "Añadir paquete escrito/seleccionado como botón fijo a la lista"
+            AppsRemoveTooltip   = "Eliminar botón '{0}' de la lista"
+            AppsRenameTooltip   = "Cambiar nombre del botón '{0}'"
+            MsgConfirmRemoveApp = "¿Seguro que desea eliminar '{0}' de la lista de aplicaciones?"
+            AddAppDialogTitle   = "Añadir botón de aplicación"
+            AddAppDialogLabel   = "Introduzca el nombre para el nuevo botón:"
+            AddAppDialogAdd     = "+ Añadir botón"
+            RenameAppDialogTitle = "Cambiar nombre del botón"
+            RenameAppDialogLabel = "Introduzca un nuevo nombre para el botón:"
+            RenameAppDialogSave = "Guardar"
+            AppsRenameItem      = "✎ Cambiar nombre..."
+            AppsDeleteItem      = "✕ Eliminar botón"
+            Layout1Tooltip      = "Diseño: Lista (1 columna)"
+            Layout2Tooltip      = "Diseño: Dos columnas (estándar)"
+            Layout3Tooltip      = "Diseño: Tres columnas (compacto)"
+            MsgAppAlreadyExists = "¡El paquete '{0}' ya existe en la lista con el nombre '{1}'!"
+
+            AppsEditorTitle               = "Editar aplicaciones en ventanas"
+            AppsEditorIntro               = "El diseño de botones se guarda por separado para cada usuario de Windows."
+            AppsEditorPhoneList           = "Seleccionar aplicación obtenida del teléfono"
+            AppsEditorSearchPlaceholder   = "Buscar paquete (ej. spotify, vivaldi, messenger)..."
+            AppsEditorNoMatches           = "No hay paquetes coincidentes"
+            AppsEditorRefresh             = "Actualizar"
+            AppsEditorName                = "Nombre"
+            AppsEditorPackage             = "Paquete Android"
+            AppsEditorUhid                = "Teclado"
+            AppsEditorClicks              = "Todos los clics"
+            AppsEditorAdd                 = "+ Añadir"
+            AppsEditorRemove              = "Eliminar"
+            AppsEditorUp                  = "Subir"
+            AppsEditorDown                = "Bajar"
+            AppsEditorPopular             = "★ Aplicaciones populares"
+            AppsEditorSave                = "Guardar"
+            AppsEditorCancel              = "Cancelar"
+            MsgAppsInvalid                = "Cada entrada necesita un nombre y un paquete válido de Android (ej. com.spotify.music)."
+            MsgAppsEmpty                  = "La lista debe contener al menos una aplicación."
+            MsgAppsSaveError              = "No se pudo guardar el diseño del usuario:`n{0}"
+            MsgAppsPhoneError             = "No se pudieron obtener las aplicaciones del teléfono. Compruebe la conexión ADB."
+            MsgLoadPopular                = "¿Desea añadir una selección de 10 aplicaciones populares (YouTube, Spotify, Chrome, WhatsApp, etc.)?"
+            MsgEmptyAppsPrompt            = "La lista de aplicaciones está vacía. ¿Desea cargar 10 aplicaciones populares (YouTube, Spotify, Chrome, etc.)?"
+
+            SectionDevice       = "OPERACIONES DEL DISPOSITIVO"
+            DesktopMode         = "Activar modo escritorio"
+            RestoreDefault      = "Restaurar vista estándar"
+            RebootBtn           = "⚠  Reiniciar teléfono"
+
+            TitleRestartConfirm = "Confirmar reinicio"
+            MsgRestartConfirm   = "¿Está seguro de que desea reiniciar el teléfono?"
+            MsgRestartSent      = "Se ha enviado el comando de reinicio al teléfono."
+            MsgNoDevice         = "No se ha detectado ningún teléfono Android.`nCompruebe el cable USB, depuración USB o conexión Wi‑Fi."
+            MsgDesktopOn        = "DPI bajo (250) aplicado, animaciones aceleradas y modo ventana activado en el teléfono."
+            MsgResetDone        = "DPI original restaurado, animaciones restablecidas y Taskbar cerrado."
+            MsgClipDone         = "Optimizaciones de portapapeles aplicadas.`nComando de reparación para PC remoto copiado al portapapeles:`n{0}`n`nAtajos de teclado en ventana:`n• Alt + V : Pegar portapapeles de PC a la sesión`n• Alt + C : Copiar portapapeles de sesión al PC"
+            MsgKeyDone          = "Ajustes de teclado físico abiertos en el teléfono.`nAsegúrese de que la distribución del teclado 'scrcpy' esté configurada correctamente."
+            MsgWifiNoIp         = "No se pudo detectar automáticamente la IP del teléfono en Wi‑Fi.`nAsegúrese de que el teléfono esté en la misma red Wi‑Fi que este PC."
+            MsgWifiDone         = "Conectado de forma inalámbrica al teléfono:`n{0}:5555`n`n¡Ya puede desconectar el cable USB!"
+            MsgPkgEmpty         = "Por favor, introduzca un nombre de paquete Android válido."
+            ResNames            = @(
+                "Full HD 1080p (Nativa 1:1)",
+                "2K QHD (2560x1440)",
+                "2K QHD Compacta (DPI 140)",
+                "4K UHD (3840x2160)",
+                "Predeterminada del teléfono"
             )
         }
     }
@@ -1350,7 +1548,28 @@ public static class WinFormsCueBanner {
     $btnLang.Font = $fontSmall
     $btnLang.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnLang.FlatAppearance.BorderSize = 1
+    $btnLang.Cursor = [System.Windows.Forms.Cursors]::Hand
     $pnlStatus.Controls.Add($btnLang)
+
+    $ctxLang = New-Object System.Windows.Forms.ContextMenuStrip
+    $ctxLang.ShowImageMargin = $false
+
+    $langOptions = @(
+        @{ Code = "PL"; Name = "🇵🇱  Polski (PL)" },
+        @{ Code = "EN"; Name = "🇬🇧  English (EN)" },
+        @{ Code = "DE"; Name = "🇩🇪  Deutsch (DE)" },
+        @{ Code = "ES"; Name = "🇪🇸  Español (ES)" }
+    )
+
+    foreach ($opt in $langOptions) {
+        $item = $ctxLang.Items.Add($opt.Name)
+        $targetCode = $opt.Code
+        $item.Add_Click({
+            Set-AppLanguage -langCode $targetCode
+        }.GetNewClosure())
+    }
+    $btnLang.ContextMenuStrip = $ctxLang
+    $tipLang = New-Object System.Windows.Forms.ToolTip
 
     # 2. GŁÓWNA AKCJA: URUCHOM SCRCPY
     $btnScrcpy = New-Object System.Windows.Forms.Button
@@ -2484,6 +2703,15 @@ public static class WinFormsCueBanner {
         $btnLang.ForeColor = $c.ToggleText
         $btnLang.FlatAppearance.BorderColor = $c.CardBorder
 
+        if ($ctxLang) {
+            $ctxLang.BackColor = $c.Card
+            $ctxLang.ForeColor = $c.Text
+            foreach ($it in $ctxLang.Items) {
+                $it.BackColor = $c.Card
+                $it.ForeColor = $c.Text
+            }
+        }
+
         $btnScrcpy.BackColor = $c.BtnHero
         $btnScrcpy.ForeColor = $c.BtnHeroText
 
@@ -2583,7 +2811,8 @@ public static class WinFormsCueBanner {
         $t = $i18n[$script:currentLang]
 
         $btnTheme.Text = if ($script:isDarkMode) { $t.ThemeDark } else { $t.ThemeLight }
-        $btnLang.Text = $t.LangSwitch
+        $btnLang.Text = $script:currentLang
+        if ($tipLang) { $tipLang.SetToolTip($btnLang, $t.LangTooltip) }
         $btnScrcpy.Text = $t.LaunchHero
         $chkFullScreen.Text = $t.FullScreenOpt
 
@@ -2650,6 +2879,16 @@ public static class WinFormsCueBanner {
         }
     }
 
+    function Set-AppLanguage([string]$langCode) {
+        if ($i18n.ContainsKey($langCode)) {
+            $script:currentLang = $langCode
+            Save-Preferences
+            Apply-Language
+            Apply-Theme
+            Update-AppButtonGrid
+        }
+    }
+
     # Obsługa przełączania motywu
     $btnTheme.Add_Click({
         $script:isDarkMode = -not $script:isDarkMode
@@ -2658,13 +2897,13 @@ public static class WinFormsCueBanner {
         Apply-Language
     })
 
-    # Obsługa przełączania języka
+    # Obsługa przełączania języka (kliknięcie cyklicznie przełącza: PL -> EN -> DE -> ES -> PL)
     $btnLang.Add_Click({
-        $script:currentLang = if ($script:currentLang -eq "PL") { "EN" } else { "PL" }
-        Save-Preferences
-        Apply-Language
-        Apply-Theme
-        Update-AppButtonGrid
+        $availableLangs = @("PL", "EN", "DE", "ES")
+        $currIdx = $availableLangs.IndexOf($script:currentLang)
+        if ($currIdx -lt 0) { $currIdx = 0 }
+        $nextIdx = ($currIdx + 1) % $availableLangs.Count
+        Set-AppLanguage -langCode $availableLangs[$nextIdx]
     })
 
     # Timer czuwania oraz odświeżania paska stanu

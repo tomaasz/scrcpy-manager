@@ -12,7 +12,7 @@ local.env
 preferences.json
 
 # Build and release artifacts
-ScrcpyManager-Portable.exe
+*.exe
 temp_portable_stage/
 bundle.zip
 
