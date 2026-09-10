@@ -1866,6 +1866,8 @@ public static class WinFormsCueBanner {
                     $delW = 26
                     $btnAlign = [System.Drawing.ContentAlignment]::MiddleLeft
                     $btnPad = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
+                    $targetIconSize = 18
+                    $btnIconPadding = New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
                 }
                 elseif ($layout -eq 3) {
                     $tileW = 118
@@ -1877,6 +1879,8 @@ public static class WinFormsCueBanner {
                     $delW = 23
                     $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
                     $btnPad = New-Object System.Windows.Forms.Padding(0)
+                    $targetIconSize = 16
+                    $btnIconPadding = New-Object System.Windows.Forms.Padding(2, 0, 0, 0)
                 }
                 else {
                     $tileW = 178
@@ -1888,6 +1892,8 @@ public static class WinFormsCueBanner {
                     $delW = 25
                     $btnAlign = [System.Drawing.ContentAlignment]::MiddleCenter
                     $btnPad = New-Object System.Windows.Forms.Padding(0)
+                    $targetIconSize = 18
+                    $btnIconPadding = New-Object System.Windows.Forms.Padding(4, 0, 0, 0)
                 }
 
                 foreach ($app in $appButtons) {
@@ -1912,19 +1918,13 @@ public static class WinFormsCueBanner {
                     $btn.ForeColor = $c.BtnAppText
                     $btn.Cursor = [System.Windows.Forms.Cursors]::Hand
 
-                    $iconImg = Get-ResizedAppIcon -Package $selectedApp.Package -Size (if ($layout -eq 3) { 16 } else { 18 })
+                    $iconImg = Get-ResizedAppIcon -Package $selectedApp.Package -Size $targetIconSize
                     if ($iconImg) {
                         $btn.Image = $iconImg
                         $btn.ImageAlign = [System.Drawing.ContentAlignment]::MiddleLeft
                         $btn.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
                         $btn.TextImageRelation = [System.Windows.Forms.TextImageRelation]::ImageBeforeText
-                        $btn.Padding = if ($layout -eq 1) {
-                            New-Object System.Windows.Forms.Padding(8, 0, 0, 0)
-                        } elseif ($layout -eq 3) {
-                            New-Object System.Windows.Forms.Padding(2, 0, 0, 0)
-                        } else {
-                            New-Object System.Windows.Forms.Padding(4, 0, 0, 0)
-                        }
+                        $btn.Padding = $btnIconPadding
                     }
 
                     $btnTip = New-Object System.Windows.Forms.ToolTip
