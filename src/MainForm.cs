@@ -207,6 +207,10 @@ namespace ScrcpyManager
             {
                 _currentLang = _pref.lang.ToUpperInvariant();
             }
+            else
+            {
+                _currentLang = "PL";
+            }
             if (_pref.layout >= 1 && _pref.layout <= 3)
             {
                 _appsLayout = _pref.layout;
@@ -1086,12 +1090,12 @@ namespace ScrcpyManager
             UpdateStatusDisplay();
         }
 
-        public void SetAppLanguage(string langCode)
+        public void SetAppLanguage(string langCode, bool savePreferences = true)
         {
             if (Localization.SupportedLanguages.ContainsKey(langCode))
             {
                 _currentLang = langCode;
-                SavePreferences();
+                if (savePreferences) SavePreferences();
                 ApplyLanguage();
                 ApplyTheme();
                 UpdateAppButtonGrid();
@@ -1364,7 +1368,7 @@ namespace ScrcpyManager
             if (!string.IsNullOrEmpty(_captureScreenshotLang))
             {
                 await _adb.GetDeviceInfoAsync();
-                SetAppLanguage(_captureScreenshotLang);
+                SetAppLanguage(_captureScreenshotLang, false);
                 ApplyTheme();
 
                 // Dostosowanie nazw aplikacji dla języków obcych (jak w testach README)

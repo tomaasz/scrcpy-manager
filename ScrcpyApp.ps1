@@ -3275,10 +3275,10 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         }
     }
 
-    function Set-AppLanguage([string]$langCode) {
+    function Set-AppLanguage([string]$langCode, [bool]$savePreferences = $true) {
         if ($i18n.ContainsKey($langCode)) {
             $script:currentLang = $langCode
-            Save-Preferences
+            if ($savePreferences) { Save-Preferences }
             Apply-Language
             Apply-Theme
             Update-AppButtonGrid
@@ -3329,7 +3329,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         try {
             if ($CaptureScreenshotLang) {
                 Update-DeviceInfo
-                Set-AppLanguage -langCode $CaptureScreenshotLang
+                Set-AppLanguage -langCode $CaptureScreenshotLang -savePreferences $false
                 Apply-Theme
                 if ($CaptureScreenshotLang -eq "EN") {
                     foreach ($btn in $createdAppButtons) {
