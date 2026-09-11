@@ -183,7 +183,13 @@ namespace ScrcpyManager
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
             Font = _fontRegular;
-            _tipMain = new ToolTip();
+            _tipMain = new ToolTip
+            {
+                AutoPopDelay = 12000,
+                InitialDelay = 350,
+                ReshowDelay = 150,
+                ShowAlways = true
+            };
         }
 
         private void LoadPreferences()
@@ -1017,6 +1023,7 @@ namespace ScrcpyManager
             _btnUpdateBadge.Text = t.UpdateBadge;
 
             _btnScrcpy.Text = t.LaunchHero;
+            _tipMain.SetToolTip(_btnScrcpy, t.LaunchHeroTooltip);
             _chkFullScreen.Text = t.FullScreenOpt;
             if (_chkNavBar != null)
             {
@@ -1034,6 +1041,8 @@ namespace ScrcpyManager
 
             _lblSectionApps.Text = t.SectionApps;
             _lblAppsSubtitle.Text = t.AppsSubtitle;
+            _tipMain.SetToolTip(_lblSectionApps, t.AppsSectionTooltip);
+            _tipMain.SetToolTip(_lblAppsSubtitle, t.AppsSectionTooltip);
             _btnEditApps.Text = t.AppsEdit;
             _tipMain.SetToolTip(_btnEditApps, t.AppsEditTooltip);
             _tipMain.SetToolTip(_btnLayout1, t.Layout1Tooltip);
@@ -1042,12 +1051,14 @@ namespace ScrcpyManager
 
             _lblCustom.Text = t.CustomLabel;
             _btnCustom.Text = t.CustomBtn;
+            _tipMain.SetToolTip(_btnCustom, t.AppsStandaloneHint);
             _btnAddCustom.Text = t.CustomAddBtn;
             _tipMain.SetToolTip(_btnAddCustom, t.CustomAddTooltip);
             NativeMethods.SetCueBanner(_txtCustom.Handle, t.CustomPlaceholder);
 
             _lblSectionDevice.Text = t.SectionDevice;
             _btnDesktop.Text = t.DesktopMode;
+            _tipMain.SetToolTip(_btnDesktop, t.DesktopModeTooltip);
             _btnNormal.Text = t.RestoreDefault;
             _btnReboot.Text = t.RebootBtn;
             if (_btnNavBack != null)
@@ -1203,7 +1214,7 @@ namespace ScrcpyManager
                         AppLaunchProfile tileProfile = ValidateProfile(currentApp.profile, currentApp.flags);
                         string profileInfo = string.Format("{0} • {1} FPS • {2} • {3}",
                             tileProfile.displaySize, tileProfile.maxFps, tileProfile.videoBitRate, tileProfile.videoCodec.ToUpperInvariant());
-                        _tipMain.SetToolTip(btn, string.Format("{0}\n{1}\n{2}", currentApp.name, currentApp.package, profileInfo));
+                        _tipMain.SetToolTip(btn, string.Format("{0}\n{1}\n{2}\n\n{3}", currentApp.name, currentApp.package, profileInfo, t.AppsStandaloneHint));
                         btn.Click += (s, e) => LaunchAppTile(currentApp);
 
                         // Przycisk edycji (✎)

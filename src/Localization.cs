@@ -25,6 +25,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Język: Polski (kliknij, aby zmienić na EN / DE / ES)" },
 
                 { "LaunchHero", "▶  Uruchom scrcpy" },
+                { "LaunchHeroTooltip", "Uruchamia pełny pulpit Androida lub ekran telefonu.\n\n💡 Wskazówka: Aby otworzyć pojedynczą aplikację, kliknij bezpośrednio jej kafelek poniżej – nie musisz najpierw wciskać tego przycisku!" },
                 { "FullScreenOpt", "Pełny ekran (-f)" },
 
                 { "SectionOptions", "OBRAZ, DŹWIĘK I STEROWANIE" },
@@ -43,6 +44,8 @@ namespace ScrcpyManager
 
                 { "SectionApps", "APLIKACJE W OKNACH" },
                 { "AppsSubtitle", "Uruchom w oknie lub kliknij [Edytuj], by dostosować listę" },
+                { "AppsSectionTooltip", "Każda aplikacja uruchamia się bezpośrednio we własnym, niezależnym oknie scrcpy.\n\n💡 Nie musisz wcześniej klikać 'Uruchom scrcpy' ani 'Włącz tryb pulpitu'!" },
+                { "AppsStandaloneHint", "💡 Bezpośredni start: nie wymaga \"Uruchom scrcpy\" ani trybu pulpitu." },
                 { "AppsEdit", "Edytuj" },
                 { "AppsEditTooltip", "Dostosuj listę: dodawaj aplikacje z telefonu, zmieniaj kolejność i wczytuj popularne szablony" },
                 { "AppsAddPrompt", "+ Dodaj aplikacje z telefonu (kliknij tutaj lub [Edytuj])" },
@@ -95,6 +98,7 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "OPERACJE NA URZĄDZENIU" },
                 { "DesktopMode", "Włącz tryb pulpitu" },
+                { "DesktopModeTooltip", "Wymusza systemowy tryb pulpitu na telefonie (eksperymentalne ustawienie deweloperskie Androida).\n\n💡 Wskazówka: Kafelki aplikacji powyżej tworzą własne pływające okna automatycznie – nie wymagają włączania trybu pulpitu!" },
                 { "RestoreDefault", "Przywróć standardowy widok" },
                 { "RebootBtn", "⚠  Uruchom telefon ponownie" },
 
@@ -147,6 +151,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Language: English (click to switch to DE / ES / PL)" },
 
                 { "LaunchHero", "▶  Launch scrcpy" },
+                { "LaunchHeroTooltip", "Launches the full Android desktop or phone screen.\n\n💡 Tip: To launch a single app, click its tile below directly – you don't need to click this button first!" },
                 { "FullScreenOpt", "Fullscreen (-f)" },
 
                 { "SectionOptions", "DISPLAY, AUDIO & CONTROL" },
@@ -165,6 +170,8 @@ namespace ScrcpyManager
 
                 { "SectionApps", "WINDOWED APPLICATIONS" },
                 { "AppsSubtitle", "Run in window or click [Edit] to customize your list" },
+                { "AppsSectionTooltip", "Each application launches directly in its own independent scrcpy window.\n\n💡 You do not need to click 'Launch scrcpy' or 'Enable desktop mode' first!" },
+                { "AppsStandaloneHint", "💡 Direct launch: does not require 'Launch scrcpy' or desktop mode." },
                 { "AppsEdit", "Edit" },
                 { "AppsEditTooltip", "Customize list: add apps from phone, reorder, or load popular presets" },
                 { "AppsAddPrompt", "+ Add apps from phone (click here or [Edit])" },
@@ -217,6 +224,7 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "DEVICE OPERATIONS" },
                 { "DesktopMode", "Enable desktop mode" },
+                { "DesktopModeTooltip", "Forces system desktop mode on the phone (Android developer setting).\n\n💡 Tip: App tiles above create standalone floating windows automatically – they do not require desktop mode!" },
                 { "RestoreDefault", "Restore default view" },
                 { "RebootBtn", "⚠  Restart phone" },
 
@@ -269,6 +277,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Sprache: Deutsch (Klicken für Wechsel zu ES / PL / EN)" },
 
                 { "LaunchHero", "▶  scrcpy starten" },
+                { "LaunchHeroTooltip", "Startet den vollständigen Android-Desktop oder den Telefonbildschirm.\n\n💡 Tipp: Um eine einzelne App zu starten, klicke direkt auf ihre Kachel unten – dieser Button ist dafür nicht nötig!" },
                 { "FullScreenOpt", "Vollbild (-f)" },
 
                 { "SectionOptions", "ANZEIGE, AUDIO & STEUERUNG" },
@@ -287,6 +296,8 @@ namespace ScrcpyManager
 
                 { "SectionApps", "ANWENDUNGEN IN FENSTERN" },
                 { "AppsSubtitle", "Im Fenster starten oder [Bearbeiten] zum Anpassen" },
+                { "AppsSectionTooltip", "Jede App startet direkt in einem eigenen, unabhängigen scrcpy-Fenster.\n\n💡 Sie müssen vorher nicht auf 'scrcpy starten' oder 'Desktop-Modus' klicken!" },
+                { "AppsStandaloneHint", "💡 Direktstart: erfordert weder 'scrcpy starten' noch den Desktop-Modus." },
                 { "AppsEdit", "Bearbeiten" },
                 { "AppsEditTooltip", "Liste anpassen: Apps vom Telefon hinzufügen, sortieren oder Vorlagen laden" },
                 { "AppsAddPrompt", "+ Apps vom Telefon hinzufügen (hier oder [Bearbeiten] klicken)" },
@@ -339,6 +350,7 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "GERÄTEOPERATIONEN" },
                 { "DesktopMode", "Desktop-Modus aktivieren" },
+                { "DesktopModeTooltip", "Erzwingt den systemweiten Desktop-Modus auf dem Telefon (Entwickleroption).\n\n💡 Tipp: Die App-Kacheln oben erstellen automatisch eigene Fenster – Desktop-Modus ist nicht erforderlich!" },
                 { "RestoreDefault", "Standardansicht wiederherstellen" },
                 { "RebootBtn", "⚠  Telefon neu starten" },
 
@@ -391,6 +403,7 @@ namespace ScrcpyManager
                 { "LangTooltip", "Idioma: Español (clic para cambiar a PL / EN / DE)" },
 
                 { "LaunchHero", "▶  Iniciar scrcpy" },
+                { "LaunchHeroTooltip", "Inicia el escritorio completo de Android o la pantalla del teléfono.\n\n💡 Consejo: Para abrir una sola app, haz clic directamente en su mosaico abajo – ¡no necesitas pulsar este botón primero!" },
                 { "FullScreenOpt", "Pantalla completa (-f)" },
 
                 { "SectionOptions", "PANTALLA, AUDIO Y CONTROL" },
@@ -409,6 +422,8 @@ namespace ScrcpyManager
 
                 { "SectionApps", "APLICACIONES EN VENTANAS" },
                 { "AppsSubtitle", "Abrir en ventana o pulse [Editar] para personalizar" },
+                { "AppsSectionTooltip", "Cada aplicación se abre directamente en su propia ventana independiente.\n\n💡 ¡No necesitas pulsar 'Iniciar scrcpy' ni 'Modo escritorio' previamente!" },
+                { "AppsStandaloneHint", "💡 Inicio directo: no requiere 'Iniciar scrcpy' ni modo escritorio." },
                 { "AppsEdit", "Editar" },
                 { "AppsEditTooltip", "Personalizar lista: añadir apps del teléfono, reordenar o cargar populares" },
                 { "AppsAddPrompt", "+ Añadir aplicaciones del teléfono (clic aquí o [Editar])" },
@@ -461,6 +476,7 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "OPERACIONES DEL DISPOSITIVO" },
                 { "DesktopMode", "Activar modo escritorio" },
+                { "DesktopModeTooltip", "Fuerza el modo de escritorio del sistema en el teléfono (ajuste para desarrolladores).\n\n💡 Consejo: Los mosaicos de apps arriba abren ventanas flotantes automáticamente – ¡no requieren activar el modo escritorio!" },
                 { "RestoreDefault", "Restaurar vista estándar" },
                 { "RebootBtn", "⚠  Reiniciar teléfono" },
 
@@ -576,6 +592,7 @@ namespace ScrcpyManager
 
             // Hero & Options
             public string LaunchHero           { get { return Get("LaunchHero"); } }
+            public string LaunchHeroTooltip    { get { return Get("LaunchHeroTooltip"); } }
             public string FullScreenOpt        { get { return Get("FullScreenOpt"); } }
             public string SectionOptions       { get { return Get("SectionOptions"); } }
             public string ResLabel             { get { return Get("ResLabel"); } }
@@ -594,6 +611,8 @@ namespace ScrcpyManager
             // Apps Section
             public string SectionApps          { get { return Get("SectionApps"); } }
             public string AppsSubtitle         { get { return Get("AppsSubtitle"); } }
+            public string AppsSectionTooltip   { get { return Get("AppsSectionTooltip"); } }
+            public string AppsStandaloneHint   { get { return Get("AppsStandaloneHint"); } }
             public string AppsEdit             { get { return Get("AppsEdit"); } }
             public string AppsEditTooltip      { get { return Get("AppsEditTooltip"); } }
             public string AppsAddPrompt        { get { return Get("AppsAddPrompt"); } }
@@ -639,6 +658,7 @@ namespace ScrcpyManager
             // Device Operations
             public string SectionDevice        { get { return Get("SectionDevice"); } }
             public string DesktopMode          { get { return Get("DesktopMode"); } }
+            public string DesktopModeTooltip   { get { return Get("DesktopModeTooltip"); } }
             public string RestoreDefault       { get { return Get("RestoreDefault"); } }
             public string RebootBtn            { get { return Get("RebootBtn"); } }
             public string RebootTitle          { get { return Get("RebootTitle"); } }
