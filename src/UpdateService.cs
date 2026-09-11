@@ -29,7 +29,7 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.4";
+        public const string CurrentVersion = "0.4.1";
         public GitHubRelease LatestRelease { get; private set; }
 
         public async Task<bool> CheckForUpdateAsync()

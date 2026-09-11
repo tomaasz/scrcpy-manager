@@ -96,7 +96,7 @@ namespace ScrcpyManager
             }
         }
 
-        public Bitmap GetResizedIcon(string package, int size = 18, int gap = 5)
+        public Bitmap GetResizedIcon(string package, int size = 18, int gap = 0)
         {
             if (_disposed || !AdbService.IsValidPackageName(package))
             {

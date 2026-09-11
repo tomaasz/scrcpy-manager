@@ -1147,9 +1147,7 @@ namespace ScrcpyManager
                 {
                     int tileW = 180, btnW = 126, renX = 129, renW = 24, delX = 156, delW = 24;
                     Padding tileMargin = new Padding(3);
-                    Padding btnPad = new Padding(6, 0, 0, 0);
-                    Padding btnIconPad = new Padding(6, 0, 0, 0);
-                    int targetIconSize = 20, targetIconGap = 6;
+                    int targetIconSize = 20, targetIconGap = 6, targetPaddingLeft = 7;
 
                     if (_appsLayout == 1)
                     {
@@ -1158,9 +1156,7 @@ namespace ScrcpyManager
                         btnW = 296;
                         renX = 300; renW = 28;
                         delX = 332; delW = 28;
-                        btnPad = new Padding(8, 0, 0, 0);
-                        btnIconPad = new Padding(8, 0, 0, 0);
-                        targetIconSize = 20; targetIconGap = 8;
+                        targetIconSize = 20; targetIconGap = 8; targetPaddingLeft = 8;
                     }
                     else if (_appsLayout == 3)
                     {
@@ -1169,9 +1165,7 @@ namespace ScrcpyManager
                         btnW = 68;
                         renX = 71; renW = 22;
                         delX = 96; delW = 22;
-                        btnPad = new Padding(3, 0, 0, 0);
-                        btnIconPad = new Padding(3, 0, 0, 0);
-                        targetIconSize = 18; targetIconGap = 4;
+                        targetIconSize = 18; targetIconGap = 4; targetPaddingLeft = 4;
                     }
 
                     foreach (AppEntry app in _appButtons)
@@ -1185,32 +1179,22 @@ namespace ScrcpyManager
                             BackColor = Color.Transparent
                         };
 
-                        Button btn = new Button
+                        AppTileButton btn = new AppTileButton
                         {
                             Text = currentApp.name,
                             Location = new Point(0, 0),
                             Size = new Size(btnW, 34),
                             Font = _fontSmall,
-                            TextAlign = ContentAlignment.MiddleLeft,
-                            Padding = btnPad,
+                            PaddingLeft = targetPaddingLeft,
+                            IconSize = targetIconSize,
+                            IconGap = targetIconGap,
+                            BorderRadius = 5,
+                            BorderColorProvider = () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder,
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.BtnAppText,
-                            AutoEllipsis = true,
-                            UseCompatibleTextRendering = false,
-                            Cursor = Cursors.Hand
+                            AppIcon = _icons.GetResizedIcon(currentApp.package, targetIconSize, 0)
                         };
-                        UiThemeHelper.SetupModernButton(btn, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
                         btn.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
-
-                        Bitmap iconImg = _icons.GetResizedIcon(currentApp.package, targetIconSize, targetIconGap);
-                        if (iconImg != null)
-                        {
-                            btn.Image = iconImg;
-                            btn.ImageAlign = ContentAlignment.MiddleLeft;
-                            btn.TextAlign = ContentAlignment.MiddleLeft;
-                            btn.TextImageRelation = TextImageRelation.ImageBeforeText;
-                            btn.Padding = btnIconPad;
-                        }
 
                         AppLaunchProfile tileProfile = ValidateProfile(currentApp.profile, currentApp.flags);
                         string profileInfo = string.Format("{0} • {1} FPS • {2} • {3}",
