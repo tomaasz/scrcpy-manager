@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
@@ -10,6 +9,15 @@ namespace ScrcpyManager
 {
     public class AppsEditorForm : Form
     {
+        // Trzymana w DataGridViewRow.Tag, wiąże wiersz z oryginalnym wpisem (a nie z aktualnie
+        // wpisaną nazwą pakietu), aby profil uruchamiania nie "przeskakiwał" między aplikacjami,
+        // gdy użytkownik edytuje pole pakietu na wartość zbieżną z inną istniejącą aplikacją.
+        private sealed class RowExtra
+        {
+            public List<string> Flags = new List<string>();
+            public AppLaunchProfile OriginalProfile;
+        }
+
         private readonly List<AppEntry> _apps;
         private readonly AdbService _adb;
         private readonly ThemeColors _c;
@@ -375,7 +383,7 @@ namespace ScrcpyManager
                         }
                     }
                 }
-                _grid.Rows[ri].Tag = extraFlags;
+                _grid.Rows[ri].Tag = new RowExtra { Flags = extraFlags, OriginalProfile = app.profile };
             }
         }
 
@@ -471,7 +479,7 @@ namespace ScrcpyManager
             else if (!string.IsNullOrWhiteSpace(_txtSearch.Text))
             {
                 string cand = _txtSearch.Text.Trim();
-                if (Regex.IsMatch(cand, @"^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)+$"))
+                if (AdbService.IsValidPackageName(cand))
                 {
                     package = cand;
                 }
@@ -482,7 +490,7 @@ namespace ScrcpyManager
             string[] parts = package.Split('.');
             string defaultName = parts[parts.Length - 1];
             int ri = _grid.Rows.Add(defaultName, package, false, false);
-            _grid.Rows[ri].Tag = new List<string>();
+            _grid.Rows[ri].Tag = new RowExtra();
             _grid.CurrentCell = _grid.Rows[ri].Cells[0];
             _grid.BeginEdit(true);
         }
@@ -537,7 +545,7 @@ namespace ScrcpyManager
                     bool uhid = app.flags != null && app.flags.Contains("-UseUhidKeyboard");
                     bool clicks = app.flags != null && app.flags.Contains("-ForwardAllClicks");
                     int ri = _grid.Rows.Add(app.name, app.package, uhid, clicks);
-                    _grid.Rows[ri].Tag = new List<string>();
+                    _grid.Rows[ri].Tag = new RowExtra { OriginalProfile = app.profile };
                 }
             }
 
@@ -561,7 +569,7 @@ namespace ScrcpyManager
             {
                 string name = Convert.ToString(row.Cells["AppName"].Value).Trim();
                 string package = Convert.ToString(row.Cells["Package"].Value).Trim();
-                if (string.IsNullOrWhiteSpace(name) || !Regex.IsMatch(package, @"^[A-Za-z0-9_]+(\.[A-Za-z0-9_]+)+$"))
+                if (string.IsNullOrWhiteSpace(name) || !AdbService.IsValidPackageName(package))
                 {
                     _grid.CurrentCell = row.Cells[0];
                     MessageBox.Show(this, _t.MsgAppsInvalid, _t.AppsEditorTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -569,22 +577,27 @@ namespace ScrcpyManager
                 }
 
                 List<string> flags = new List<string>();
-                List<string> extra = row.Tag as List<string>;
-                if (extra != null) flags.AddRange(extra);
+                RowExtra rowExtra = row.Tag as RowExtra;
+                if (rowExtra != null && rowExtra.Flags != null) flags.AddRange(rowExtra.Flags);
 
-                if (Convert.ToBoolean(row.Cells["UseUhid"].Value)) flags.Add("-UseUhidKeyboard");
-                if (Convert.ToBoolean(row.Cells["ForwardClicks"].Value)) flags.Add("-ForwardAllClicks");
+                bool useUhid = Convert.ToBoolean(row.Cells["UseUhid"].Value);
+                bool forwardClicks = Convert.ToBoolean(row.Cells["ForwardClicks"].Value);
+                if (useUhid) flags.Add("-UseUhidKeyboard");
+                if (forwardClicks) flags.Add("-ForwardAllClicks");
 
-                updated.Add(new AppEntry(name, package, flags.ToArray()));
+                AppEntry entry = new AppEntry(name, package, flags.ToArray());
+                AppLaunchProfile previousProfile = rowExtra != null ? rowExtra.OriginalProfile : null;
+                entry.profile = previousProfile != null ? previousProfile.Clone() : new AppLaunchProfile();
+                // Pola powiązane z checkboxami edytora są jednoznacznie wyznaczane przez ich
+                // aktualny stan (włącz/wyłącz), a nie tylko przez obecność starej flagi -UseUhidKeyboard.
+                entry.profile.keyboardMode = useUhid ? "uhid" : (entry.profile.keyboardMode == "uhid" ? "sdk" : entry.profile.keyboardMode);
+                entry.profile.forwardAllClicks = forwardClicks;
+                updated.Add(entry);
             }
 
             try
             {
-                JavaScriptSerializer serializer = new JavaScriptSerializer();
-                string json = serializer.Serialize(updated);
-                string dir = Path.GetDirectoryName(_appsConfigPath);
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                File.WriteAllText(_appsConfigPath, json, System.Text.Encoding.UTF8);
+                ConfigStore.SaveAtomic(_appsConfigPath, updated);
 
                 _apps.Clear();
                 _apps.AddRange(updated);
@@ -599,4 +612,3 @@ namespace ScrcpyManager
         }
     }
 }
-

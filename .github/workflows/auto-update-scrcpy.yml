@@ -98,6 +98,8 @@ jobs:
           if (-not (Test-Path "ScrcpyManager-Portable.exe")) {
             throw "Build failed: ScrcpyManager-Portable.exe was not created!"
           }
+          $hash = (Get-FileHash "ScrcpyManager-Portable.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  ScrcpyManager-Portable.exe" | Out-File -FilePath "ScrcpyManager-Portable.exe.sha256" -Encoding ascii -NoNewline
           Write-Host "Build successful! Size: $((Get-Item ScrcpyManager-Portable.exe).Length / 1MB) MB"
 
       - name: Calculate new version and publish release
@@ -122,6 +124,8 @@ jobs:
           $notes = @(
             "## 🚀 scrcpy Manager $newTag (Portable Edition)",
             "",
+            "## English",
+            "",
             "Automated release bundling the latest **scrcpy $upstreamTag** and ADB.",
             "",
             "### 📦 Highlights",
@@ -133,11 +137,27 @@ jobs:
             "* Zero setup: standalone executable, runs anywhere without installation.",
             "",
             "### 📥 Download",
-            "Download **ScrcpyManager-Portable.exe** below to get started!"
+            "Download **ScrcpyManager-Portable.exe** below to get started!",
+            "",
+            "---",
+            "",
+            "## Polski",
+            "",
+            "Automatyczne wydanie zawierające najnowsze **scrcpy $upstreamTag** oraz ADB.",
+            "",
+            "### 📦 Najważniejsze funkcje",
+            "* Zaktualizowany wbudowany silnik do **scrcpy $upstreamTag**.",
+            "* Aplikacje Androida w niezależnych, pływających oknach.",
+            "* Wyszukiwanie pakietów w czasie rzeczywistym z oficjalnymi ikonami aplikacji.",
+            "* Bezprzewodowe ADB (Wi-Fi) uruchamiane jednym kliknięciem.",
+            "* Wielojęzyczny interfejs (PL / EN / DE / ES).",
+            "* Bez instalacji: samodzielny plik wykonywalny działający z dowolnego katalogu.",
+            "",
+            "### 📥 Pobieranie",
+            "Pobierz poniżej plik **ScrcpyManager-Portable.exe**, aby rozpocząć."
           ) -join "`n"
 
           $notes | Out-File -FilePath "release_notes.md" -Encoding UTF8
-          gh release create $newTag ScrcpyManager-Portable.exe --title "scrcpy Manager $newTag - Portable Edition (scrcpy $upstreamTag)" --notes-file "release_notes.md"
+          gh release create $newTag ScrcpyManager-Portable.exe ScrcpyManager-Portable.exe.sha256 --title "scrcpy Manager $newTag - Portable Edition (scrcpy $upstreamTag)" --notes-file "release_notes.md"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

@@ -4,15 +4,27 @@ using System.Drawing;
 
 namespace ScrcpyManager
 {
+    public enum DeviceConnectionState
+    {
+        None,
+        Online,
+        Unauthorized,
+        Offline,
+        Recovery,
+        Multiple
+    }
+
     public class AppEntry
     {
         public string name { get; set; }
         public string package { get; set; }
         public List<string> flags { get; set; }
+        public AppLaunchProfile profile { get; set; }
 
         public AppEntry()
         {
             flags = new List<string>();
+            profile = new AppLaunchProfile();
         }
 
         public AppEntry(string name, string package, params string[] initialFlags)
@@ -20,6 +32,7 @@ namespace ScrcpyManager
             this.name = name;
             this.package = package;
             this.flags = initialFlags != null ? new List<string>(initialFlags) : new List<string>();
+            profile = new AppLaunchProfile();
         }
 
         public AppEntry(string name, string package, IEnumerable<string> initialFlags)
@@ -27,6 +40,44 @@ namespace ScrcpyManager
             this.name = name;
             this.package = package;
             this.flags = initialFlags != null ? new List<string>(initialFlags) : new List<string>();
+            profile = new AppLaunchProfile();
+        }
+    }
+
+    public class AppLaunchProfile
+    {
+        public string preset { get; set; }
+        public string displaySize { get; set; }
+        public int maxFps { get; set; }
+        public string videoBitRate { get; set; }
+        public string videoCodec { get; set; }
+        public string orientation { get; set; }
+        public string keyboardMode { get; set; }
+        public string mouseMode { get; set; }
+        public string audioMode { get; set; }
+        public bool alwaysOnTop { get; set; }
+        public bool borderless { get; set; }
+        public bool fullscreen { get; set; }
+        public bool turnScreenOff { get; set; }
+        public bool recordSession { get; set; }
+        public bool forwardAllClicks { get; set; }
+
+        public AppLaunchProfile()
+        {
+            preset = "default";
+            displaySize = "2560x1440/160";
+            maxFps = 60;
+            videoBitRate = "8M";
+            videoCodec = "h264";
+            orientation = "auto";
+            keyboardMode = "sdk";
+            mouseMode = "sdk";
+            audioMode = "global";
+        }
+
+        public AppLaunchProfile Clone()
+        {
+            return (AppLaunchProfile)MemberwiseClone();
         }
     }
 
@@ -36,6 +87,7 @@ namespace ScrcpyManager
         public string lang { get; set; }
         public int layout { get; set; }
         public bool navBar { get; set; }
+        public string initialDiscovery { get; set; }
 
         public UserPreferences()
         {
@@ -43,6 +95,7 @@ namespace ScrcpyManager
             lang = "PL";
             layout = 2;
             navBar = true;
+            initialDiscovery = "pending";
         }
     }
 
@@ -54,6 +107,9 @@ namespace ScrcpyManager
         public bool IsCharging { get; set; }
         public bool IsWifiConnected { get; set; }
         public bool IsOnline { get; set; }
+        public string Serial { get; set; }
+        public DeviceConnectionState ConnectionState { get; set; }
+        public string ConnectionError { get; set; }
 
         public DeviceInfo()
         {
@@ -63,6 +119,9 @@ namespace ScrcpyManager
             IsCharging = false;
             IsWifiConnected = false;
             IsOnline = false;
+            Serial = "";
+            ConnectionState = DeviceConnectionState.None;
+            ConnectionError = "";
         }
     }
 
@@ -165,4 +224,3 @@ namespace ScrcpyManager
         };
     }
 }
-

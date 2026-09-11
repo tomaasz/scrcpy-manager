@@ -51,13 +51,42 @@ if (Test-Path $bundleZip) { Remove-Item $bundleZip -Force }
 New-Item -ItemType Directory -Path $tempStage -Force | Out-Null
 
 try {
-    # 3. Skopiuj pliki scrcpy
-    Get-ChildItem -Path $scrcpyDir -File | ForEach-Object {
-        Copy-Item -LiteralPath $_.FullName -Destination $tempStage -Force
+    # 3. Skopiuj wyłącznie pliki wymagane przez scrcpy/ADB. Jawna lista
+    # zapobiega przypadkowemu dołączeniu prywatnych JSON-ów, logów i skryptów.
+    $requiredRuntimeFiles = @(
+        "scrcpy.exe",
+        "scrcpy-server",
+        "adb.exe",
+        "AdbWinApi.dll",
+        "AdbWinUsbApi.dll",
+        "SDL3.dll",
+        "libusb-1.0.dll"
+    )
+    foreach ($name in $requiredRuntimeFiles) {
+        $source = Join-Path $scrcpyDir $name
+        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+            throw "Brak wymaganego pliku runtime: $name"
+        }
+        Copy-Item -LiteralPath $source -Destination $tempStage -Force
+    }
+
+    $codecPatterns = @("avcodec-*.dll", "avformat-*.dll", "avutil-*.dll", "swresample-*.dll")
+    foreach ($pattern in $codecPatterns) {
+        $matches = @(Get-ChildItem -LiteralPath $scrcpyDir -Filter $pattern -File)
+        if ($matches.Count -eq 0) {
+            throw "Brak wymaganej biblioteki runtime pasującej do: $pattern"
+        }
+        foreach ($match in $matches) {
+            Copy-Item -LiteralPath $match.FullName -Destination $tempStage -Force
+        }
+    }
+
+    $licenseFile = Join-Path $scrcpyDir "LICENSE.txt"
+    if (Test-Path -LiteralPath $licenseFile -PathType Leaf) {
+        Copy-Item -LiteralPath $licenseFile -Destination $tempStage -Force
     }
 
     # 4. Skopiuj pliki aplikacji
-    Copy-Item -LiteralPath (Join-Path $repoDir "ScrcpyApp.ps1") -Destination $tempStage -Force
     Copy-Item -LiteralPath (Join-Path $repoDir "apps.json") -Destination $tempStage -Force
     $appIco = Join-Path $repoDir "app.ico"
     if (Test-Path $appIco) {

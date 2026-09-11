@@ -6,16 +6,25 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ScrcpyManager
 {
-    public class IconService
+    public class IconService : IDisposable
     {
         private readonly string _cacheDir;
         private readonly string _repoIconsDir;
         private readonly Dictionary<string, Bitmap> _cachedBitmaps = new Dictionary<string, Bitmap>(StringComparer.OrdinalIgnoreCase);
         private readonly object _lock = new object();
+        private readonly HashSet<string> _downloadsInProgress = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Zamiast trwałej "czarnej listy" na cały czas życia procesu, pamiętamy tylko kiedy
+        // ostatnio się nie udało - po krótkim czasie próba pobrania ikony jest powtarzana
+        // (np. gdy telefon był chwilowo niedostępny albo padło zapytanie do Play Store).
+        private readonly Dictionary<string, DateTime> _recentFailures = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+        private static readonly TimeSpan FailureRetryCooldown = TimeSpan.FromMinutes(2);
+        private readonly CancellationTokenSource _disposeToken = new CancellationTokenSource();
+        private bool _disposed;
 
         public IconService(string repoRoot = null)
         {
@@ -42,7 +51,7 @@ namespace ScrcpyManager
 
         public Bitmap GetResizedIcon(string package, int size = 18, int gap = 5)
         {
-            if (string.IsNullOrWhiteSpace(package))
+            if (_disposed || !AdbService.IsValidPackageName(package))
             {
                 return null;
             }
@@ -92,6 +101,17 @@ namespace ScrcpyManager
 
                         lock (_lock)
                         {
+                            if (_disposed)
+                            {
+                                dest.Dispose();
+                                return null;
+                            }
+                            Bitmap existing;
+                            if (_cachedBitmaps.TryGetValue(key, out existing) && existing != null)
+                            {
+                                dest.Dispose();
+                                return existing;
+                            }
                             _cachedBitmaps[key] = dest;
                         }
                         return dest;
@@ -105,7 +125,7 @@ namespace ScrcpyManager
 
         public async Task<bool> FetchSingleAppIconAsync(string package, AdbService adb)
         {
-            if (string.IsNullOrWhiteSpace(package))
+            if (_disposed || !AdbService.IsValidPackageName(package))
             {
                 return false;
             }
@@ -121,11 +141,13 @@ namespace ScrcpyManager
             {
                 try
                 {
+                    string remoteIcon = "/data/local/tmp/scrcpy_icon_" + package.Replace('.', '_') + ".png";
+                    string localTemp = cachedFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
                     if (string.Equals(package, "com.android.settings", StringComparison.OrdinalIgnoreCase))
                     {
-                        await adb.RunAdbAsync("shell \"unzip -p /system/framework/framework-res.apk res/drawable-xxhdpi-v4/ic_settings.png > /data/local/tmp/scrcpy_icon.png 2>/dev/null\"");
-                        await adb.RunAdbAsync(string.Format("pull /data/local/tmp/scrcpy_icon.png \"{0}\"", cachedFile));
-                        if (File.Exists(cachedFile) && new FileInfo(cachedFile).Length > 100)
+                        await adb.RunAdbAsync("shell \"unzip -p /system/framework/framework-res.apk res/drawable-xxhdpi-v4/ic_settings.png > " + remoteIcon + " 2>/dev/null\"");
+                        await adb.RunAdbAsync("pull " + remoteIcon + " " + AdbService.QuoteWindowsArgument(localTemp));
+                        if (CommitDownloadedIcon(localTemp, cachedFile))
                         {
                             return true;
                         }
@@ -146,7 +168,7 @@ namespace ScrcpyManager
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(apk))
+                    if (IsSafeAndroidPath(apk))
                     {
                         string listOut = await adb.RunAdbAsync(string.Format("shell \"unzip -l {0} 2>/dev/null\"", apk));
                         if (!string.IsNullOrWhiteSpace(listOut))
@@ -155,9 +177,10 @@ namespace ScrcpyManager
                             if (matches.Count > 0)
                             {
                                 string lastEntry = matches[matches.Count - 1].Value;
-                                await adb.RunAdbAsync(string.Format("shell \"unzip -p {0} {1} > /data/local/tmp/scrcpy_icon.png 2>/dev/null\"", apk, lastEntry));
-                                await adb.RunAdbAsync(string.Format("pull /data/local/tmp/scrcpy_icon.png \"{0}\"", cachedFile));
-                                if (File.Exists(cachedFile) && new FileInfo(cachedFile).Length > 100)
+                                if (!Regex.IsMatch(lastEntry, @"^[A-Za-z0-9_./+@-]+$")) return false;
+                                await adb.RunAdbAsync(string.Format("shell \"unzip -p {0} {1} > {2} 2>/dev/null\"", apk, lastEntry, remoteIcon));
+                                await adb.RunAdbAsync("pull " + remoteIcon + " " + AdbService.QuoteWindowsArgument(localTemp));
+                                if (CommitDownloadedIcon(localTemp, cachedFile))
                                 {
                                     return true;
                                 }
@@ -188,8 +211,9 @@ namespace ScrcpyManager
                         using (WebClient wc = new WebClient())
                         {
                             wc.Headers.Add("User-Agent", "Mozilla/5.0");
-                            await wc.DownloadFileTaskAsync(new Uri(imgUrl), cachedFile);
-                            if (File.Exists(cachedFile) && new FileInfo(cachedFile).Length > 100)
+                            string localTemp = cachedFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                            await wc.DownloadFileTaskAsync(new Uri(imgUrl), localTemp);
+                            if (CommitDownloadedIcon(localTemp, cachedFile))
                             {
                                 return true;
                             }
@@ -202,27 +226,88 @@ namespace ScrcpyManager
             return false;
         }
 
+        private static bool IsSafeAndroidPath(string path)
+        {
+            return !string.IsNullOrEmpty(path) &&
+                   Regex.IsMatch(path, @"^/[A-Za-z0-9_./=+@:-]+$") &&
+                   path.IndexOf("..", StringComparison.Ordinal) < 0;
+        }
+
         public void StartAsyncIconDownload(IEnumerable<string> packages, AdbService adb, Action<string> onIconFetched)
         {
-            Task.Run(async () =>
+            if (packages == null) return;
+            List<string> work = new List<string>();
+            CancellationToken cancellationToken = _disposeToken.Token;
+            lock (_lock)
             {
+                if (_disposed) return;
                 foreach (string pkg in packages)
                 {
-                    if (string.IsNullOrWhiteSpace(pkg)) continue;
-                    string cachedFile = Path.Combine(_cacheDir, pkg + ".png");
-                    if (File.Exists(cachedFile) && new FileInfo(cachedFile).Length > 100)
+                    if (!AdbService.IsValidPackageName(pkg) || !_downloadsInProgress.Add(pkg)) continue;
+                    DateTime lastFailure;
+                    if (_recentFailures.TryGetValue(pkg, out lastFailure) && DateTime.UtcNow - lastFailure < FailureRetryCooldown)
                     {
+                        _downloadsInProgress.Remove(pkg);
                         continue;
                     }
+                    work.Add(pkg);
+                }
+            }
 
-                    bool success = await FetchSingleAppIconAsync(pkg, adb);
-                    if (success && onIconFetched != null)
+            Task.Run(async () =>
+            {
+                foreach (string pkg in work)
+                {
+                    if (cancellationToken.IsCancellationRequested) break;
+                    bool success = false;
+                    try
                     {
-                        onIconFetched(pkg);
+                        string cachedFile = Path.Combine(_cacheDir, pkg + ".png");
+                        success = File.Exists(cachedFile) && new FileInfo(cachedFile).Length > 100;
+                        if (!success) success = await FetchSingleAppIconAsync(pkg, adb);
+                        if (success && onIconFetched != null && !cancellationToken.IsCancellationRequested) onIconFetched(pkg);
+                    }
+                    catch { }
+                    finally
+                    {
+                        lock (_lock)
+                        {
+                            _downloadsInProgress.Remove(pkg);
+                            if (!success) _recentFailures[pkg] = DateTime.UtcNow;
+                            else _recentFailures.Remove(pkg);
+                        }
                     }
                 }
             });
         }
+
+        private static bool CommitDownloadedIcon(string temp, string destination)
+        {
+            try
+            {
+                if (!File.Exists(temp) || new FileInfo(temp).Length <= 100) return false;
+                if (File.Exists(destination)) File.Replace(temp, destination, null, true);
+                else File.Move(temp, destination);
+                return true;
+            }
+            catch { return false; }
+            finally { try { if (File.Exists(temp)) File.Delete(temp); } catch { } }
+        }
+
+        public void Dispose()
+        {
+            lock (_lock)
+            {
+                if (_disposed) return;
+                _disposed = true;
+                _disposeToken.Cancel();
+                foreach (Bitmap bitmap in _cachedBitmaps.Values)
+                {
+                    try { bitmap.Dispose(); } catch { }
+                }
+                _cachedBitmaps.Clear();
+            }
+            _disposeToken.Dispose();
+        }
     }
 }
-

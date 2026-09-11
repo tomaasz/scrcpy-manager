@@ -32,13 +32,16 @@
 * **Zero setup & zero dependencies**: Bundles `scrcpy v4.1`, Android Debug Bridge (`adb`), and all required libraries inside a single standalone executable.
 * **No installation**: Runs immediately on any Windows 10/11 computer without installing `scrcpy` or modifying system `PATH`.
 * **Zero console window**: Clean native desktop GUI experience with no flashing command prompts.
-* **Instant subsequent starts**: Cached runtime verified with MD5 hash starts in under 0.2s.
+* **Instant subsequent starts**: Versioned cached runtime verified with SHA-256 starts in under 0.2s.
 
 ---
 
 ## 🌟 Key Features
 
 * 🚀 **Multi-Window Floating Apps**: Launch any Android app in an independent virtual display window (`--new-display`).
+* ⚙️ **Per-App Launch Profiles**: Save resolution/DPI, FPS, bitrate, codec, orientation, keyboard, mouse, audio, fullscreen, borderless and always-on-top settings for every tile.
+* 🎛️ **Ready-to-Use Presets**: Default, Work/RDP, Gaming, Wi-Fi Saver and Presentation profiles.
+* 🎥 **Session Recording**: Record selected application sessions to timestamped MP4 files in `Videos\scrcpy-manager`.
 * 🎨 **Native App Icons**: Extracts official application icons directly from your phone and Google Play, displaying crisp icons on your custom launch tiles.
 * 🔎 **Real-Time Package Search**: Instant search and filtering when picking apps from your connected phone.
 * 📶 **One-Click Wireless ADB (Wi‑Fi)**: Automatically detect your phone's Wi‑Fi IP and switch from USB cable to wireless debugging in one click.

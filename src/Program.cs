@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ScrcpyManager
@@ -37,7 +38,12 @@ namespace ScrcpyManager
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MainForm(args));
+                Application.ApplicationExit += (s, e) =>
+                {
+                    KeyboardHook.Stop();
+                    NavBarManager.Shutdown();
+                };
+                Application.Run(new MainForm(args, runtimeDir));
             }
             catch (Exception ex)
             {
@@ -52,75 +58,126 @@ namespace ScrcpyManager
 
         private static string EnsureRuntimeExtracted()
         {
+            string developerDir = AppDomain.CurrentDomain.BaseDirectory;
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string runtimeDir = Path.Combine(localAppData, "scrcpy-manager", "runtime");
-            string versionFile = Path.Combine(runtimeDir, ".version");
-            string scrcpyExe = Path.Combine(runtimeDir, "scrcpy.exe");
-            string adbExe = Path.Combine(runtimeDir, "adb.exe");
+            string runtimeRoot = Path.Combine(localAppData, "scrcpy-manager", "runtime");
 
             Assembly asm = Assembly.GetExecutingAssembly();
             using (Stream stream = asm.GetManifestResourceStream("bundle.zip"))
             {
                 if (stream == null)
                 {
-                    // Brak osadzonego zasobu (np. uruchamianie developerskie z folderu źródłowego)
-                    return runtimeDir;
+                    // Build developerski korzysta z zasobów leżących obok pliku wykonywalnego.
+                    return developerDir;
                 }
 
                 string currentHash = ComputeStreamHash(stream);
-                stream.Position = 0;
-
-                bool needsExtract = true;
-                if (Directory.Exists(runtimeDir) && File.Exists(versionFile) && File.Exists(scrcpyExe) && File.Exists(adbExe))
+                string runtimeDir = Path.Combine(runtimeRoot, currentHash);
+                if (IsCompleteRuntime(runtimeDir))
                 {
+                    CleanupStaleRuntimeDirs(runtimeRoot, runtimeDir);
+                    return runtimeDir;
+                }
+
+                Directory.CreateDirectory(runtimeRoot);
+                using (Mutex extractionMutex = new Mutex(false, "Local\\scrcpy-manager-runtime-extraction"))
+                {
+                    bool lockTaken = false;
                     try
                     {
-                        string cachedHash = File.ReadAllText(versionFile, Encoding.UTF8).Trim();
-                        if (string.Equals(cachedHash, currentHash, StringComparison.OrdinalIgnoreCase))
-                        {
-                            needsExtract = false;
-                        }
+                        try { lockTaken = extractionMutex.WaitOne(TimeSpan.FromSeconds(30)); }
+                        catch (AbandonedMutexException) { lockTaken = true; }
+                        if (!lockTaken) throw new IOException("Przekroczono czas oczekiwania na przygotowanie runtime scrcpy.");
+                        if (IsCompleteRuntime(runtimeDir)) return runtimeDir;
+
+                        stream.Position = 0;
+                        ExtractRuntimeAtomically(stream, runtimeRoot, runtimeDir, currentHash);
                     }
-                    catch {}
+                    finally
+                    {
+                        if (lockTaken) extractionMutex.ReleaseMutex();
+                    }
                 }
+                CleanupStaleRuntimeDirs(runtimeRoot, runtimeDir);
+                return runtimeDir;
+            }
+        }
 
-                if (needsExtract)
+        // Best-effort: each new bundled scrcpy/adb version now lives in its own
+        // hash-named folder (so a mid-update process keeps working off its original
+        // files), but nothing else ever removed the previous version's folder. Left
+        // unchecked this grows %LOCALAPPDATA%\scrcpy-manager\runtime\ without bound
+        // across auto-updates. Deletion failures (e.g. an older instance still has
+        // the folder open) are swallowed - the folder just survives to the next launch.
+        private static void CleanupStaleRuntimeDirs(string runtimeRoot, string currentRuntimeDir)
+        {
+            try
+            {
+                foreach (string dir in Directory.GetDirectories(runtimeRoot))
                 {
-                    if (!Directory.Exists(runtimeDir))
-                    {
-                        Directory.CreateDirectory(runtimeDir);
-                    }
-
-                    using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
-                    {
-                        foreach (ZipArchiveEntry entry in archive.Entries)
-                        {
-                            string destPath = Path.Combine(runtimeDir, entry.FullName);
-                            string destDir = Path.GetDirectoryName(destPath);
-                            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
-                            {
-                                Directory.CreateDirectory(destDir);
-                            }
-
-                            if (!string.IsNullOrEmpty(entry.Name))
-                            {
-                                entry.ExtractToFile(destPath, true);
-                            }
-                        }
-                    }
-
-                    File.WriteAllText(versionFile, currentHash, Encoding.UTF8);
+                    if (string.Equals(dir, currentRuntimeDir, StringComparison.OrdinalIgnoreCase)) continue;
+                    string name = Path.GetFileName(dir);
+                    if (string.IsNullOrEmpty(name) || name.StartsWith(".extracting-", StringComparison.OrdinalIgnoreCase)) continue;
+                    try { Directory.Delete(dir, true); } catch { }
                 }
             }
+            catch { }
+        }
 
-            return runtimeDir;
+        private static bool IsCompleteRuntime(string runtimeDir)
+        {
+            return Directory.Exists(runtimeDir) &&
+                   File.Exists(Path.Combine(runtimeDir, ".complete")) &&
+                   File.Exists(Path.Combine(runtimeDir, "scrcpy.exe")) &&
+                   File.Exists(Path.Combine(runtimeDir, "adb.exe"));
+        }
+
+        private static void ExtractRuntimeAtomically(Stream bundle, string runtimeRoot, string runtimeDir, string hash)
+        {
+            string stagingDir = Path.Combine(runtimeRoot, ".extracting-" + Process.GetCurrentProcess().Id + "-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(stagingDir);
+            try
+            {
+                string stagingRoot = Path.GetFullPath(stagingDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                using (ZipArchive archive = new ZipArchive(bundle, ZipArchiveMode.Read, true))
+                {
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (string.IsNullOrEmpty(entry.Name)) continue;
+                        string normalizedName = entry.FullName.Replace('/', Path.DirectorySeparatorChar);
+                        string destPath = Path.GetFullPath(Path.Combine(stagingDir, normalizedName));
+                        if (!destPath.StartsWith(stagingRoot, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new InvalidDataException("Niedozwolona ścieżka w bundle.zip: " + entry.FullName);
+                        }
+                        string destDir = Path.GetDirectoryName(destPath);
+                        if (!string.IsNullOrEmpty(destDir)) Directory.CreateDirectory(destDir);
+                        entry.ExtractToFile(destPath, false);
+                    }
+                }
+
+                if (!File.Exists(Path.Combine(stagingDir, "scrcpy.exe")) || !File.Exists(Path.Combine(stagingDir, "adb.exe")))
+                    throw new InvalidDataException("Pakiet portable nie zawiera wymaganego scrcpy.exe lub adb.exe.");
+
+                File.WriteAllText(Path.Combine(stagingDir, ".complete"), hash, new UTF8Encoding(false));
+                if (Directory.Exists(runtimeDir)) Directory.Delete(runtimeDir, true);
+                Directory.Move(stagingDir, runtimeDir);
+                stagingDir = null;
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(stagingDir) && Directory.Exists(stagingDir))
+                {
+                    try { Directory.Delete(stagingDir, true); } catch { }
+                }
+            }
         }
 
         private static string ComputeStreamHash(Stream stream)
         {
-            using (MD5 md5 = MD5.Create())
+            using (SHA256 sha256 = SHA256.Create())
             {
-                byte[] hash = md5.ComputeHash(stream);
+                byte[] hash = sha256.ComputeHash(stream);
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < hash.Length; i++)
                 {
@@ -172,4 +229,3 @@ namespace ScrcpyManager
         }
     }
 }
-

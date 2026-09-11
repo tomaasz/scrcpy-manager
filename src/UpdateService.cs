@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.1";
+        public const string CurrentVersion = "0.2";
         public GitHubRelease LatestRelease { get; private set; }
 
         public async Task<bool> CheckForUpdateAsync()
@@ -221,25 +222,24 @@ namespace ScrcpyManager
             if (release == null || release.assets == null || release.assets.Count == 0) return false;
 
             GitHubAsset targetAsset = null;
+            GitHubAsset checksumAsset = null;
             foreach (GitHubAsset a in release.assets)
             {
-                if (a.name != null && a.name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                {
-                    targetAsset = a;
-                    if (a.name.IndexOf("Portable", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        break;
-                    }
-                }
+                if (a == null || string.IsNullOrEmpty(a.name)) continue;
+                if (string.Equals(a.name, "ScrcpyManager-Portable.exe", StringComparison.OrdinalIgnoreCase)) targetAsset = a;
+                else if (string.Equals(a.name, "ScrcpyManager-Portable.exe.sha256", StringComparison.OrdinalIgnoreCase)) checksumAsset = a;
             }
 
-            if (targetAsset == null || string.IsNullOrEmpty(targetAsset.browser_download_url))
+            if (targetAsset == null || checksumAsset == null ||
+                !IsTrustedReleaseUrl(targetAsset.browser_download_url) || !IsTrustedReleaseUrl(checksumAsset.browser_download_url))
             {
                 return false;
             }
 
             string currentExe = Process.GetCurrentProcess().MainModule.FileName;
             string tempFile = Path.Combine(Path.GetTempPath(), "ScrcpyManager_update_" + Guid.NewGuid().ToString("N") + ".exe");
+            string checksumFile = tempFile + ".sha256";
+            bool handedOff = false;
 
             try
             {
@@ -248,9 +248,15 @@ namespace ScrcpyManager
                 {
                     wc.Headers.Add("User-Agent", "scrcpy-manager-desktop");
                     wc.DownloadFile(targetAsset.browser_download_url, tempFile);
+                    wc.DownloadFile(checksumAsset.browser_download_url, checksumFile);
                 }
 
                 if (!File.Exists(tempFile) || new FileInfo(tempFile).Length < 100000)
+                {
+                    return false;
+                }
+                string expectedHash = ExtractSha256(File.ReadAllText(checksumFile, Encoding.UTF8));
+                if (expectedHash == null || !string.Equals(expectedHash, ComputeSha256(tempFile), StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -258,16 +264,22 @@ namespace ScrcpyManager
                 string script = string.Format(@"
 Start-Sleep -Milliseconds 800
 $count = 0
+$updated = $false
 while ($count -lt 30) {{
     try {{
         Move-Item -LiteralPath '{0}' -Destination '{1}' -Force -ErrorAction Stop
+        $updated = $true
         break
     }} catch {{
         Start-Sleep -Milliseconds 500
         $count++
     }}
 }}
-Start-Process -FilePath '{1}'
+if ($updated) {{
+    Start-Process -FilePath '{1}'
+}} else {{
+    Remove-Item -LiteralPath '{0}' -Force -ErrorAction SilentlyContinue
+}}
 ", tempFile.Replace("'", "''"), currentExe.Replace("'", "''"));
 
                 byte[] bytes = Encoding.Unicode.GetBytes(script);
@@ -282,6 +294,7 @@ Start-Process -FilePath '{1}'
                 };
                 Process.Start(psi);
 
+                handedOff = true;
                 Application.Exit();
                 return true;
             }
@@ -289,7 +302,40 @@ Start-Process -FilePath '{1}'
             {
                 return false;
             }
+            finally
+            {
+                try { if (File.Exists(checksumFile)) File.Delete(checksumFile); } catch { }
+                if (!handedOff)
+                {
+                    try { if (File.Exists(tempFile)) File.Delete(tempFile); } catch { }
+                }
+            }
+        }
+
+        private static bool IsTrustedReleaseUrl(string value)
+        {
+            Uri uri;
+            if (!Uri.TryCreate(value, UriKind.Absolute, out uri) || uri.Scheme != Uri.UriSchemeHttps) return false;
+            return string.Equals(uri.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
+                   uri.AbsolutePath.StartsWith("/tomaasz/scrcpy-manager/releases/download/", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ExtractSha256(string text)
+        {
+            Match match = Regex.Match(text ?? string.Empty, @"(?i)(?<![0-9a-f])[0-9a-f]{64}(?![0-9a-f])");
+            return match.Success ? match.Value : null;
+        }
+
+        private static string ComputeSha256(string path)
+        {
+            using (FileStream stream = File.OpenRead(path))
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hash = sha256.ComputeHash(stream);
+                StringBuilder result = new StringBuilder(hash.Length * 2);
+                foreach (byte value in hash) result.Append(value.ToString("x2"));
+                return result.ToString();
+            }
         }
     }
 }
-

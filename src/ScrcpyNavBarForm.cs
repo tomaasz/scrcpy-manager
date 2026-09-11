@@ -23,7 +23,8 @@ namespace ScrcpyManager
             get
             {
                 CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x08000000; // WS_EX_NOACTIVATE (prevents stealing focus from scrcpy)
+                cp.ExStyle |= 0x08000000; // WS_EX_NOACTIVATE
+                cp.ExStyle |= 0x00000080; // WS_EX_TOOLWINDOW
                 return cp;
             }
         }
@@ -60,22 +61,19 @@ namespace ScrcpyManager
         {
             _tip = new ToolTip();
 
-            _btnBack = CreateNavButton("◀", "Cofnij (ESC / Alt+B)", (s, e) =>
+            _btnBack = CreateNavButton("◀", "Cofnij (ESC / Alt+B)", async (s, e) =>
             {
-                KeyboardHook.TriggerBackNavigation(_targetHwnd);
-                AdbService.SendKeyEventAsync(4);
+                await AdbService.SendKeyEventAsync(4);
             });
 
-            _btnHome = CreateNavButton("●", "Ekran główny (Alt+H)", (s, e) =>
+            _btnHome = CreateNavButton("●", "Ekran główny (Alt+H)", async (s, e) =>
             {
-                KeyboardHook.TriggerHomeNavigation(_targetHwnd);
-                AdbService.SendKeyEventAsync(3);
+                await AdbService.SendKeyEventAsync(3);
             });
 
-            _btnRecents = CreateNavButton("▢", "Ostatnie aplikacje (Alt+S)", (s, e) =>
+            _btnRecents = CreateNavButton("▢", "Ostatnie aplikacje (Alt+S)", async (s, e) =>
             {
-                KeyboardHook.TriggerRecentsNavigation(_targetHwnd);
-                AdbService.SendKeyEventAsync(187);
+                await AdbService.SendKeyEventAsync(187);
             });
 
             Controls.Add(_btnBack);
@@ -151,7 +149,6 @@ namespace ScrcpyManager
             {
                 _trackTimer.Stop();
                 Close();
-                Dispose();
                 return;
             }
 
@@ -301,6 +298,16 @@ namespace ScrcpyManager
                 _activeBars.Clear();
             }
         }
+
+        public static void Shutdown()
+        {
+            if (_scanTimer != null)
+            {
+                _scanTimer.Stop();
+                _scanTimer.Dispose();
+                _scanTimer = null;
+            }
+            CloseAll();
+        }
     }
 }
-

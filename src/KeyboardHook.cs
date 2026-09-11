@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace ScrcpyManager
 {
@@ -41,6 +40,8 @@ namespace ScrcpyManager
                     NativeMethods.UnhookWindowsHookEx(_hookId);
                 }
                 catch { }
+                // Reset regardless of the call's outcome: on failure the handle is no longer
+                // valid to retry, and leaving it set would make Start() a permanent no-op.
                 _hookId = IntPtr.Zero;
             }
         }
@@ -61,7 +62,7 @@ namespace ScrcpyManager
                             if ((DateTime.UtcNow - _lastBackTime).TotalMilliseconds > 120)
                             {
                                 _lastBackTime = DateTime.UtcNow;
-                                TriggerBackNavigation(fg);
+                                AdbService.SendKeyEventAsync(4);
                             }
                             return (IntPtr)1; // Consume raw ESC
                         }
@@ -131,24 +132,10 @@ namespace ScrcpyManager
                 NativeMethods.GetWindowThreadProcessId(hWnd, out pid);
                 if (pid == 0) return false;
 
-                foreach (Process p in AdbService.ActiveProcesses)
-                {
-                    try
-                    {
-                        if (p.Id == (int)pid) return true;
-                    }
-                    catch { }
-                }
-
-                Process proc = Process.GetProcessById((int)pid);
-                if (proc != null && proc.ProcessName.IndexOf("scrcpy", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    return true;
-                }
+                return AdbService.IsActiveScrcpyProcessId((int)pid);
             }
             catch { }
             return false;
         }
     }
 }
-

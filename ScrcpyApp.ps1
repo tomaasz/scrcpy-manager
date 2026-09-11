@@ -41,7 +41,7 @@ public static class NativeDwmScreenshot {
     $adbPin = $env:SCRCPY_ADB_PIN
 
     # Stan urządzenia i sesji
-    $script:appDisplaySize = "1080x2400"
+    $script:appDisplaySize = "2560x1440/160"
     $script:deviceModel = "Android"
     $script:deviceManufacturer = ""
     $script:isWifiConnected = $false
@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "0.1"
+    $script:appVersion = "0.2"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
@@ -2034,7 +2034,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
 
     $initialNames = $i18n[$script:currentLang].ResNames
     foreach ($rn in $initialNames) { $cmbRes.Items.Add($rn) | Out-Null }
-    $cmbRes.SelectedIndex = 0
+    $cmbRes.SelectedIndex = 1
 
     $cmbRes.Add_DrawItem({
         param($s, $e)

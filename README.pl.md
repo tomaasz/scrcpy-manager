@@ -32,13 +32,16 @@
 * **Zero instalacji i brak zależności**: Zawiera w jednym pliku `scrcpy v4.1`, Android Debug Bridge (`adb`) oraz wszystkie biblioteki DLL.
 * **Działa od razu**: Uruchamia się na dowolnym komputerze z Windows 10/11 bez potrzeby wcześniejszej instalacji `scrcpy` czy konfiguracji zmiennej `PATH`.
 * **Czysty interfejs**: Brak migających czarnych okien konsoli (natywna aplikacja okienkowa GUI).
-* **Błyskawiczny start**: Po jednokrotnym rozpakowaniu pamięć podręczna startuje w ułamku sekundy (< 0.2 s).
+* **Błyskawiczny start**: Po jednokrotnym rozpakowaniu wersjonowana pamięć podręczna, weryfikowana przez SHA-256, startuje w ułamku sekundy (< 0.2 s).
 
 ---
 
 ## 🌟 Najważniejsze funkcje
 
 * 🚀 **Aplikacje w niezależnych oknach**: Uruchamiaj dowolne aplikacje Androida w osobnych, pływających oknach (`--new-display`).
+* ⚙️ **Profile uruchamiania per aplikacja**: Dla każdego kafelka zapisz rozdzielczość/DPI, FPS, bitrate, kodek, orientację, klawiaturę, mysz, dźwięk, pełny ekran, okno bez ramek i tryb „zawsze na wierzchu”.
+* 🎛️ **Gotowe presety**: Domyślny, Praca/RDP, Gra, Oszczędny Wi-Fi i Prezentacja.
+* 🎥 **Nagrywanie sesji**: Zapisuj sesje wybranych aplikacji jako pliki MP4 z datą w katalogu `Wideo\scrcpy-manager`.
 * 🎨 **Prawdziwe ikony aplikacji**: Automatycznie wyciąga oficjalne ikony aplikacji bezpośrednio z telefonu oraz Google Play Store i wyświetla je na kafelkach.
 * 🔎 **Wyszukiwarka pakietów w czasie rzeczywistym**: Błyskawiczne wyszukiwanie i filtrowanie pakietów zainstalowanych na telefonie.
 * 📶 **Bezprzewodowe ADB (Wi‑Fi) jednym kliknięciem**: Automatycznie wykrywa adres IP telefonu w sieci domowej i przełącza połączenie z kabla USB na Wi-Fi.

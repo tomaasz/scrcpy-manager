@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -34,9 +35,18 @@ namespace ScrcpyManager
         private List<AppEntry> _appButtons = new List<AppEntry>();
         private DeviceInfo _currentDevice = new DeviceInfo();
         private readonly List<Process> _launchedProcesses = new List<Process>();
-        private int _originalTimeout = 30000;
+        // 0 means "no known original timeout yet" - AdbService.RestoreScreenTimeoutAsync
+        // falls back to whatever it captured itself before enabling keep-awake, or 30s.
+        private int _originalTimeout = 0;
         private string _captureScreenshotLang = null;
         private bool _hasPromptedForInitialApps = false;
+        private bool _appsConfigLoaded = false;
+        private readonly SemaphoreSlim _statusRefreshGate = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _packageCacheGate = new SemaphoreSlim(1, 1);
+        private readonly CancellationTokenSource _closing = new CancellationTokenSource();
+        private List<string> _installedPackageCache;
+        private string _installedPackageCacheSerial;
+        private int _suggestionGeneration;
 
         // Czcionki
         private readonly Font _fontRegular = new Font("Segoe UI", 9f, FontStyle.Regular);
@@ -46,6 +56,7 @@ namespace ScrcpyManager
         private readonly Font _fontSection = new Font("Segoe UI", 8.2f, FontStyle.Bold);
         private readonly Font _fontSmall = new Font("Segoe UI", 8.2f, FontStyle.Regular);
         private readonly Font _fontDot = new Font("Segoe UI", 11f, FontStyle.Bold);
+        private readonly Font _fontBadge = new Font("Segoe UI", 7.5f, FontStyle.Bold);
 
         // Wartości rozdzielczości RDP
         private readonly string[] _resValues = new[]
@@ -103,14 +114,14 @@ namespace ScrcpyManager
         private Button _btnNavRecents;
 
         private ToolTip _tipMain;
-        private Timer _keepAwakeTimer;
-        private Timer _statusTimer;
+        private System.Windows.Forms.Timer _statusTimer;
+        private System.Windows.Forms.Timer _suggestionTimer;
 
         private readonly List<Button> _createdAppButtons = new List<Button>();
         private readonly List<Button> _createdRenameButtons = new List<Button>();
         private readonly List<Button> _createdDelButtons = new List<Button>();
 
-        public MainForm(string[] args)
+        public MainForm(string[] args, string runtimeDir)
         {
             // Opcjonalne argumenty wiersza poleceń (np. -CaptureScreenshotLang PL)
             if (args != null)
@@ -125,7 +136,9 @@ namespace ScrcpyManager
                 }
             }
 
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string baseDir = !string.IsNullOrEmpty(runtimeDir) && Directory.Exists(runtimeDir)
+                ? runtimeDir
+                : AppDomain.CurrentDomain.BaseDirectory;
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             _userConfigRoot = Path.Combine(appData, "scrcpy-manager");
             _userPrefFile = Path.Combine(_userConfigRoot, "preferences.json");
@@ -176,21 +189,12 @@ namespace ScrcpyManager
         private void LoadPreferences()
         {
             _pref = new UserPreferences();
-            string prefToLoad = File.Exists(_userPrefFile) ? _userPrefFile : (File.Exists(_defaultPrefFile) ? _defaultPrefFile : null);
-            if (prefToLoad != null)
-            {
-                try
-                {
-                    string json = File.ReadAllText(prefToLoad);
-                    JavaScriptSerializer js = new JavaScriptSerializer();
-                    UserPreferences loaded = js.Deserialize<UserPreferences>(json);
-                    if (loaded != null)
-                    {
-                        _pref = loaded;
-                    }
-                }
-                catch {}
-            }
+            UserPreferences loaded;
+            if (ConfigStore.TryLoad(_userPrefFile, out loaded, true) || ConfigStore.TryLoad(_defaultPrefFile, out loaded))
+                _pref = loaded;
+
+            if (_pref.initialDiscovery != "accepted" && _pref.initialDiscovery != "declined")
+                _pref.initialDiscovery = "pending";
 
             _isDarkMode = !string.Equals(_pref.theme, "light", StringComparison.OrdinalIgnoreCase);
             if (!string.IsNullOrEmpty(_pref.lang) && Localization.SupportedLanguages.ContainsKey(_pref.lang.ToUpperInvariant()))
@@ -216,15 +220,7 @@ namespace ScrcpyManager
                 _pref.lang = _currentLang;
                 _pref.layout = _appsLayout;
 
-                JavaScriptSerializer js = new JavaScriptSerializer();
-                string json = js.Serialize(_pref);
-
-                if (!Directory.Exists(_userConfigRoot)) Directory.CreateDirectory(_userConfigRoot);
-                File.WriteAllText(_userPrefFile, json);
-                if (Directory.Exists(AppDomain.CurrentDomain.BaseDirectory))
-                {
-                    try { File.WriteAllText(_defaultPrefFile, json); } catch {}
-                }
+                ConfigStore.SaveAtomic(_userPrefFile, _pref);
             }
             catch {}
         }
@@ -232,21 +228,57 @@ namespace ScrcpyManager
         private void LoadApps()
         {
             _appButtons = new List<AppEntry>();
-            string appsFileToLoad = File.Exists(_appsConfigFile) ? _appsConfigFile : (File.Exists(_defaultAppsFile) ? _defaultAppsFile : null);
-            if (appsFileToLoad != null)
+            List<AppEntry> loaded;
+            if (ConfigStore.TryLoad(_appsConfigFile, out loaded, true))
             {
-                try
-                {
-                    string json = File.ReadAllText(appsFileToLoad);
-                    JavaScriptSerializer js = new JavaScriptSerializer();
-                    List<AppEntry> loaded = js.Deserialize<List<AppEntry>>(json);
-                    if (loaded != null && loaded.Count > 0)
-                    {
-                        _appButtons.AddRange(loaded);
-                    }
-                }
-                catch {}
+                _appsConfigLoaded = true;
+                AddValidApps(loaded);
             }
+            else if (ConfigStore.TryLoad(_defaultAppsFile, out loaded))
+            {
+                AddValidApps(loaded);
+            }
+        }
+
+        private void AddValidApps(IEnumerable<AppEntry> apps)
+        {
+            if (apps == null) return;
+            int accepted = 0;
+            foreach (AppEntry app in apps)
+            {
+                if (accepted >= 500) break;
+                if (app == null || string.IsNullOrWhiteSpace(app.name) || app.name.Length > 128 ||
+                    !AdbService.IsValidPackageName(app.package)) continue;
+                List<string> flags = new List<string>();
+                if (app.flags != null)
+                {
+                    if (app.flags.Contains("-UseUhidKeyboard")) flags.Add("-UseUhidKeyboard");
+                    if (app.flags.Contains("-ForwardAllClicks")) flags.Add("-ForwardAllClicks");
+                }
+                AppEntry validated = new AppEntry(app.name.Trim(), app.package, flags);
+                validated.profile = ValidateProfile(app.profile, flags);
+                _appButtons.Add(validated);
+                accepted++;
+            }
+        }
+
+        private static AppLaunchProfile ValidateProfile(AppLaunchProfile source, IList<string> legacyFlags)
+        {
+            AppLaunchProfile profile = source != null ? source.Clone() : new AppLaunchProfile();
+            if (!AdbService.IsValidDisplaySize(profile.displaySize)) profile.displaySize = "2560x1440/160";
+            profile.maxFps = Math.Max(15, Math.Min(240, profile.maxFps > 0 ? profile.maxFps : 60));
+            if (!Regex.IsMatch(profile.videoBitRate ?? "", @"^\d{1,3}[KM]$", RegexOptions.IgnoreCase)) profile.videoBitRate = "8M";
+            if (!Regex.IsMatch(profile.videoCodec ?? "", @"^(h264|h265|av1|vp8|vp9)$", RegexOptions.IgnoreCase)) profile.videoCodec = "h264";
+            if (!Regex.IsMatch(profile.orientation ?? "", @"^(auto|0|90|180|270)$")) profile.orientation = "auto";
+            if (!Regex.IsMatch(profile.keyboardMode ?? "", @"^(sdk|uhid|disabled)$")) profile.keyboardMode = "sdk";
+            if (!Regex.IsMatch(profile.mouseMode ?? "", @"^(sdk|uhid|disabled)$")) profile.mouseMode = "sdk";
+            if (!Regex.IsMatch(profile.audioMode ?? "", @"^(global|on|off)$")) profile.audioMode = "global";
+            if (legacyFlags != null)
+            {
+                if (legacyFlags.Contains("-UseUhidKeyboard")) profile.keyboardMode = "uhid";
+                if (legacyFlags.Contains("-ForwardAllClicks")) profile.forwardAllClicks = true;
+            }
+            return profile;
         }
 
         private void BuildControls()
@@ -346,7 +378,7 @@ namespace ScrcpyManager
             {
                 Location = new Point(260, 34),
                 Size = new Size(104, 21),
-                Font = new Font("Segoe UI", 7.5f, FontStyle.Bold),
+                Font = _fontBadge,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand,
                 Visible = false
@@ -562,7 +594,14 @@ namespace ScrcpyManager
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = _fontRegular
             };
-            _txtCustom.TextChanged += (s, e) => FilterCustomSuggestions();
+            _suggestionTimer = new System.Windows.Forms.Timer { Interval = 250 };
+            _suggestionTimer.Tick += async (s, e) =>
+            {
+                _suggestionTimer.Stop();
+                int generation = _suggestionGeneration;
+                await FilterCustomSuggestionsAsync(generation);
+            };
+            _txtCustom.TextChanged += (s, e) => ScheduleCustomSuggestions();
             _txtCustom.KeyDown += OnTxtCustomKeyDown;
             _txtCustom.LostFocus += (s, e) =>
             {
@@ -1022,7 +1061,8 @@ namespace ScrcpyManager
             }
 
             int currIdx = _cmbRes.SelectedIndex;
-            if (currIdx < 0) currIdx = 0;
+            // QHD 2560x1440 / 160 DPI is the default virtual display profile.
+            if (currIdx < 0) currIdx = 1;
             _cmbRes.Items.Clear();
             foreach (string rn in t.ResNames)
             {
@@ -1160,7 +1200,10 @@ namespace ScrcpyManager
                             btn.Padding = btnIconPad;
                         }
 
-                        _tipMain.SetToolTip(btn, string.Format("{0}\n{1}", currentApp.name, currentApp.package));
+                        AppLaunchProfile tileProfile = ValidateProfile(currentApp.profile, currentApp.flags);
+                        string profileInfo = string.Format("{0} • {1} FPS • {2} • {3}",
+                            tileProfile.displaySize, tileProfile.maxFps, tileProfile.videoBitRate, tileProfile.videoCodec.ToUpperInvariant());
+                        _tipMain.SetToolTip(btn, string.Format("{0}\n{1}\n{2}", currentApp.name, currentApp.package, profileInfo));
                         btn.Click += (s, e) => LaunchAppTile(currentApp);
 
                         // Przycisk edycji (✎)
@@ -1177,10 +1220,10 @@ namespace ScrcpyManager
                         };
                         btnRename.FlatAppearance.BorderSize = 1;
                         btnRename.FlatAppearance.BorderColor = cTheme.BtnAppBorder;
-                        _tipMain.SetToolTip(btnRename, string.Format(t.AppsRenameTooltip, currentApp.name));
+                        _tipMain.SetToolTip(btnRename, (_currentLang == "PL" ? "Profil uruchamiania: " : "Launch profile: ") + currentApp.name);
                         btnRename.MouseEnter += (s, e) => btnRename.ForeColor = Color.FromArgb(100, 180, 255);
                         btnRename.MouseLeave += (s, e) => btnRename.ForeColor = (_isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted);
-                        btnRename.Click += (s, e) => RenameAppTile(currentApp);
+                        btnRename.Click += (s, e) => EditAppProfile(currentApp);
 
                         // Przycisk usuwania (✕)
                         Button btnDel = new Button
@@ -1305,8 +1348,19 @@ namespace ScrcpyManager
             else
             {
                 _lblStatusDot.ForeColor = c.StatusDotOffline;
-                _lblDeviceTitle.Text = t.StatusNoPhone;
-                _lblStatusDetail.Text = t.StatusCheckConn;
+                if (_currentDevice.ConnectionState == DeviceConnectionState.Unauthorized)
+                    _lblDeviceTitle.Text = "ADB: unauthorized";
+                else if (_currentDevice.ConnectionState == DeviceConnectionState.Offline)
+                    _lblDeviceTitle.Text = "ADB: offline";
+                else if (_currentDevice.ConnectionState == DeviceConnectionState.Recovery)
+                    _lblDeviceTitle.Text = "ADB: recovery";
+                else if (_currentDevice.ConnectionState == DeviceConnectionState.Multiple)
+                    _lblDeviceTitle.Text = "ADB: multiple devices";
+                else
+                    _lblDeviceTitle.Text = t.StatusNoPhone;
+                _lblStatusDetail.Text = !string.IsNullOrWhiteSpace(_currentDevice.ConnectionError)
+                    ? _currentDevice.ConnectionError.Trim()
+                    : t.StatusCheckConn;
             }
         }
 
@@ -1358,9 +1412,16 @@ namespace ScrcpyManager
                 {
                     using (Graphics g = Graphics.FromImage(bmp))
                     {
-                        IntPtr hdc = g.GetHdc();
-                        NativeMethods.PrintWindow(Handle, hdc, 2);
-                        g.ReleaseHdc(hdc);
+                        IntPtr hdc = IntPtr.Zero;
+                        try
+                        {
+                            hdc = g.GetHdc();
+                            NativeMethods.PrintWindow(Handle, hdc, 2);
+                        }
+                        finally
+                        {
+                            if (hdc != IntPtr.Zero) g.ReleaseHdc(hdc);
+                        }
                     }
 
                     string docsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "docs");
@@ -1378,43 +1439,41 @@ namespace ScrcpyManager
             NavBarManager.Initialize(_isDarkMode);
             NavBarManager.Enabled = _chkNavBar != null && _chkNavBar.Checked;
 
-            RefreshDeviceStatusAsync();
-            InitTimeoutSettingsAsync();
+            await RefreshDeviceStatusAsync();
+            await RecoverLegacyScreenTimeoutAsync();
             CheckUpdatesAsync();
             DownloadMissingIconsAsync();
 
             // Timer odpytywania stanu urządzenia co 3 sekundy
-            _statusTimer = new Timer { Interval = 3000 };
-            _statusTimer.Tick += (s, ev) => RefreshDeviceStatusAsync();
+            _statusTimer = new System.Windows.Forms.Timer { Interval = 3000 };
+            _statusTimer.Tick += async (s, ev) => await RefreshDeviceStatusAsync();
             _statusTimer.Start();
-
-            // Timer czuwania ekranu co 8 sekund
-            _keepAwakeTimer = new Timer { Interval = 8000 };
-            _keepAwakeTimer.Tick += async (s, ev) =>
-            {
-                CleanExitedProcesses();
-                if (_currentDevice.IsOnline)
-                {
-                    await _adb.PreventScreenLockAsync();
-                    if (await _adb.IsKeyguardShowingAsync())
-                    {
-                        await _adb.UnlockDeviceAsync(Environment.GetEnvironmentVariable("SCRCPY_ADB_PIN"));
-                    }
-                }
-            };
-            _keepAwakeTimer.Start();
         }
 
-        private async void RefreshDeviceStatusAsync()
+        private async Task RefreshDeviceStatusAsync()
         {
-            _currentDevice = await _adb.GetDeviceInfoAsync();
-            UpdateStatusDisplay();
-
-            if (_currentDevice.IsOnline && _appButtons.Count == 0 && !File.Exists(_appsConfigFile) && !_hasPromptedForInitialApps)
+            if (!await _statusRefreshGate.WaitAsync(0)) return;
+            try
             {
-                _hasPromptedForInitialApps = true;
-                await CheckAndPromptInitialAppsAsync();
+                DeviceInfo next = await _adb.GetDeviceInfoAsync();
+                if (_closing.IsCancellationRequested || IsDisposed) return;
+                if (!string.Equals(_currentDevice.Serial, next.Serial, StringComparison.OrdinalIgnoreCase))
+                {
+                    _installedPackageCache = null;
+                    _installedPackageCacheSerial = null;
+                }
+                _currentDevice = next;
+                UpdateStatusDisplay();
+
+                bool discoveryPending = string.Equals(_pref.initialDiscovery, "pending", StringComparison.OrdinalIgnoreCase);
+                if (_currentDevice.IsOnline && _appButtons.Count == 0 && !_appsConfigLoaded && discoveryPending && !_hasPromptedForInitialApps)
+                {
+                    _hasPromptedForInitialApps = true;
+                    await CheckAndPromptInitialAppsAsync();
+                }
             }
+            catch { }
+            finally { _statusRefreshGate.Release(); }
         }
 
         private async Task CheckAndPromptInitialAppsAsync()
@@ -1429,6 +1488,11 @@ namespace ScrcpyManager
                 if (dr == DialogResult.Yes)
                 {
                     List<string> installed = await _adb.GetInstalledPackagesAsync();
+                    if (installed == null || installed.Count == 0)
+                    {
+                        MessageBox.Show(this, t.MsgAppsPhoneError, t.DiscoverTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
                     HashSet<string> installedSet = new HashSet<string>(installed ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
 
                     List<AppEntry> matched = new List<AppEntry>();
@@ -1457,24 +1521,33 @@ namespace ScrcpyManager
                     {
                         SaveAppsConfigFile();
                     }
+                    _appsConfigLoaded = true;
+                    _pref.initialDiscovery = "accepted";
+                    SavePreferences();
                 }
                 else
                 {
-                    SaveAppsConfigFile();
+                    _pref.initialDiscovery = "declined";
+                    SavePreferences();
                 }
             }
             catch {}
         }
 
-        private async void InitTimeoutSettingsAsync()
+        private async Task RecoverLegacyScreenTimeoutAsync()
         {
-            int timeout = await _adb.GetOriginalScreenTimeoutAsync();
-            if (timeout > 0 && timeout != 2147483647)
+            if (!File.Exists(_stateFile) || !_currentDevice.IsOnline) return;
+            try
             {
-                _originalTimeout = timeout;
-                try { File.WriteAllText(_stateFile, timeout.ToString()); } catch {}
+                int timeout;
+                if (int.TryParse(File.ReadAllText(_stateFile).Trim(), out timeout) && timeout > 0 && timeout != 2147483647)
+                {
+                    _originalTimeout = timeout;
+                    await _adb.RestoreScreenTimeoutAsync(timeout);
+                }
+                File.Delete(_stateFile);
             }
-            await _adb.PreventScreenLockAsync();
+            catch { }
         }
 
         private async void CheckUpdatesAsync()
@@ -1497,72 +1570,56 @@ namespace ScrcpyManager
             }
             _icons.StartAsyncIconDownload(pkgs, _adb, pkg =>
             {
-                // Aktualizujemy ikony na kafelkach
-                BeginInvoke((Action)(() =>
+                if (_closing.IsCancellationRequested || IsDisposed || Disposing || !IsHandleCreated) return;
+                try
                 {
-                    UpdateAppButtonGrid();
-                }));
+                    BeginInvoke((Action)(() =>
+                    {
+                        if (!_closing.IsCancellationRequested && !IsDisposed) UpdateAppButtonGrid();
+                    }));
+                }
+                catch (InvalidOperationException) { }
             });
         }
 
         private void OnFormClosing(object sender, FormClosingEventArgs e)
         {
+            _closing.Cancel();
             KeyboardHook.Stop();
-            NavBarManager.CloseAll();
+            NavBarManager.Shutdown();
 
             if (_statusTimer != null) { _statusTimer.Stop(); _statusTimer.Dispose(); }
-            if (_keepAwakeTimer != null) { _keepAwakeTimer.Stop(); _keepAwakeTimer.Dispose(); }
+            if (_suggestionTimer != null) { _suggestionTimer.Stop(); _suggestionTimer.Dispose(); }
 
             CleanExitedProcesses();
-            List<int> pids = new List<int>();
-            foreach (Process p in _launchedProcesses)
-            {
-                if (!p.HasExited) pids.Add(p.Id);
-            }
 
-            if (pids.Count == 0)
+            // Best-effort: if no mirrored app windows are still running, restore the
+            // device's original screen timeout immediately instead of leaving it maxed out.
+            if (_launchedProcesses.Count == 0)
             {
                 _adb.RestoreScreenTimeoutAsync(_originalTimeout);
-            }
-            else
-            {
-                // Uruchomienie cichego skryptu nadzorcy w tle
-                string pidList = string.Join(",", pids);
-                string script = string.Format(@"
-$pids = @({0})
-while ((Get-Process -Id $pids -ErrorAction SilentlyContinue).Count -gt 0) {{
-    adb shell settings put system screen_off_timeout 2147483647 2>$null
-    adb shell svc power stayon true 2>$null
-    Start-Sleep -Seconds 5
-}}
-adb shell settings put system screen_off_timeout {1} 2>$null
-adb shell svc power stayon false 2>$null
-if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }}
-", pidList, _originalTimeout, _stateFile.Replace("'", "''"));
-
-                byte[] bytes = System.Text.Encoding.Unicode.GetBytes(script);
-                string b64 = Convert.ToBase64String(bytes);
-                ProcessStartInfo psi = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = "-NoProfile -WindowStyle Hidden -EncodedCommand " + b64,
-                    CreateNoWindow = true,
-                    UseShellExecute = false
-                };
-                try { Process.Start(psi); } catch {}
             }
         }
 
         private void CleanExitedProcesses()
         {
-            _launchedProcesses.RemoveAll(p => p.HasExited);
+            for (int i = _launchedProcesses.Count - 1; i >= 0; i--)
+            {
+                Process process = _launchedProcesses[i];
+                bool remove;
+                try { remove = process.HasExited; } catch { remove = true; }
+                if (remove)
+                {
+                    _launchedProcesses.RemoveAt(i);
+                    try { process.Dispose(); } catch { }
+                }
+            }
         }
 
         private async void LaunchFullScrcpy()
         {
             if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
 
-            await _adb.PreventScreenLockAsync();
             if (_chkAutoTaskbar.Checked)
             {
                 await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
@@ -1570,13 +1627,14 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
 
             await _adb.RunAdbAsync("shell settings put system accelerometer_rotation 0");
             await _adb.RunAdbAsync("shell settings put system user_rotation 1");
+            await AdbService.EnableKeepAwakeAsync();
             await _adb.UnlockDeviceAsync(Environment.GetEnvironmentVariable("SCRCPY_ADB_PIN"));
 
             string title = !string.IsNullOrEmpty(_currentDevice.Model) ? string.Format("{0} (scrcpy)", _currentDevice.Model) : "Android (scrcpy)";
             string audioArg = _chkAudio.Checked ? "" : "--no-audio";
             string fsArg = _chkFullScreen.Checked ? "-f" : "";
 
-            string argsToRun = string.Format("-S -w -K {0} {1} --window-title=\"{2}\"", fsArg, audioArg, title).Trim();
+            string argsToRun = string.Format("-S -w -K {0} {1} --window-title={2}", fsArg, audioArg, AdbService.QuoteWindowsArgument(title)).Trim();
 
             try
             {
@@ -1591,32 +1649,31 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
 
         private async void LaunchAppTile(AppEntry app)
         {
+            if (app == null || !AdbService.IsValidPackageName(app.package)) return;
+            if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
             if (_chkAutoTaskbar.Checked)
             {
                 await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
             }
 
-            string disp = "1080x2400";
+            AppLaunchProfile profile = ValidateProfile(app.profile, app.flags);
             if (string.Equals(app.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase))
             {
                 int idx = _cmbRes.SelectedIndex;
                 if (idx >= 0 && idx < _resValues.Length)
                 {
                     string val = _resValues[idx];
-                    disp = val == "AUTO" ? "1080x2400" : val;
+                    profile.displaySize = val == "AUTO" ? "1080x2400" : val;
                 }
                 else
                 {
-                    disp = "1920x1080/160";
+                    profile.displaySize = "2560x1440/160";
                 }
             }
 
-            bool useUhid = app.flags != null && app.flags.Contains("-UseUhidKeyboard");
-            bool forwardClicks = app.flags != null && app.flags.Contains("-ForwardAllClicks");
-
             try
             {
-                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, useUhid, forwardClicks, disp, _chkAudio.Checked);
+                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, profile, _chkAudio.Checked);
                 if (proc != null) _launchedProcesses.Add(proc);
             }
             catch (Exception ex)
@@ -1625,39 +1682,39 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             }
         }
 
-        private void LaunchCustomApp()
+        private async void LaunchCustomApp()
         {
             string pkg = (_txtCustom.Text ?? "").Trim();
             Localization.Strings t = Localization.Get(_currentLang);
-            if (string.IsNullOrWhiteSpace(pkg))
+            if (!AdbService.IsValidPackageName(pkg))
             {
-                MessageBox.Show(this, t.MsgPkgEmpty, "scrcpy", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, t.MsgAppsInvalid, "scrcpy", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
+
             if (_chkAutoTaskbar.Checked)
             {
-                _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
+                await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
             }
 
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, false, false, "1080x2400", _chkAudio.Checked);
-                    if (proc != null) _launchedProcesses.Add(proc);
-                }
-                catch {}
-            });
+                bool audio = _chkAudio.Checked;
+                Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, new AppLaunchProfile(), audio);
+                if (proc != null) _launchedProcesses.Add(proc);
+            }
+            catch { }
         }
 
         private void AddCustomPackageTile()
         {
             string pkg = (_txtCustom.Text ?? "").Trim();
             Localization.Strings t = Localization.Get(_currentLang);
-            if (string.IsNullOrWhiteSpace(pkg))
+            if (!AdbService.IsValidPackageName(pkg))
             {
-                MessageBox.Show(this, t.MsgPkgEmpty, "scrcpy", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, t.MsgAppsInvalid, "scrcpy", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -1680,15 +1737,16 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             }
         }
 
-        private void RenameAppTile(AppEntry app)
+        private void EditAppProfile(AppEntry app)
         {
-            Localization.Strings t = Localization.Get(_currentLang);
-            string newName = PromptName(t.RenameAppDialogTitle, t.RenameAppDialogLabel, t.RenameAppDialogSave, app.package, app.name);
-            if (!string.IsNullOrWhiteSpace(newName) && newName != app.name)
+            ThemeColors colors = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
+            using (AppProfileForm dialog = new AppProfileForm(app, colors, _currentLang, Icon))
             {
-                app.name = newName;
-                SaveAppsConfigFile();
-                UpdateAppButtonGrid();
+                if (dialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    SaveAppsConfigFile();
+                    UpdateAppButtonGrid();
+                }
             }
         }
 
@@ -1757,12 +1815,14 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
         {
             try
             {
-                JavaScriptSerializer js = new JavaScriptSerializer();
-                string json = js.Serialize(_appButtons);
-                if (!Directory.Exists(_userConfigRoot)) Directory.CreateDirectory(_userConfigRoot);
-                File.WriteAllText(_appsConfigFile, json, System.Text.Encoding.UTF8);
+                ConfigStore.SaveAtomic(_appsConfigFile, _appButtons);
+                _appsConfigLoaded = true;
             }
-            catch {}
+            catch (Exception ex)
+            {
+                Localization.Strings t = Localization.Get(_currentLang);
+                MessageBox.Show(this, string.Format(t.MsgAppsSaveError, ex.Message), t.AppsEditorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void OpenAppsEditor()
@@ -1779,7 +1839,47 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             }
         }
 
-        private async void FilterCustomSuggestions()
+        private void ScheduleCustomSuggestions()
+        {
+            _suggestionGeneration++;
+            if (_suggestionTimer == null) return;
+            _suggestionTimer.Stop();
+            if (string.IsNullOrWhiteSpace(_txtCustom.Text))
+            {
+                _lstCustomSuggestions.Visible = false;
+                return;
+            }
+            _suggestionTimer.Start();
+        }
+
+        private async Task<List<string>> GetInstalledPackagesCachedAsync()
+        {
+            string serial = _currentDevice != null ? _currentDevice.Serial : null;
+            if (string.IsNullOrEmpty(serial)) return new List<string>();
+            if (_installedPackageCache != null && string.Equals(_installedPackageCacheSerial, serial, StringComparison.OrdinalIgnoreCase))
+                return new List<string>(_installedPackageCache);
+
+            await _packageCacheGate.WaitAsync();
+            try
+            {
+                if (_installedPackageCache != null && string.Equals(_installedPackageCacheSerial, serial, StringComparison.OrdinalIgnoreCase))
+                    return new List<string>(_installedPackageCache);
+
+                List<string> installed = await _adb.GetInstalledPackagesAsync() ?? new List<string>();
+                if (!_closing.IsCancellationRequested && string.Equals(_currentDevice.Serial, serial, StringComparison.OrdinalIgnoreCase))
+                {
+                    _installedPackageCache = new List<string>(installed);
+                    _installedPackageCacheSerial = serial;
+                }
+                return installed;
+            }
+            finally
+            {
+                _packageCacheGate.Release();
+            }
+        }
+
+        private async Task FilterCustomSuggestionsAsync(int generation)
         {
             string query = (_txtCustom.Text ?? "").Trim();
             if (query.Length < 1)
@@ -1794,7 +1894,9 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
                 if (!string.IsNullOrEmpty(a.package)) pool.Add(a.package);
             }
 
-            List<string> installed = await _adb.GetInstalledPackagesAsync();
+            List<string> installed = await GetInstalledPackagesCachedAsync();
+            if (generation != _suggestionGeneration || _closing.IsCancellationRequested || IsDisposed ||
+                !string.Equals(query, (_txtCustom.Text ?? "").Trim(), StringComparison.Ordinal)) return;
             if (installed != null)
             {
                 foreach (string p in installed) pool.Add(p);
@@ -1831,6 +1933,8 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             {
                 _lstCustomSuggestions.EndUpdate();
             }
+
+            if (!_txtCustom.Focused) return;
 
             int itemH = Math.Max(_lstCustomSuggestions.ItemHeight, 20);
             int visCount = Math.Min(matches.Count, 6);
@@ -1902,7 +2006,7 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             if (ok)
             {
                 MessageBox.Show(this, string.Format(t.MsgWifiDone, ip), t.WifiBtn, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                RefreshDeviceStatusAsync();
+                await RefreshDeviceStatusAsync();
             }
             else
             {
@@ -1915,6 +2019,31 @@ if (Test-Path '{2}') {{ Remove-Item '{2}' -Force -ErrorAction SilentlyContinue }
             Localization.Strings t = Localization.Get(_currentLang);
             MessageBox.Show(this, t.MsgNoDevice, t.NoDevice, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try { _closing.Cancel(); } catch { }
+                if (_statusTimer != null) { _statusTimer.Stop(); _statusTimer.Dispose(); _statusTimer = null; }
+                if (_suggestionTimer != null) { _suggestionTimer.Stop(); _suggestionTimer.Dispose(); _suggestionTimer = null; }
+            }
+
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                if (_tipMain != null) _tipMain.Dispose();
+                _icons.Dispose();
+                _fontRegular.Dispose();
+                _fontBold.Dispose();
+                _fontHero.Dispose();
+                _fontTitle.Dispose();
+                _fontSection.Dispose();
+                _fontSmall.Dispose();
+                _fontDot.Dispose();
+                _fontBadge.Dispose();
+            }
+        }
     }
 }
-
