@@ -61,6 +61,7 @@ namespace ScrcpyManager
         public bool turnScreenOff { get; set; }
         public bool recordSession { get; set; }
         public bool forwardAllClicks { get; set; }
+        public string taskbarMode { get; set; }
 
         public AppLaunchProfile()
         {
@@ -73,6 +74,7 @@ namespace ScrcpyManager
             keyboardMode = "sdk";
             mouseMode = "sdk";
             audioMode = "global";
+            taskbarMode = "global";
         }
 
         public AppLaunchProfile Clone()
@@ -87,6 +89,7 @@ namespace ScrcpyManager
         public string lang { get; set; }
         public int layout { get; set; }
         public bool navBar { get; set; }
+        public bool autoTaskbar { get; set; }
         public string initialDiscovery { get; set; }
 
         public UserPreferences()
@@ -95,6 +98,7 @@ namespace ScrcpyManager
             lang = "PL";
             layout = 2;
             navBar = true;
+            autoTaskbar = false;
             initialDiscovery = "pending";
         }
     }
@@ -120,7 +124,6 @@ namespace ScrcpyManager
             IsWifiConnected = false;
             IsOnline = false;
             Serial = "";
-            ConnectionState = DeviceConnectionState.None;
             ConnectionError = "";
         }
     }
@@ -135,22 +138,30 @@ namespace ScrcpyManager
         public Color StatusDotOnline { get; set; }
         public Color StatusDotOffline { get; set; }
         public Color BtnHero { get; set; }
+        public Color BtnHeroHover { get; set; }
+        public Color BtnHeroDown { get; set; }
         public Color BtnHeroText { get; set; }
         public Color BtnMode { get; set; }
+        public Color BtnModeHover { get; set; }
         public Color BtnModeText { get; set; }
         public Color BtnModeBorder { get; set; }
         public Color BtnReboot { get; set; }
+        public Color BtnRebootHover { get; set; }
         public Color BtnRebootText { get; set; }
         public Color BtnRebootBorder { get; set; }
         public Color BtnTool { get; set; }
+        public Color BtnToolHover { get; set; }
         public Color BtnToolText { get; set; }
         public Color BtnToolBorder { get; set; }
         public Color BtnApp { get; set; }
+        public Color BtnAppHover { get; set; }
         public Color BtnAppText { get; set; }
         public Color BtnAppBorder { get; set; }
         public Color InputBg { get; set; }
         public Color InputText { get; set; }
+        public Color InputBorder { get; set; }
         public Color ToggleBg { get; set; }
+        public Color ToggleHover { get; set; }
         public Color ToggleChecked { get; set; }
         public Color ToggleText { get; set; }
         public Color BadgeUpdate { get; set; }
@@ -159,32 +170,40 @@ namespace ScrcpyManager
 
         public static readonly ThemeColors Dark = new ThemeColors
         {
-            Bg               = Color.FromArgb(24, 25, 32),
-            Card             = Color.FromArgb(33, 35, 45),
-            CardBorder       = Color.FromArgb(52, 56, 70),
-            Text             = Color.FromArgb(240, 242, 248),
-            TextMuted        = Color.FromArgb(150, 155, 175),
-            StatusDotOnline  = Color.FromArgb(46, 204, 113),
-            StatusDotOffline = Color.FromArgb(127, 140, 141),
-            BtnHero          = Color.FromArgb(35, 145, 75),
+            Bg               = Color.FromArgb(22, 27, 36),       // chłodny, głęboki grafit (#161B24)
+            Card             = Color.FromArgb(24, 31, 43),       // grafitowa karta (#181F2B)
+            CardBorder       = Color.FromArgb(44, 57, 75),       // delikatne, spójne obramowanie (#2C394B)
+            Text             = Color.FromArgb(248, 250, 252),    // wyrazisty, czysty biały (#F8FAFC)
+            TextMuted        = Color.FromArgb(148, 163, 184),    // czytelny, jasny odcień pomocniczy slate (#94A3B8)
+            StatusDotOnline  = Color.FromArgb(34, 197, 94),      // żywa zieleń (#22C55E)
+            StatusDotOffline = Color.FromArgb(100, 116, 139),    // stonowany slate (#64748B)
+            BtnHero          = Color.FromArgb(28, 144, 80),      // wyrazisty zielony przycisk (#1C9050)
+            BtnHeroHover     = Color.FromArgb(34, 168, 94),      // rozjaśniony zielony przy najechaniu
+            BtnHeroDown      = Color.FromArgb(22, 120, 66),
             BtnHeroText      = Color.White,
-            BtnMode          = Color.FromArgb(44, 48, 62),
-            BtnModeText      = Color.FromArgb(230, 235, 245),
-            BtnModeBorder    = Color.FromArgb(66, 71, 92),
-            BtnReboot        = Color.FromArgb(62, 35, 40),
-            BtnRebootText    = Color.FromArgb(255, 138, 138),
-            BtnRebootBorder  = Color.FromArgb(110, 46, 53),
-            BtnTool          = Color.FromArgb(39, 58, 94),
-            BtnToolText      = Color.FromArgb(214, 228, 255),
-            BtnToolBorder    = Color.FromArgb(58, 80, 126),
-            BtnApp           = Color.FromArgb(37, 40, 52),
-            BtnAppText       = Color.FromArgb(235, 240, 250),
-            BtnAppBorder     = Color.FromArgb(56, 61, 80),
-            InputBg          = Color.FromArgb(28, 30, 38),
-            InputText        = Color.FromArgb(240, 242, 248),
-            ToggleBg         = Color.FromArgb(44, 48, 62),
-            ToggleChecked    = Color.FromArgb(48, 70, 104),
-            ToggleText       = Color.FromArgb(230, 235, 245),
+            BtnMode          = Color.FromArgb(26, 34, 48),       // stonowane przyciski trybu (#1A2230)
+            BtnModeHover     = Color.FromArgb(36, 47, 66),
+            BtnModeText      = Color.FromArgb(241, 245, 249),
+            BtnModeBorder    = Color.FromArgb(48, 62, 82),       // (#303E52)
+            BtnReboot        = Color.FromArgb(71, 40, 45),       // stonowany ciemnoczerwony (#47282D)
+            BtnRebootHover   = Color.FromArgb(88, 48, 54),
+            BtnRebootText    = Color.FromArgb(252, 165, 165),    // ciepły, łagodny czerwony tekst (#FCA5A5)
+            BtnRebootBorder  = Color.FromArgb(122, 50, 61),      // (#7A323D)
+            BtnTool          = Color.FromArgb(36, 62, 101),      // ciemnoniebieski grafit (#243E65)
+            BtnToolHover     = Color.FromArgb(46, 78, 126),
+            BtnToolText      = Color.FromArgb(241, 245, 249),
+            BtnToolBorder    = Color.FromArgb(58, 92, 144),
+            BtnApp           = Color.FromArgb(34, 43, 55),       // czytelne kafelki (#222B37)
+            BtnAppHover      = Color.FromArgb(44, 55, 71),
+            BtnAppText       = Color.FromArgb(241, 245, 249),
+            BtnAppBorder     = Color.FromArgb(48, 62, 82),       // (#303E52)
+            InputBg          = Color.FromArgb(22, 29, 39),       // (#161D27)
+            InputText        = Color.FromArgb(248, 250, 252),
+            InputBorder      = Color.FromArgb(48, 62, 82),
+            ToggleBg         = Color.FromArgb(26, 34, 48),
+            ToggleHover      = Color.FromArgb(36, 47, 66),
+            ToggleChecked    = Color.FromArgb(37, 99, 235),
+            ToggleText       = Color.FromArgb(241, 245, 249),
             BadgeUpdate      = Color.FromArgb(16, 185, 129),
             BadgeUpdateText  = Color.White,
             BadgeUpdateBorder= Color.FromArgb(52, 211, 153)
@@ -200,22 +219,30 @@ namespace ScrcpyManager
             StatusDotOnline  = Color.FromArgb(39, 174, 96),
             StatusDotOffline = Color.FromArgb(189, 195, 199),
             BtnHero          = Color.FromArgb(27, 138, 70),
+            BtnHeroHover     = Color.FromArgb(35, 160, 82),
+            BtnHeroDown      = Color.FromArgb(20, 115, 58),
             BtnHeroText      = Color.White,
             BtnMode          = Color.FromArgb(240, 242, 248),
+            BtnModeHover     = Color.FromArgb(228, 232, 242),
             BtnModeText      = Color.FromArgb(36, 40, 56),
             BtnModeBorder    = Color.FromArgb(212, 216, 230),
             BtnReboot        = Color.FromArgb(253, 238, 239),
+            BtnRebootHover   = Color.FromArgb(248, 222, 224),
             BtnRebootText    = Color.FromArgb(192, 34, 47),
             BtnRebootBorder  = Color.FromArgb(246, 193, 197),
             BtnTool          = Color.FromArgb(238, 243, 252),
+            BtnToolHover     = Color.FromArgb(225, 234, 248),
             BtnToolText      = Color.FromArgb(27, 79, 155),
             BtnToolBorder    = Color.FromArgb(202, 217, 244),
             BtnApp           = Color.FromArgb(255, 255, 255),
+            BtnAppHover      = Color.FromArgb(245, 247, 252),
             BtnAppText       = Color.FromArgb(33, 36, 48),
             BtnAppBorder     = Color.FromArgb(216, 220, 230),
             InputBg          = Color.White,
             InputText        = Color.FromArgb(25, 28, 36),
+            InputBorder      = Color.FromArgb(216, 220, 230),
             ToggleBg         = Color.FromArgb(232, 235, 245),
+            ToggleHover      = Color.FromArgb(220, 225, 238),
             ToggleChecked    = Color.FromArgb(214, 225, 246),
             ToggleText       = Color.FromArgb(35, 40, 55),
             BadgeUpdate      = Color.FromArgb(209, 250, 229),

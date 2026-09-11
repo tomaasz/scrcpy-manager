@@ -26,8 +26,11 @@ namespace ScrcpyManager
         private readonly CancellationTokenSource _disposeToken = new CancellationTokenSource();
         private bool _disposed;
 
+        public static IconService Instance { get; private set; }
+
         public IconService(string repoRoot = null)
         {
+            Instance = this;
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             _cacheDir = Path.Combine(appData, "scrcpy-manager", "icons");
             try
@@ -46,6 +49,50 @@ namespace ScrcpyManager
             else
             {
                 _repoIconsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icons");
+            }
+        }
+
+        public string GetIconFilePath(string package)
+        {
+            if (string.IsNullOrEmpty(package) || !AdbService.IsValidPackageName(package))
+            {
+                return null;
+            }
+
+            string cachedFile = Path.Combine(_cacheDir, package + ".png");
+            if (!File.Exists(cachedFile) && !string.IsNullOrEmpty(_repoIconsDir))
+            {
+                string repoFile = Path.Combine(_repoIconsDir, package + ".png");
+                if (File.Exists(repoFile))
+                {
+                    try
+                    {
+                        File.Copy(repoFile, cachedFile, true);
+                    }
+                    catch { }
+                }
+            }
+
+            return File.Exists(cachedFile) ? cachedFile : null;
+        }
+
+        public Bitmap GetRawIconBitmap(string package)
+        {
+            string file = GetIconFilePath(package);
+            if (string.IsNullOrEmpty(file) || !File.Exists(file)) return null;
+
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(file);
+                using (MemoryStream ms = new MemoryStream(bytes))
+                using (Image img = Image.FromStream(ms))
+                {
+                    return new Bitmap(img);
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
 

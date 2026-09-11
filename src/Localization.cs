@@ -32,6 +32,7 @@ namespace ScrcpyManager
                 { "ResLabel", "Rozdzielczość wirtualnego ekranu (RDP):" },
                 { "AudioPass", "Przesyłaj dźwięk do PC" },
                 { "AutoTaskbar", "Uruchamiaj Taskbar" },
+                { "AutoTaskbarTooltip", "Gdy włączone, na dole wirtualnego ekranu scrcpy wyświetla się dolny pasek zadań Androida. Gdy wyłączone (zalecane), scrcpy ukrywa pasek (--no-vd-system-decorations), dzięki czemu zmaksymalizowane okna aplikacji nie są przesłaniane od dołu." },
                 { "WifiBtn", "Połącz przez Wi‑Fi" },
                 { "KeyBtn", "Klawiatura fizyczna" },
                 { "ClipBtn", "Naprawa schowka" },
@@ -40,7 +41,7 @@ namespace ScrcpyManager
                 { "SectionNavigation", "NAWIGACJA ANDROIDA" },
                 { "NavBack", "◀  Cofnij (Esc)" },
                 { "NavHome", "●  Ekran główny" },
-                { "NavRecents", "▢  Ostatnie aplikacje" },
+                { "NavRecents", "▢  Ostatnie" },
 
                 { "SectionApps", "APLIKACJE W OKNACH" },
                 { "AppsSubtitle", "Uruchom w oknie lub kliknij [Edytuj], by dostosować listę" },
@@ -158,6 +159,7 @@ namespace ScrcpyManager
                 { "ResLabel", "Virtual display resolution (RDP):" },
                 { "AudioPass", "Forward audio to PC" },
                 { "AutoTaskbar", "Start Taskbar" },
+                { "AutoTaskbarTooltip", "When enabled, the Android bottom taskbar is displayed on the virtual screen. When disabled (recommended), scrcpy hides the taskbar (--no-vd-system-decorations) so maximized app windows are not obscured." },
                 { "WifiBtn", "Connect via Wi‑Fi" },
                 { "KeyBtn", "Hardware keyboard" },
                 { "ClipBtn", "Fix clipboard" },
@@ -284,6 +286,7 @@ namespace ScrcpyManager
                 { "ResLabel", "Virtuelle Bildschirmauflösung (RDP):" },
                 { "AudioPass", "Audio an PC übertragen" },
                 { "AutoTaskbar", "Taskbar starten" },
+                { "AutoTaskbarTooltip", "Wenn aktiviert, wird die Android-Taskleiste auf dem virtuellen Bildschirm angezeigt. Wenn deaktiviert (empfohlen), blendet scrcpy die Taskleiste aus (--no-vd-system-decorations)." },
                 { "WifiBtn", "Über WLAN verbinden" },
                 { "KeyBtn", "Physische Tastatur" },
                 { "ClipBtn", "Zwischenablage reparieren" },
@@ -410,6 +413,7 @@ namespace ScrcpyManager
                 { "ResLabel", "Resolución de pantalla virtual (RDP):" },
                 { "AudioPass", "Transmitir audio al PC" },
                 { "AutoTaskbar", "Iniciar Taskbar" },
+                { "AutoTaskbarTooltip", "Cuando está habilitado, la barra de tareas de Android se muestra en la pantalla virtual. Cuando está deshabilitado (recomendado), scrcpy oculta la barra (--no-vd-system-decorations)." },
                 { "WifiBtn", "Conectar por Wi‑Fi" },
                 { "KeyBtn", "Teclado físico" },
                 { "ClipBtn", "Reparar portapapeles" },
@@ -598,6 +602,7 @@ namespace ScrcpyManager
             public string ResLabel             { get { return Get("ResLabel"); } }
             public string AudioPass            { get { return Get("AudioPass"); } }
             public string AutoTaskbar          { get { return Get("AutoTaskbar"); } }
+            public string AutoTaskbarTooltip   { get { return Get("AutoTaskbarTooltip"); } }
             public string WifiBtn              { get { return Get("WifiBtn"); } }
             public string KeyBtn               { get { return Get("KeyBtn"); } }
             public string ClipBtn              { get { return Get("ClipBtn"); } }

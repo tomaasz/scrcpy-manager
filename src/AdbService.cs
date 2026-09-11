@@ -12,6 +12,7 @@ namespace ScrcpyManager
 {
     public class AdbService
     {
+        public static string RuntimeDirectory { get; set; }
         public sealed class CommandResult
         {
             public int ExitCode { get; set; }
@@ -118,14 +119,14 @@ namespace ScrcpyManager
             return StartScrcpyProcess(args);
         }
 
-        public Task<Process> StartScrcpyAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true)
+        public Task<Process> StartScrcpyAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true, bool autoTaskbar = false)
         {
-            return LaunchScrcpyForAppAsync(package, title, useUhid, forwardClicks, displaySize, audio);
+            return LaunchScrcpyForAppAsync(package, title, useUhid, forwardClicks, displaySize, audio, autoTaskbar);
         }
 
-        public Task<Process> StartScrcpyAppAsync(string package, string title, AppLaunchProfile profile, bool audio = true)
+        public Task<Process> StartScrcpyAppAsync(string package, string title, AppLaunchProfile profile, bool audio = true, bool autoTaskbar = false)
         {
-            return LaunchScrcpyForAppAsync(package, title, profile, audio);
+            return LaunchScrcpyForAppAsync(package, title, profile, audio, autoTaskbar);
         }
 
         public Task SendKeyAsync(int keycode)
@@ -518,15 +519,15 @@ namespace ScrcpyManager
             }
         }
 
-        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true)
+        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, bool useUhid, bool forwardClicks, string displaySize, bool audio = true, bool autoTaskbar = false)
         {
             AppLaunchProfile profile = new AppLaunchProfile { displaySize = displaySize };
             if (useUhid) profile.keyboardMode = "uhid";
             profile.forwardAllClicks = forwardClicks;
-            return await LaunchScrcpyForAppAsync(package, title, profile, audio).ConfigureAwait(false);
+            return await LaunchScrcpyForAppAsync(package, title, profile, audio, autoTaskbar).ConfigureAwait(false);
         }
 
-        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, AppLaunchProfile profile, bool audio = true)
+        public static async Task<Process> LaunchScrcpyForAppAsync(string package, string title, AppLaunchProfile profile, bool audio = true, bool autoTaskbar = false)
         {
             if (!IsValidPackageName(package)) return null;
 
@@ -545,6 +546,12 @@ namespace ScrcpyManager
                 "--window-title=" + QuoteWindowsArgument(winTitle),
                 "-w"
             };
+
+            bool hideTaskbar = profile.taskbarMode == "hidden" || (profile.taskbarMode != "shown" && !autoTaskbar);
+            if (hideTaskbar)
+            {
+                argsList.Add("--no-vd-system-decorations");
+            }
 
             int fps = Math.Max(15, Math.Min(240, profile.maxFps > 0 ? profile.maxFps : 60));
             argsList.Add("--max-fps=" + fps);
@@ -595,10 +602,10 @@ namespace ScrcpyManager
             }
 
             string scrcpyArgs = string.Join(" ", argsList);
-            return StartScrcpyProcess(scrcpyArgs);
+            return StartScrcpyProcess(scrcpyArgs, package);
         }
 
-        public static Process StartScrcpyProcess(string args)
+        public static Process StartScrcpyProcess(string args, string package = null)
         {
             try
             {
@@ -610,15 +617,28 @@ namespace ScrcpyManager
                 }
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
-                    FileName = "scrcpy.exe",
+                    FileName = (!string.IsNullOrEmpty(RuntimeDirectory) ? Path.Combine(RuntimeDirectory, "scrcpy.exe") : "scrcpy.exe"),
                     Arguments = args,
                     UseShellExecute = false,
                     CreateNoWindow = false
                 };
 
+                if (!string.IsNullOrEmpty(package))
+                {
+                    string iconDir = AppWindowIconManager.PrepareAppIconDirectory(package);
+                    if (!string.IsNullOrEmpty(iconDir))
+                    {
+                        psi.EnvironmentVariables["SCRCPY_ICON_DIR"] = iconDir;
+                    }
+                }
+
                 Process proc = Process.Start(psi);
                 if (proc != null)
                 {
+                    if (!string.IsNullOrEmpty(package))
+                    {
+                        AppWindowIconManager.RegisterProcess(proc, package);
+                    }
                     lock (_activeScrcpyProcesses)
                     {
                         _activeScrcpyProcesses.Add(proc);

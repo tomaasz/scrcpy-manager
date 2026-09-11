@@ -39,10 +39,12 @@
 ## 🌟 Najważniejsze funkcje
 
 * 🚀 **Aplikacje w niezależnych oknach**: Uruchamiaj dowolne aplikacje Androida w osobnych, pływających oknach (`--new-display`).
-* ⚙️ **Profile uruchamiania per aplikacja**: Dla każdego kafelka zapisz rozdzielczość/DPI, FPS, bitrate, kodek, orientację, klawiaturę, mysz, dźwięk, pełny ekran, okno bez ramek i tryb „zawsze na wierzchu”.
-* 🎛️ **Gotowe presety**: Domyślny, Praca/RDP, Gra, Oszczędny Wi-Fi i Prezentacja.
+* 🎨 **Dedykowane ikony okien w Windows**: Każde uruchomione okno aplikacji otrzymuje własną oficjalną ikonę na pasku zadań i w przełączniku zadań Windows (Alt+Tab), zamiast generycznej ikony `scrcpy`.
+* 🖥️ **Nowoczesny, odświeżony interfejs**: Elegancki grafitowy motyw z delikatnie zaokrąglonymi przyciskami, wygładzaniem krawędzi (anti-aliasing) i subtelnymi efektami hover.
+* ⚙️ **Profile uruchamiania per aplikacja**: Dla każdego kafelka zapisz rozdzielczość/DPI, FPS, bitrate, kodek, orientację, klawiaturę, mysz, dźwięk, pełny ekran, okno bez ramek, tryb „zawsze na wierzchu” oraz widoczność paska zadań.
+* 🎛️ **Gotowe presety**: Domyślny, Praca/RDP, Terminal (wysokie DPI dla idealnej czytelności), Gra, Oszczędny Wi-Fi i Prezentacja.
+* 🛡️ **Kontrola paska zadań Androida (Taskbar)**: Opcjonalne ukrywanie dolnego paska zadań (`--no-vd-system-decorations`), dzięki czemu zmaksymalizowane okna aplikacji nie są przesłaniane od dołu.
 * 🎥 **Nagrywanie sesji**: Zapisuj sesje wybranych aplikacji jako pliki MP4 z datą w katalogu `Wideo\scrcpy-manager`.
-* 🎨 **Prawdziwe ikony aplikacji**: Automatycznie wyciąga oficjalne ikony aplikacji bezpośrednio z telefonu oraz Google Play Store i wyświetla je na kafelkach.
 * 🔎 **Wyszukiwarka pakietów w czasie rzeczywistym**: Błyskawiczne wyszukiwanie i filtrowanie pakietów zainstalowanych na telefonie.
 * 📶 **Bezprzewodowe ADB (Wi‑Fi) jednym kliknięciem**: Automatycznie wykrywa adres IP telefonu w sieci domowej i przełącza połączenie z kabla USB na Wi-Fi.
 * 🔊 **Sterowanie dźwiękiem**: Wygodny przełącznik przesyłania dźwięku z telefonu do głośników lub słuchawek komputera.
@@ -53,7 +55,7 @@
   * `4K UHD (3840x2160)` – Maksymalna rozdzielczość dla dużych ekranów.
   * *Wysoki bitrate (16 Mbps)* gwarantujący żyletkowo ostre czcionki.
 * 🔙 **Wygodna nawigacja i klawisz ESC**: Naciśnięcie klawisza `ESC` w oknie dowolnej aplikacji Androida natychmiast wywołuje `Cofnij` (to samo co strzałka `←` w aplikacji).
-* 🧭 **Zadokowany pasek nawigacyjny okien**: Pływający dolny pasek z przyciskami `◀` (Cofnij), `●` (Ekran główny) i `▢` (Ostatnie aplikacje) przyczepiony do okna scrcpy.
+* 🧭 **Zadokowany pasek nawigacyjny okien**: Pływający dolny pasek z przyciskami `◀` (Cofnij), `●` (Ekran główny) i `▢` (Ostatnie) przyczepiony do okna scrcpy.
 * 📱 **Przyciski nawigacji w panelu**: Szybkie sterowanie telefonem (`◀ Cofnij`, `● Home`, `▢ Ostatnie`) bezpośrednio z poziomu managera.
 * 📐 **Elastyczny układ kafelków**: Przełączaj jednym kliknięciem między listą (1 kolumna), siatką 2-kolumnową i zwartą siatką 3-kolumnową.
 * 🌓 **Tryb Ciemny i Jasny**: Szybkie przełączanie motywu (`☀️ Jasny` / `🌙 Ciemny`) z dedykowanymi kontrolkami.

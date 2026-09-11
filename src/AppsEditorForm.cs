@@ -140,12 +140,12 @@ namespace ScrcpyManager
                 Location = new Point(714, 35),
                 Size = new Size(30, 28),
                 Font = new Font("Segoe UI", 8.2f, FontStyle.Regular),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnMode,
                 ForeColor = _c.BtnModeText,
                 Cursor = Cursors.Hand
             };
-            _btnClearSearch.FlatAppearance.BorderColor = _c.BtnModeBorder;
+            UiThemeHelper.SetupModernButton(_btnClearSearch, 4, () => _c.BtnModeBorder);
+            _btnClearSearch.FlatAppearance.MouseOverBackColor = _c.BtnModeHover;
             _btnClearSearch.Click += (s, e) =>
             {
                 _txtSearch.Text = "";
@@ -174,6 +174,7 @@ namespace ScrcpyManager
                 }
                 else if (e.KeyCode == Keys.Up && _cmbPhoneApps.SelectedIndex <= 1)
                 {
+                    e.SuppressKeyPress = true;
                     _txtSearch.Focus();
                 }
             };
@@ -184,12 +185,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorRefresh,
                 Location = new Point(522, 69),
                 Size = new Size(104, 30),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnTool,
                 ForeColor = _c.BtnToolText,
                 Cursor = Cursors.Hand
             };
-            _btnRefreshApps.FlatAppearance.BorderColor = _c.BtnToolBorder;
+            UiThemeHelper.SetupModernButton(_btnRefreshApps, 5, () => _c.BtnToolBorder);
+            _btnRefreshApps.FlatAppearance.MouseOverBackColor = _c.BtnToolHover;
             _btnRefreshApps.Click += (s, e) => LoadPhoneAppsAsync();
             Controls.Add(_btnRefreshApps);
 
@@ -198,12 +199,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorAdd,
                 Location = new Point(634, 69),
                 Size = new Size(110, 30),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnHero,
                 ForeColor = _c.BtnHeroText,
                 Cursor = Cursors.Hand
             };
-            _btnAddApp.FlatAppearance.BorderSize = 0;
+            UiThemeHelper.SetupModernButton(_btnAddApp, 5, () => Color.Transparent);
+            _btnAddApp.FlatAppearance.MouseOverBackColor = _c.BtnHeroHover;
             _btnAddApp.Click += (s, e) => AddSelectedApp();
             Controls.Add(_btnAddApp);
 
@@ -275,12 +276,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorRemove,
                 Location = new Point(16, 458),
                 Size = new Size(90, 32),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnReboot,
                 ForeColor = _c.BtnRebootText,
                 Cursor = Cursors.Hand
             };
-            _btnRemoveApp.FlatAppearance.BorderColor = _c.BtnRebootBorder;
+            UiThemeHelper.SetupModernButton(_btnRemoveApp, 5, () => _c.BtnRebootBorder);
+            _btnRemoveApp.FlatAppearance.MouseOverBackColor = _c.BtnRebootHover;
             _btnRemoveApp.Click += (s, e) =>
             {
                 if (_grid.CurrentRow != null)
@@ -295,12 +296,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorUp,
                 Location = new Point(112, 458),
                 Size = new Size(90, 32),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnMode,
                 ForeColor = _c.BtnModeText,
                 Cursor = Cursors.Hand
             };
-            _btnMoveUp.FlatAppearance.BorderColor = _c.BtnModeBorder;
+            UiThemeHelper.SetupModernButton(_btnMoveUp, 5, () => _c.BtnModeBorder);
+            _btnMoveUp.FlatAppearance.MouseOverBackColor = _c.BtnModeHover;
             _btnMoveUp.Click += (s, e) => MoveRow(-1);
             Controls.Add(_btnMoveUp);
 
@@ -309,12 +310,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorDown,
                 Location = new Point(208, 458),
                 Size = new Size(90, 32),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnMode,
                 ForeColor = _c.BtnModeText,
                 Cursor = Cursors.Hand
             };
-            _btnMoveDown.FlatAppearance.BorderColor = _c.BtnModeBorder;
+            UiThemeHelper.SetupModernButton(_btnMoveDown, 5, () => _c.BtnModeBorder);
+            _btnMoveDown.FlatAppearance.MouseOverBackColor = _c.BtnModeHover;
             _btnMoveDown.Click += (s, e) => MoveRow(1);
             Controls.Add(_btnMoveDown);
 
@@ -323,12 +324,12 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorPopular,
                 Location = new Point(308, 458),
                 Size = new Size(150, 32),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnTool,
                 ForeColor = _c.BtnToolText,
                 Cursor = Cursors.Hand
             };
-            _btnPopularApps.FlatAppearance.BorderColor = _c.BtnToolBorder;
+            UiThemeHelper.SetupModernButton(_btnPopularApps, 5, () => _c.BtnToolBorder);
+            _btnPopularApps.FlatAppearance.MouseOverBackColor = _c.BtnToolHover;
             _btnPopularApps.Click += (s, e) => LoadPopularApps();
             Controls.Add(_btnPopularApps);
 
@@ -337,13 +338,13 @@ namespace ScrcpyManager
                 Text = _t.AppsEditorCancel,
                 Location = new Point(550, 458),
                 Size = new Size(92, 32),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnMode,
                 ForeColor = _c.BtnModeText,
                 DialogResult = DialogResult.Cancel,
                 Cursor = Cursors.Hand
             };
-            _btnCancel.FlatAppearance.BorderColor = _c.BtnModeBorder;
+            UiThemeHelper.SetupModernButton(_btnCancel, 5, () => _c.BtnModeBorder);
+            _btnCancel.FlatAppearance.MouseOverBackColor = _c.BtnModeHover;
             CancelButton = _btnCancel;
             Controls.Add(_btnCancel);
 
@@ -353,12 +354,12 @@ namespace ScrcpyManager
                 Location = new Point(652, 458),
                 Size = new Size(92, 32),
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                FlatStyle = FlatStyle.Flat,
                 BackColor = _c.BtnHero,
                 ForeColor = _c.BtnHeroText,
                 Cursor = Cursors.Hand
             };
-            _btnSave.FlatAppearance.BorderSize = 0;
+            UiThemeHelper.SetupModernButton(_btnSave, 5, () => Color.Transparent);
+            _btnSave.FlatAppearance.MouseOverBackColor = _c.BtnHeroHover;
             _btnSave.Click += (s, e) => SaveApps();
             Controls.Add(_btnSave);
         }

@@ -52,10 +52,10 @@ namespace ScrcpyManager
         private readonly Font _fontRegular = new Font("Segoe UI", 9f, FontStyle.Regular);
         private readonly Font _fontBold = new Font("Segoe UI", 9f, FontStyle.Bold);
         private readonly Font _fontHero = new Font("Segoe UI", 10.5f, FontStyle.Bold);
-        private readonly Font _fontTitle = new Font("Segoe UI", 9.5f, FontStyle.Bold);
-        private readonly Font _fontSection = new Font("Segoe UI", 8.2f, FontStyle.Bold);
-        private readonly Font _fontSmall = new Font("Segoe UI", 8.2f, FontStyle.Regular);
-        private readonly Font _fontDot = new Font("Segoe UI", 11f, FontStyle.Bold);
+        private readonly Font _fontTitle = new Font("Segoe UI", 10f, FontStyle.Bold);
+        private readonly Font _fontSection = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+        private readonly Font _fontSmall = new Font("Segoe UI", 8.5f, FontStyle.Regular);
+        private readonly Font _fontDot = new Font("Segoe UI", 12f, FontStyle.Bold);
         private readonly Font _fontBadge = new Font("Segoe UI", 7.5f, FontStyle.Bold);
 
         // Wartości rozdzielczości RDP
@@ -294,15 +294,16 @@ namespace ScrcpyManager
             {
                 Location = new Point(16, 12),
                 Size = new Size(372, 60),
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.None
             };
+            UiThemeHelper.SetupModernCard(_pnlStatus, 8, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             Controls.Add(_pnlStatus);
 
             _lblStatusDot = new Label
             {
                 Text = "●",
                 Font = _fontDot,
-                Location = new Point(10, 8),
+                Location = new Point(12, 10),
                 Size = new Size(18, 20),
                 BackColor = Color.Transparent
             };
@@ -312,8 +313,8 @@ namespace ScrcpyManager
             {
                 Text = "Wyszukiwanie urządzenia...",
                 Font = _fontTitle,
-                Location = new Point(28, 9),
-                Size = new Size(225, 20),
+                Location = new Point(32, 9),
+                Size = new Size(220, 22),
                 BackColor = Color.Transparent
             };
             _pnlStatus.Controls.Add(_lblDeviceTitle);
@@ -322,21 +323,19 @@ namespace ScrcpyManager
             {
                 Text = "Inicjalizacja...",
                 Font = _fontSmall,
-                Location = new Point(28, 32),
-                Size = new Size(225, 20),
+                Location = new Point(32, 33),
+                Size = new Size(220, 20),
                 BackColor = Color.Transparent
             };
             _pnlStatus.Controls.Add(_lblStatusDetail);
 
             _btnTheme = new Button
             {
-                Location = new Point(260, 8),
-                Size = new Size(62, 24),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(254, 8),
+                Size = new Size(64, 24),
+                Font = _fontSmall
             };
-            _btnTheme.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnTheme, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _btnTheme.Click += (s, e) =>
             {
                 _isDarkMode = !_isDarkMode;
@@ -349,13 +348,11 @@ namespace ScrcpyManager
 
             _btnLang = new Button
             {
-                Location = new Point(326, 8),
-                Size = new Size(38, 24),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(324, 8),
+                Size = new Size(40, 24),
+                Font = _fontSmall
             };
-            _btnLang.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnLang, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _ctxLang = new ContextMenuStrip();
             _ctxLang.ShowImageMargin = false;
             foreach (var langOpt in new[] {
@@ -382,14 +379,12 @@ namespace ScrcpyManager
 
             _btnUpdateBadge = new Button
             {
-                Location = new Point(260, 34),
-                Size = new Size(104, 21),
+                Location = new Point(258, 34),
+                Size = new Size(106, 21),
                 Font = _fontBadge,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand,
                 Visible = false
             };
-            _btnUpdateBadge.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnUpdateBadge, 10, () => _isDarkMode ? ThemeColors.Dark.BadgeUpdateBorder : ThemeColors.Light.BadgeUpdateBorder);
             _btnUpdateBadge.Click += (s, e) =>
             {
                 ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
@@ -401,19 +396,17 @@ namespace ScrcpyManager
             // 2. Główny przycisk Hero: Uruchom scrcpy
             _btnScrcpy = new Button
             {
-                Location = new Point(16, 82),
-                Size = new Size(372, 40),
-                Font = _fontHero,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(16, 80),
+                Size = new Size(372, 42),
+                Font = _fontHero
             };
-            _btnScrcpy.FlatAppearance.BorderSize = 0;
+            UiThemeHelper.SetupModernButton(_btnScrcpy, 6, () => Color.Transparent);
             _btnScrcpy.Click += (s, e) => LaunchFullScrcpy();
             Controls.Add(_btnScrcpy);
 
             _chkFullScreen = new CheckBox
             {
-                Location = new Point(18, 126),
+                Location = new Point(18, 128),
                 AutoSize = true,
                 Font = _fontSmall
             };
@@ -421,7 +414,7 @@ namespace ScrcpyManager
 
             _chkNavBar = new CheckBox
             {
-                Location = new Point(215, 126),
+                Location = new Point(215, 128),
                 AutoSize = true,
                 Checked = _pref.navBar,
                 Font = _fontSmall
@@ -437,7 +430,7 @@ namespace ScrcpyManager
             // 3. Obraz, dźwięk i sterowanie
             _lblSectionOptions = new Label
             {
-                Location = new Point(16, 150),
+                Location = new Point(16, 152),
                 Size = new Size(372, 16),
                 Font = _fontSection
             };
@@ -445,7 +438,7 @@ namespace ScrcpyManager
 
             _lblRes = new Label
             {
-                Location = new Point(16, 170),
+                Location = new Point(16, 172),
                 AutoSize = true,
                 Font = _fontSmall
             };
@@ -453,19 +446,20 @@ namespace ScrcpyManager
 
             _cmbRes = new ComboBox
             {
-                Location = new Point(16, 188),
-                Size = new Size(372, 26),
+                Location = new Point(16, 190),
+                Size = new Size(372, 28),
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 DrawMode = DrawMode.OwnerDrawFixed,
                 ItemHeight = 22,
                 Font = _fontRegular
             };
             _cmbRes.DrawItem += OnCmbResDrawItem;
+            UiThemeHelper.ApplyRoundedCorners(_cmbRes, 5);
             Controls.Add(_cmbRes);
 
             _chkAudio = new CheckBox
             {
-                Location = new Point(18, 220),
+                Location = new Point(18, 224),
                 AutoSize = true,
                 Checked = true,
                 Font = _fontSmall
@@ -474,34 +468,35 @@ namespace ScrcpyManager
 
             _chkAutoTaskbar = new CheckBox
             {
-                Location = new Point(205, 220),
+                Location = new Point(205, 224),
                 AutoSize = true,
-                Checked = true,
+                Checked = _pref.autoTaskbar,
                 Font = _fontSmall
+            };
+            _chkAutoTaskbar.CheckedChanged += (s, e) =>
+            {
+                _pref.autoTaskbar = _chkAutoTaskbar.Checked;
+                SavePreferences();
             };
             Controls.Add(_chkAutoTaskbar);
 
             _btnWifi = new Button
             {
-                Location = new Point(16, 244),
-                Size = new Size(118, 28),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(16, 250),
+                Size = new Size(118, 30),
+                Font = _fontSmall
             };
-            _btnWifi.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnWifi, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnWifi.Click += async (s, e) => await SwitchToWirelessAdbAsync();
             Controls.Add(_btnWifi);
 
             _btnKeyFix = new Button
             {
-                Location = new Point(143, 244),
-                Size = new Size(118, 28),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(143, 250),
+                Size = new Size(118, 30),
+                Font = _fontSmall
             };
-            _btnKeyFix.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnKeyFix, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnKeyFix.Click += async (s, e) =>
             {
                 if (await _adb.IsDeviceConnectedAsync())
@@ -515,13 +510,11 @@ namespace ScrcpyManager
 
             _btnClipFix = new Button
             {
-                Location = new Point(270, 244),
-                Size = new Size(118, 28),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(270, 250),
+                Size = new Size(118, 30),
+                Font = _fontSmall
             };
-            _btnClipFix.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnClipFix, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnClipFix.Click += async (s, e) =>
             {
                 if (await _adb.IsDeviceConnectedAsync())
@@ -538,7 +531,7 @@ namespace ScrcpyManager
             // 4. Aplikacje w oknach
             _lblSectionApps = new Label
             {
-                Location = new Point(16, 282),
+                Location = new Point(16, 290),
                 Size = new Size(160, 16),
                 Font = _fontSection
             };
@@ -546,15 +539,18 @@ namespace ScrcpyManager
 
             _lblAppsSubtitle = new Label
             {
-                Location = new Point(16, 298),
+                Location = new Point(16, 312),
                 Size = new Size(372, 16),
                 Font = _fontSmall
             };
             Controls.Add(_lblAppsSubtitle);
 
-            _btnLayout1 = new Button { Location = new Point(248, 276), Size = new Size(28, 22), Text = "1", FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-            _btnLayout2 = new Button { Location = new Point(278, 276), Size = new Size(28, 22), Text = "2", FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
-            _btnLayout3 = new Button { Location = new Point(308, 276), Size = new Size(28, 22), Text = "3", FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
+            _btnLayout1 = new Button { Location = new Point(236, 286), Size = new Size(24, 22), Text = "1", Font = _fontSmall };
+            _btnLayout2 = new Button { Location = new Point(264, 286), Size = new Size(24, 22), Text = "2", Font = _fontSmall };
+            _btnLayout3 = new Button { Location = new Point(292, 286), Size = new Size(24, 22), Text = "3", Font = _fontSmall };
+            UiThemeHelper.SetupModernButton(_btnLayout1, 4, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
+            UiThemeHelper.SetupModernButton(_btnLayout2, 4, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
+            UiThemeHelper.SetupModernButton(_btnLayout3, 4, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _btnLayout1.Click += (s, e) => ChangeLayout(1);
             _btnLayout2.Click += (s, e) => ChangeLayout(2);
             _btnLayout3.Click += (s, e) => ChangeLayout(3);
@@ -564,19 +560,17 @@ namespace ScrcpyManager
 
             _btnEditApps = new Button
             {
-                Location = new Point(338, 276),
-                Size = new Size(50, 22),
-                Font = _fontSmall,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(320, 286),
+                Size = new Size(68, 22),
+                Font = _fontSmall
             };
-            _btnEditApps.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnEditApps, 4, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
             _btnEditApps.Click += (s, e) => OpenAppsEditor();
             Controls.Add(_btnEditApps);
 
             _flowAppButtons = new FlowLayoutPanel
             {
-                Location = new Point(16, 314),
+                Location = new Point(16, 334),
                 Width = 372,
                 Height = 186,
                 AutoScroll = false,
@@ -587,7 +581,7 @@ namespace ScrcpyManager
             // Pod siatką aplikacji: Inny pakiet Androida
             _lblCustom = new Label
             {
-                Location = new Point(16, 506),
+                Location = new Point(16, 526),
                 Size = new Size(372, 16),
                 Font = _fontSmall
             };
@@ -595,11 +589,12 @@ namespace ScrcpyManager
 
             _txtCustom = new TextBox
             {
-                Location = new Point(16, 524),
-                Size = new Size(228, 25),
+                Location = new Point(16, 544),
+                Size = new Size(228, 28),
                 BorderStyle = BorderStyle.FixedSingle,
                 Font = _fontRegular
             };
+            UiThemeHelper.ApplyRoundedCorners(_txtCustom, 5);
             _suggestionTimer = new System.Windows.Forms.Timer { Interval = 250 };
             _suggestionTimer.Tick += async (s, e) =>
             {
@@ -624,7 +619,7 @@ namespace ScrcpyManager
 
             _lstCustomSuggestions = new ListBox
             {
-                Location = new Point(16, 550),
+                Location = new Point(16, 574),
                 Width = 284,
                 Height = 118,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -656,33 +651,29 @@ namespace ScrcpyManager
 
             _btnCustom = new Button
             {
-                Location = new Point(250, 523),
-                Size = new Size(72, 26),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(250, 544),
+                Size = new Size(72, 28),
+                Font = _fontSection
             };
-            _btnCustom.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnCustom, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
             _btnCustom.Click += (s, e) => LaunchCustomApp();
             Controls.Add(_btnCustom);
 
             _btnAddCustom = new Button
             {
-                Location = new Point(326, 523),
-                Size = new Size(62, 26),
+                Location = new Point(326, 544),
+                Size = new Size(62, 28),
                 Text = "+ Dodaj",
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Font = _fontSection
             };
-            _btnAddCustom.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnAddCustom, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
             _btnAddCustom.Click += (s, e) => AddCustomPackageTile();
             Controls.Add(_btnAddCustom);
 
             // 5. Operacje na urządzeniu
             _lblSectionDevice = new Label
             {
-                Location = new Point(16, 558),
+                Location = new Point(16, 580),
                 Size = new Size(372, 16),
                 Font = _fontSection
             };
@@ -690,13 +681,11 @@ namespace ScrcpyManager
 
             _btnDesktop = new Button
             {
-                Location = new Point(16, 578),
-                Size = new Size(180, 32),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(16, 600),
+                Size = new Size(180, 36),
+                Font = _fontSection
             };
-            _btnDesktop.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnDesktop, 6, () => _isDarkMode ? ThemeColors.Dark.BtnModeBorder : ThemeColors.Light.BtnModeBorder);
             _btnDesktop.Click += async (s, e) =>
             {
                 if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
@@ -706,7 +695,6 @@ namespace ScrcpyManager
                 await _adb.RunAdbAsync("shell settings put global animator_duration_scale 0.5");
                 await _adb.RunAdbAsync("shell settings put global enable_freeform_support 1");
                 await _adb.RunAdbAsync("shell settings put secure force_resizable_activities 1");
-                await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
                 Localization.Strings t = Localization.Get(_currentLang);
                 MessageBox.Show(this, t.MsgDesktopOn, t.DesktopMode, MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
@@ -714,13 +702,11 @@ namespace ScrcpyManager
 
             _btnNormal = new Button
             {
-                Location = new Point(208, 578),
-                Size = new Size(180, 32),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(208, 600),
+                Size = new Size(180, 36),
+                Font = _fontSection
             };
-            _btnNormal.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnNormal, 6, () => _isDarkMode ? ThemeColors.Dark.BtnModeBorder : ThemeColors.Light.BtnModeBorder);
             _btnNormal.Click += async (s, e) =>
             {
                 if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
@@ -731,7 +717,6 @@ namespace ScrcpyManager
                 await _adb.RunAdbAsync("shell settings put system user_rotation 0");
                 await _adb.RunAdbAsync("shell settings put system accelerometer_rotation 1");
                 await _adb.RestoreScreenTimeoutAsync(_originalTimeout);
-                await _adb.RunAdbAsync("shell am stopservice com.farmerbb.taskbar/.service.DashboardTileService");
                 Localization.Strings t = Localization.Get(_currentLang);
                 MessageBox.Show(this, t.MsgResetDone, t.RestoreDefault, MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
@@ -739,13 +724,11 @@ namespace ScrcpyManager
 
             _btnReboot = new Button
             {
-                Location = new Point(16, 618),
-                Size = new Size(372, 30),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(16, 644),
+                Size = new Size(372, 36),
+                Font = _fontSection
             };
-            _btnReboot.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnReboot, 6, () => _isDarkMode ? ThemeColors.Dark.BtnRebootBorder : ThemeColors.Light.BtnRebootBorder);
             _btnReboot.Click += async (s, e) =>
             {
                 if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
@@ -760,13 +743,11 @@ namespace ScrcpyManager
             // 6. Nawigacja Androida (Cofnij, Home, Ostatnie)
             _btnNavBack = new Button
             {
-                Location = new Point(16, 658),
-                Size = new Size(118, 32),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(16, 688),
+                Size = new Size(118, 34),
+                Font = _fontSection
             };
-            _btnNavBack.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnNavBack, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnNavBack.Click += async (s, e) =>
             {
                 if (await _adb.IsDeviceConnectedAsync())
@@ -778,13 +759,11 @@ namespace ScrcpyManager
 
             _btnNavHome = new Button
             {
-                Location = new Point(143, 658),
-                Size = new Size(118, 32),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(143, 688),
+                Size = new Size(118, 34),
+                Font = _fontSection
             };
-            _btnNavHome.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnNavHome, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnNavHome.Click += async (s, e) =>
             {
                 if (await _adb.IsDeviceConnectedAsync())
@@ -796,13 +775,11 @@ namespace ScrcpyManager
 
             _btnNavRecents = new Button
             {
-                Location = new Point(270, 658),
-                Size = new Size(118, 32),
-                Font = _fontSection,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
+                Location = new Point(270, 688),
+                Size = new Size(118, 34),
+                Font = _fontSection
             };
-            _btnNavRecents.FlatAppearance.BorderSize = 1;
+            UiThemeHelper.SetupModernButton(_btnNavRecents, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
             _btnNavRecents.Click += async (s, e) =>
             {
                 if (await _adb.IsDeviceConnectedAsync())
@@ -825,9 +802,10 @@ namespace ScrcpyManager
         {
             if (e.Index < 0) return;
             bool isSelected = (e.State & DrawItemState.Selected) != 0;
-            Color bgCol = isSelected ? (_isDarkMode ? Color.FromArgb(40, 95, 175) : Color.FromArgb(60, 125, 220))
-                                     : (_isDarkMode ? Color.FromArgb(33, 35, 45) : Color.White);
-            Color textCol = (isSelected || _isDarkMode) ? Color.FromArgb(240, 242, 248) : Color.FromArgb(25, 28, 36);
+            ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
+            Color bgCol = isSelected ? (_isDarkMode ? Color.FromArgb(44, 76, 120) : Color.FromArgb(60, 125, 220))
+                                     : (_isDarkMode ? c.InputBg : Color.White);
+            Color textCol = (isSelected || _isDarkMode) ? c.InputText : Color.FromArgb(25, 28, 36);
 
             using (SolidBrush bgBrush = new SolidBrush(bgCol))
             using (SolidBrush textBrush = new SolidBrush(textCol))
@@ -855,10 +833,12 @@ namespace ScrcpyManager
             _btnTheme.BackColor = c.ToggleBg;
             _btnTheme.ForeColor = c.ToggleText;
             _btnTheme.FlatAppearance.BorderColor = c.CardBorder;
+            _btnTheme.FlatAppearance.MouseOverBackColor = c.ToggleHover;
 
             _btnLang.BackColor = c.ToggleBg;
             _btnLang.ForeColor = c.ToggleText;
             _btnLang.FlatAppearance.BorderColor = c.CardBorder;
+            _btnLang.FlatAppearance.MouseOverBackColor = c.ToggleHover;
 
             _ctxLang.BackColor = c.Card;
             _ctxLang.ForeColor = c.Text;
@@ -871,9 +851,12 @@ namespace ScrcpyManager
             _btnUpdateBadge.BackColor = c.BadgeUpdate;
             _btnUpdateBadge.ForeColor = c.BadgeUpdateText;
             _btnUpdateBadge.FlatAppearance.BorderColor = c.BadgeUpdateBorder;
+            _btnUpdateBadge.FlatAppearance.MouseOverBackColor = c.BtnHeroHover;
 
             _btnScrcpy.BackColor = c.BtnHero;
             _btnScrcpy.ForeColor = c.BtnHeroText;
+            _btnScrcpy.FlatAppearance.MouseOverBackColor = c.BtnHeroHover;
+            _btnScrcpy.FlatAppearance.MouseDownBackColor = c.BtnHeroDown;
 
             _chkFullScreen.ForeColor = c.TextMuted;
             if (_chkNavBar != null) _chkNavBar.ForeColor = c.TextMuted;
@@ -888,14 +871,17 @@ namespace ScrcpyManager
             _btnWifi.BackColor = c.BtnTool;
             _btnWifi.ForeColor = c.BtnToolText;
             _btnWifi.FlatAppearance.BorderColor = c.BtnToolBorder;
+            _btnWifi.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
 
             _btnKeyFix.BackColor = c.BtnTool;
             _btnKeyFix.ForeColor = c.BtnToolText;
             _btnKeyFix.FlatAppearance.BorderColor = c.BtnToolBorder;
+            _btnKeyFix.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
 
             _btnClipFix.BackColor = c.BtnTool;
             _btnClipFix.ForeColor = c.BtnToolText;
             _btnClipFix.FlatAppearance.BorderColor = c.BtnToolBorder;
+            _btnClipFix.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
 
             _lblSectionApps.ForeColor = c.TextMuted;
             _lblAppsSubtitle.ForeColor = c.TextMuted;
@@ -903,6 +889,7 @@ namespace ScrcpyManager
             _btnEditApps.BackColor = c.BtnApp;
             _btnEditApps.ForeColor = c.BtnAppText;
             _btnEditApps.FlatAppearance.BorderColor = c.BtnAppBorder;
+            _btnEditApps.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
 
             UpdateLayoutButtonColors();
 
@@ -915,38 +902,46 @@ namespace ScrcpyManager
             _btnCustom.BackColor = c.BtnApp;
             _btnCustom.ForeColor = c.BtnAppText;
             _btnCustom.FlatAppearance.BorderColor = c.BtnAppBorder;
+            _btnCustom.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
 
             _btnAddCustom.BackColor = c.BtnApp;
             _btnAddCustom.ForeColor = c.BtnAppText;
             _btnAddCustom.FlatAppearance.BorderColor = c.BtnAppBorder;
+            _btnAddCustom.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
 
             _lblSectionDevice.ForeColor = c.TextMuted;
 
             _btnDesktop.BackColor = c.BtnMode;
             _btnDesktop.ForeColor = c.BtnModeText;
             _btnDesktop.FlatAppearance.BorderColor = c.BtnModeBorder;
+            _btnDesktop.FlatAppearance.MouseOverBackColor = c.BtnModeHover;
 
             _btnNormal.BackColor = c.BtnMode;
             _btnNormal.ForeColor = c.BtnModeText;
             _btnNormal.FlatAppearance.BorderColor = c.BtnModeBorder;
+            _btnNormal.FlatAppearance.MouseOverBackColor = c.BtnModeHover;
 
             _btnReboot.BackColor = c.BtnReboot;
             _btnReboot.ForeColor = c.BtnRebootText;
             _btnReboot.FlatAppearance.BorderColor = c.BtnRebootBorder;
+            _btnReboot.FlatAppearance.MouseOverBackColor = c.BtnRebootHover;
 
             if (_btnNavBack != null)
             {
                 _btnNavBack.BackColor = c.BtnTool;
                 _btnNavBack.ForeColor = c.BtnToolText;
                 _btnNavBack.FlatAppearance.BorderColor = c.BtnToolBorder;
+                _btnNavBack.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
 
                 _btnNavHome.BackColor = c.BtnTool;
                 _btnNavHome.ForeColor = c.BtnToolText;
                 _btnNavHome.FlatAppearance.BorderColor = c.BtnToolBorder;
+                _btnNavHome.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
 
                 _btnNavRecents.BackColor = c.BtnTool;
                 _btnNavRecents.ForeColor = c.BtnToolText;
                 _btnNavRecents.FlatAppearance.BorderColor = c.BtnToolBorder;
+                _btnNavRecents.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
             }
 
             NavBarManager.SetDarkMode(_isDarkMode);
@@ -959,12 +954,14 @@ namespace ScrcpyManager
                     b.BackColor = c.Card;
                     b.ForeColor = c.TextMuted;
                     b.FlatAppearance.BorderColor = c.CardBorder;
+                    b.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
                 }
                 else
                 {
                     b.BackColor = c.BtnApp;
                     b.ForeColor = c.BtnAppText;
                     b.FlatAppearance.BorderColor = c.BtnAppBorder;
+                    b.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
                 }
             }
             foreach (Button r in _createdRenameButtons)
@@ -972,12 +969,14 @@ namespace ScrcpyManager
                 r.BackColor = c.BtnApp;
                 r.ForeColor = c.TextMuted;
                 r.FlatAppearance.BorderColor = c.BtnAppBorder;
+                r.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
             }
             foreach (Button d in _createdDelButtons)
             {
                 d.BackColor = c.BtnApp;
                 d.ForeColor = c.TextMuted;
                 d.FlatAppearance.BorderColor = c.BtnAppBorder;
+                d.FlatAppearance.MouseOverBackColor = c.BtnAppHover;
             }
 
             UpdateStatusDisplay();
@@ -1001,6 +1000,7 @@ namespace ScrcpyManager
                     b.BackColor = activeBg;
                     b.ForeColor = activeFg;
                     b.FlatAppearance.BorderColor = activeBorder;
+                    b.FlatAppearance.MouseOverBackColor = c.ToggleChecked;
                     b.Font = _fontSection;
                 }
                 else
@@ -1008,6 +1008,7 @@ namespace ScrcpyManager
                     b.BackColor = c.ToggleBg;
                     b.ForeColor = c.TextMuted;
                     b.FlatAppearance.BorderColor = c.CardBorder;
+                    b.FlatAppearance.MouseOverBackColor = c.ToggleHover;
                     b.Font = _fontSmall;
                 }
             }
@@ -1035,6 +1036,7 @@ namespace ScrcpyManager
             _lblRes.Text = t.ResLabel;
             _chkAudio.Text = t.AudioPass;
             _chkAutoTaskbar.Text = t.AutoTaskbar;
+            _tipMain.SetToolTip(_chkAutoTaskbar, t.AutoTaskbarTooltip);
             _btnWifi.Text = t.WifiBtn;
             _btnKeyFix.Text = t.KeyBtn;
             _btnClipFix.Text = t.ClipBtn;
@@ -1131,46 +1133,45 @@ namespace ScrcpyManager
                         Size = new Size(350, 40),
                         Margin = new Padding(12, 3, 3, 3),
                         Font = _fontSection,
-                        FlatStyle = FlatStyle.Flat,
                         BackColor = cTheme.Card,
                         ForeColor = cTheme.TextMuted,
                         Cursor = Cursors.Hand
                     };
-                    btnEmpty.FlatAppearance.BorderSize = 1;
-                    btnEmpty.FlatAppearance.BorderColor = cTheme.CardBorder;
+                    UiThemeHelper.SetupModernButton(btnEmpty, 6, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
+                    btnEmpty.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
                     btnEmpty.Click += (s, e) => OpenAppsEditor();
                     _flowAppButtons.Controls.Add(btnEmpty);
                     _createdAppButtons.Add(btnEmpty);
                 }
                 else
                 {
-                    int tileW = 178, btnW = 130, renX = 129, renW = 25, delX = 153, delW = 25;
+                    int tileW = 180, btnW = 126, renX = 129, renW = 24, delX = 156, delW = 24;
                     Padding tileMargin = new Padding(3);
-                    Padding btnPad = new Padding(4, 0, 0, 0);
-                    Padding btnIconPad = new Padding(4, 0, 0, 0);
-                    int targetIconSize = 18, targetIconGap = 5;
+                    Padding btnPad = new Padding(6, 0, 0, 0);
+                    Padding btnIconPad = new Padding(6, 0, 0, 0);
+                    int targetIconSize = 20, targetIconGap = 6;
 
                     if (_appsLayout == 1)
                     {
                         tileW = 360;
                         tileMargin = new Padding(6, 3, 6, 3);
-                        btnW = 310;
-                        renX = 309; renW = 26;
-                        delX = 334; delW = 26;
+                        btnW = 296;
+                        renX = 300; renW = 28;
+                        delX = 332; delW = 28;
                         btnPad = new Padding(8, 0, 0, 0);
                         btnIconPad = new Padding(8, 0, 0, 0);
-                        targetIconSize = 18; targetIconGap = 6;
+                        targetIconSize = 20; targetIconGap = 8;
                     }
                     else if (_appsLayout == 3)
                     {
                         tileW = 118;
                         tileMargin = new Padding(2, 3, 2, 3);
-                        btnW = 74;
-                        renX = 73; renW = 23;
-                        delX = 95; delW = 23;
-                        btnPad = new Padding(2, 0, 0, 0);
-                        btnIconPad = new Padding(2, 0, 0, 0);
-                        targetIconSize = 16; targetIconGap = 4;
+                        btnW = 68;
+                        renX = 71; renW = 22;
+                        delX = 96; delW = 22;
+                        btnPad = new Padding(3, 0, 0, 0);
+                        btnIconPad = new Padding(3, 0, 0, 0);
+                        targetIconSize = 18; targetIconGap = 4;
                     }
 
                     foreach (AppEntry app in _appButtons)
@@ -1179,7 +1180,7 @@ namespace ScrcpyManager
 
                         Panel pnlTile = new Panel
                         {
-                            Size = new Size(tileW, 30),
+                            Size = new Size(tileW, 34),
                             Margin = tileMargin,
                             BackColor = Color.Transparent
                         };
@@ -1188,19 +1189,18 @@ namespace ScrcpyManager
                         {
                             Text = currentApp.name,
                             Location = new Point(0, 0),
-                            Size = new Size(btnW, 30),
+                            Size = new Size(btnW, 34),
                             Font = _fontSmall,
                             TextAlign = ContentAlignment.MiddleLeft,
                             Padding = btnPad,
-                            FlatStyle = FlatStyle.Flat,
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.BtnAppText,
                             AutoEllipsis = true,
-                            UseCompatibleTextRendering = true,
+                            UseCompatibleTextRendering = false,
                             Cursor = Cursors.Hand
                         };
-                        btn.FlatAppearance.BorderSize = 1;
-                        btn.FlatAppearance.BorderColor = cTheme.BtnAppBorder;
+                        UiThemeHelper.SetupModernButton(btn, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
+                        btn.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
 
                         Bitmap iconImg = _icons.GetResizedIcon(currentApp.package, targetIconSize, targetIconGap);
                         if (iconImg != null)
@@ -1223,15 +1223,14 @@ namespace ScrcpyManager
                         {
                             Text = "✎",
                             Location = new Point(renX, 0),
-                            Size = new Size(renW, 30),
+                            Size = new Size(renW, 34),
                             Font = _fontSmall,
-                            FlatStyle = FlatStyle.Flat,
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.TextMuted,
                             Cursor = Cursors.Hand
                         };
-                        btnRename.FlatAppearance.BorderSize = 1;
-                        btnRename.FlatAppearance.BorderColor = cTheme.BtnAppBorder;
+                        UiThemeHelper.SetupModernButton(btnRename, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
+                        btnRename.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
                         _tipMain.SetToolTip(btnRename, (_currentLang == "PL" ? "Profil uruchamiania: " : "Launch profile: ") + currentApp.name);
                         btnRename.MouseEnter += (s, e) => btnRename.ForeColor = Color.FromArgb(100, 180, 255);
                         btnRename.MouseLeave += (s, e) => btnRename.ForeColor = (_isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted);
@@ -1242,15 +1241,14 @@ namespace ScrcpyManager
                         {
                             Text = "✕",
                             Location = new Point(delX, 0),
-                            Size = new Size(delW, 30),
+                            Size = new Size(delW, 34),
                             Font = _fontSmall,
-                            FlatStyle = FlatStyle.Flat,
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.TextMuted,
                             Cursor = Cursors.Hand
                         };
-                        btnDel.FlatAppearance.BorderSize = 1;
-                        btnDel.FlatAppearance.BorderColor = cTheme.BtnAppBorder;
+                        UiThemeHelper.SetupModernButton(btnDel, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
+                        btnDel.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
                         _tipMain.SetToolTip(btnDel, string.Format(t.AppsRemoveTooltip, currentApp.name));
                         btnDel.MouseEnter += (s, e) => btnDel.ForeColor = Color.FromArgb(255, 90, 90);
                         btnDel.MouseLeave += (s, e) => btnDel.ForeColor = (_isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted);
@@ -1290,11 +1288,11 @@ namespace ScrcpyManager
         {
             int cols = _appsLayout == 1 ? 1 : (_appsLayout == 3 ? 3 : 2);
             int rowCount = _appButtons.Count == 0 ? 1 : (int)Math.Ceiling(_appButtons.Count / (double)cols);
-            int neededFlowH = (rowCount * 36) + 6;
+            int neededFlowH = (rowCount * 40) + 6;
 
             int screenH = 900;
             try { screenH = Screen.FromControl(this).WorkingArea.Height; } catch {}
-            int maxFlowH = Math.Max(186, screenH - 520);
+            int maxFlowH = Math.Max(206, screenH - 520);
 
             if (neededFlowH > maxFlowH)
             {
@@ -1436,10 +1434,15 @@ namespace ScrcpyManager
                         }
                     }
 
-                    string docsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "docs");
+                    string repoDocsDir = Path.Combine(Environment.CurrentDirectory, "docs");
+                    string docsDir = Directory.Exists(repoDocsDir) ? repoDocsDir : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "docs");
                     if (!Directory.Exists(docsDir)) Directory.CreateDirectory(docsDir);
                     string outPath = Path.Combine(docsDir, "screenshot." + _captureScreenshotLang.ToLower() + ".png");
                     bmp.Save(outPath, ImageFormat.Png);
+                    if (_captureScreenshotLang.Equals("PL", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try { bmp.Save(Path.Combine(docsDir, "screenshot.png"), ImageFormat.Png); } catch { }
+                    }
                 }
 
                 Close();
@@ -1632,11 +1635,6 @@ namespace ScrcpyManager
         {
             if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
 
-            if (_chkAutoTaskbar.Checked)
-            {
-                await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
-            }
-
             await _adb.RunAdbAsync("shell settings put system accelerometer_rotation 0");
             await _adb.RunAdbAsync("shell settings put system user_rotation 1");
             await AdbService.EnableKeepAwakeAsync();
@@ -1645,8 +1643,9 @@ namespace ScrcpyManager
             string title = !string.IsNullOrEmpty(_currentDevice.Model) ? string.Format("{0} (scrcpy)", _currentDevice.Model) : "Android (scrcpy)";
             string audioArg = _chkAudio.Checked ? "" : "--no-audio";
             string fsArg = _chkFullScreen.Checked ? "-f" : "";
+            string taskbarArg = _chkAutoTaskbar.Checked ? "" : "--no-vd-system-decorations";
 
-            string argsToRun = string.Format("-S -w -K {0} {1} --window-title={2}", fsArg, audioArg, AdbService.QuoteWindowsArgument(title)).Trim();
+            string argsToRun = string.Format("-S -w -K {0} {1} {2} --window-title={3}", fsArg, audioArg, taskbarArg, AdbService.QuoteWindowsArgument(title)).Trim();
 
             try
             {
@@ -1663,10 +1662,6 @@ namespace ScrcpyManager
         {
             if (app == null || !AdbService.IsValidPackageName(app.package)) return;
             if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
-            if (_chkAutoTaskbar.Checked)
-            {
-                await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
-            }
 
             AppLaunchProfile profile = ValidateProfile(app.profile, app.flags);
             if (string.Equals(app.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase))
@@ -1685,7 +1680,7 @@ namespace ScrcpyManager
 
             try
             {
-                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, profile, _chkAudio.Checked);
+                Process proc = await _adb.StartScrcpyAppAsync(app.package, app.name, profile, _chkAudio.Checked, _chkAutoTaskbar.Checked);
                 if (proc != null) _launchedProcesses.Add(proc);
             }
             catch (Exception ex)
@@ -1706,15 +1701,10 @@ namespace ScrcpyManager
 
             if (!await _adb.IsDeviceConnectedAsync()) { ShowNoDeviceWarning(); return; }
 
-            if (_chkAutoTaskbar.Checked)
-            {
-                await _adb.RunAdbAsync("shell am start-service com.farmerbb.taskbar/.service.DashboardTileService");
-            }
-
             try
             {
                 bool audio = _chkAudio.Checked;
-                Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, new AppLaunchProfile(), audio);
+                Process proc = await _adb.StartScrcpyAppAsync(pkg, pkg, new AppLaunchProfile(), audio, _chkAutoTaskbar.Checked);
                 if (proc != null) _launchedProcesses.Add(proc);
             }
             catch { }

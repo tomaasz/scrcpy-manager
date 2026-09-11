@@ -39,10 +39,12 @@
 ## 🌟 Key Features
 
 * 🚀 **Multi-Window Floating Apps**: Launch any Android app in an independent virtual display window (`--new-display`).
-* ⚙️ **Per-App Launch Profiles**: Save resolution/DPI, FPS, bitrate, codec, orientation, keyboard, mouse, audio, fullscreen, borderless and always-on-top settings for every tile.
-* 🎛️ **Ready-to-Use Presets**: Default, Work/RDP, Gaming, Wi-Fi Saver and Presentation profiles.
+* 🎨 **Dedicated Window Icons in Windows**: Every running app window receives its official application icon on the Windows taskbar and in Alt+Tab, instead of the generic `scrcpy` robot icon.
+* 🖥️ **Modern, Refreshed UI**: Sleek cool-graphite theme with delicately rounded corners, anti-aliased borders, and subtle hover highlights.
+* ⚙️ **Per-App Launch Profiles**: Save resolution/DPI, FPS, bitrate, codec, orientation, keyboard, mouse, audio, fullscreen, borderless, always-on-top, and taskbar visibility for every tile.
+* 🎛️ **Ready-to-Use Presets**: Default, Work/RDP, Terminal (high DPI for maximum font clarity), Gaming, Wi-Fi Saver and Presentation profiles.
+* 🛡️ **Android Taskbar Control**: Optional suppression of the virtual screen taskbar (`--no-vd-system-decorations`) so maximized app windows are never obscured from below.
 * 🎥 **Session Recording**: Record selected application sessions to timestamped MP4 files in `Videos\scrcpy-manager`.
-* 🎨 **Native App Icons**: Extracts official application icons directly from your phone and Google Play, displaying crisp icons on your custom launch tiles.
 * 🔎 **Real-Time Package Search**: Instant search and filtering when picking apps from your connected phone.
 * 📶 **One-Click Wireless ADB (Wi‑Fi)**: Automatically detect your phone's Wi‑Fi IP and switch from USB cable to wireless debugging in one click.
 * 🔊 **Audio Passthrough Control**: Toggle real-time audio forwarding from your Android device to PC speakers/headphones.

@@ -19,6 +19,7 @@ namespace ScrcpyManager
         private readonly ComboBox _keyboard;
         private readonly ComboBox _mouse;
         private readonly ComboBox _audio;
+        private readonly ComboBox _taskbar;
         private readonly CheckBox _alwaysOnTop;
         private readonly CheckBox _borderless;
         private readonly CheckBox _turnScreenOff;
@@ -33,7 +34,7 @@ namespace ScrcpyManager
             AppLaunchProfile profile = app.profile ?? new AppLaunchProfile();
 
             Text = _polish ? "Profil uruchamiania aplikacji" : "Application launch profile";
-            ClientSize = new Size(510, 595);
+            ClientSize = new Size(510, 630);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = false;
@@ -56,14 +57,14 @@ namespace ScrcpyManager
             TableLayoutPanel table = new TableLayoutPanel
             {
                 Location = new Point(16, 14),
-                Size = new Size(478, 502),
+                Size = new Size(478, 536),
                 ColumnCount = 2,
-                RowCount = 12,
+                RowCount = 13,
                 BackColor = Color.Transparent
             };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 175));
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            for (int i = 0; i < 12; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 10 ? 96 : 34));
+            for (int i = 0; i < 13; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 11 ? 96 : 34));
             Controls.Add(table);
 
             _name = AddText(table, 0, _polish ? "Nazwa kafelka" : "Tile name", app.name, colors,
@@ -124,9 +125,18 @@ namespace ScrcpyManager
                 _polish ? "Przesyłanie dźwięku z Androida:\n• Ustawienie główne: zgodnie z przełącznikiem 'Przesyłaj dźwięk' w oknie głównym,\n• Zawsze włączony: dźwięk z tej aplikacji zawsze trafia do głośników PC,\n• Zawsze wyłączony: całkowite wyciszenie dźwięku scrcpy."
                         : "Audio playback forwarding:\n• Global setting: follows main window audio toggle,\n• Always enabled: sound from this app always streams to PC speakers,\n• Always disabled: audio muted.");
 
+            _taskbar = AddCombo(table, 10, _polish ? "Dolny pasek (Taskbar)" : "Bottom taskbar", new[]
+            {
+                _polish ? "Ustawienie główne" : "Global setting",
+                _polish ? "Zawsze ukryty (zalecane)" : "Always hidden (recommended)",
+                _polish ? "Zawsze widoczny" : "Always visible"
+            }, colors, editable: false, tooltip:
+                _polish ? "Sterowanie dolnym paskiem zadań Androida na wirtualnym ekranie:\n• Ustawienie główne: zgodnie z opcją w oknie głównym,\n• Zawsze ukryty (zalecane): dodaje --no-vd-system-decorations, dzięki czemu zmaksymalizowane okno aplikacji nie jest zasłaniane od dołu,\n• Zawsze widoczny: zachowuje pasek zadań z ikonami na dole ekranu."
+                        : "Android taskbar control on the virtual display:\n• Global setting: follows main window checkbox,\n• Always hidden (recommended): adds --no-vd-system-decorations so maximized app windows are not obscured,\n• Always visible: keeps the bottom taskbar with icons.");
+
             FlowLayoutPanel toggles = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = false, WrapContents = true };
             table.SetColumnSpan(toggles, 2);
-            table.Controls.Add(toggles, 0, 10);
+            table.Controls.Add(toggles, 0, 11);
             _alwaysOnTop = AddCheck(toggles, _polish ? "Zawsze na wierzchu" : "Always on top", colors,
                 _polish ? "Utrzymuje okno aplikacji nad wszystkimi innymi otwartymi oknami w systemie Windows."
                         : "Keeps this application window floating above all other desktop windows.");
@@ -154,7 +164,7 @@ namespace ScrcpyManager
             Label packageLabel = new Label
             {
                 Text = (_polish ? "Pakiet: " : "Package: ") + app.package,
-                Location = new Point(18, 525),
+                Location = new Point(18, 558),
                 Size = new Size(475, 18),
                 ForeColor = colors.TextMuted,
                 AutoEllipsis = true
@@ -165,13 +175,14 @@ namespace ScrcpyManager
             Button save = new Button
             {
                 Text = _polish ? "Zapisz profil" : "Save profile",
-                Location = new Point(276, 555),
+                Location = new Point(276, 588),
                 Size = new Size(126, 30),
                 BackColor = colors.BtnHero,
-                ForeColor = colors.BtnHeroText,
-                FlatStyle = FlatStyle.Flat
+                ForeColor = colors.BtnHeroText
             };
-            save.FlatAppearance.BorderSize = 0;
+            UiThemeHelper.SetupModernButton(save, 5, () => Color.Transparent);
+            save.FlatAppearance.MouseOverBackColor = colors.BtnHeroHover;
+            save.FlatAppearance.MouseDownBackColor = colors.BtnHeroDown;
             save.Click += OnSave;
             _toolTip.SetToolTip(save, _polish ? "Zapisuje profil i stosuje konfigurację przy kolejnych uruchomieniach kafelka." : "Saves profile and applies configuration on next launch.");
             Controls.Add(save);
@@ -180,13 +191,14 @@ namespace ScrcpyManager
             Button cancel = new Button
             {
                 Text = _polish ? "Anuluj" : "Cancel",
-                Location = new Point(410, 555),
+                Location = new Point(410, 588),
                 Size = new Size(84, 30),
                 BackColor = colors.BtnApp,
                 ForeColor = colors.BtnAppText,
-                FlatStyle = FlatStyle.Flat,
                 DialogResult = DialogResult.Cancel
             };
+            UiThemeHelper.SetupModernButton(cancel, 5, () => colors.BtnAppBorder);
+            cancel.FlatAppearance.MouseOverBackColor = colors.BtnAppHover;
             _toolTip.SetToolTip(cancel, _polish ? "Zamyka okno bez zapisywania zmian." : "Closes window without saving changes.");
             Controls.Add(cancel);
             CancelButton = cancel;
@@ -256,6 +268,7 @@ namespace ScrcpyManager
             Select(_keyboard, p.keyboardMode, "sdk");
             Select(_mouse, p.mouseMode, "sdk");
             _audio.SelectedIndex = p.audioMode == "on" ? 1 : (p.audioMode == "off" ? 2 : 0);
+            _taskbar.SelectedIndex = p.taskbarMode == "hidden" ? 1 : (p.taskbarMode == "shown" ? 2 : 0);
             _alwaysOnTop.Checked = p.alwaysOnTop;
             _borderless.Checked = p.borderless;
             _fullscreen.Checked = p.fullscreen;
@@ -337,6 +350,7 @@ namespace ScrcpyManager
             p.keyboardMode = _keyboard.Text;
             p.mouseMode = _mouse.Text;
             p.audioMode = _audio.SelectedIndex == 1 ? "on" : (_audio.SelectedIndex == 2 ? "off" : "global");
+            p.taskbarMode = _taskbar.SelectedIndex == 1 ? "hidden" : (_taskbar.SelectedIndex == 2 ? "shown" : "global");
             p.alwaysOnTop = _alwaysOnTop.Checked;
             p.borderless = _borderless.Checked;
             p.fullscreen = _fullscreen.Checked;

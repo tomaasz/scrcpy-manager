@@ -9,6 +9,9 @@ namespace ScrcpyManager
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
 
@@ -104,6 +107,97 @@ namespace ScrcpyManager
             public int Bottom;
             public int Width { get { return Right - Left; } }
             public int Height { get { return Bottom - Top; } }
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
+        private static extern IntPtr SetClassLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetClassLong")]
+        private static extern IntPtr SetClassLong32(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        public static IntPtr SetClassLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong)
+        {
+            try
+            {
+                if (IntPtr.Size == 8) return SetClassLongPtr64(hWnd, nIndex, dwNewLong);
+                return SetClassLong32(hWnd, nIndex, dwNewLong);
+            }
+            catch { return IntPtr.Zero; }
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool DestroyIcon(IntPtr hIcon);
+
+        public const int WM_SETICON = 0x0080;
+        public const int ICON_SMALL = 0;
+        public const int ICON_BIG = 1;
+        public const int GCLP_HICON = -14;
+        public const int GCLP_HICONSM = -34;
+
+        [DllImport("shell32.dll", SetLastError = true)]
+        private static extern int SHGetPropertyStoreForWindow(IntPtr handle, ref Guid riid, out IPropertyStore propertyStore);
+
+        [ComImport, Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IPropertyStore
+        {
+            int GetCount(out uint propertyCount);
+            int GetAt(uint propertyIndex, out PropertyKey key);
+            int GetValue(ref PropertyKey key, out PropVariant value);
+            int SetValue(ref PropertyKey key, ref PropVariant value);
+            int Commit();
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct PropertyKey
+        {
+            public Guid fmtid;
+            public uint pid;
+            public PropertyKey(Guid guid, uint id)
+            {
+                fmtid = guid;
+                pid = id;
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct PropVariant
+        {
+            [FieldOffset(0)] public ushort vt;
+            [FieldOffset(8)] public IntPtr pwszVal;
+
+            public static PropVariant FromString(string val)
+            {
+                return new PropVariant
+                {
+                    vt = 31, // VT_LPWSTR
+                    pwszVal = Marshal.StringToCoTaskMemUni(val)
+                };
+            }
+        }
+
+        private static readonly Guid IID_IPropertyStore = new Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99");
+        private static readonly PropertyKey AppUserModel_ID = new PropertyKey(new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"), 5);
+
+        public static bool SetWindowAppId(IntPtr hwnd, string appId)
+        {
+            if (hwnd == IntPtr.Zero || string.IsNullOrEmpty(appId)) return false;
+            try
+            {
+                IPropertyStore store;
+                Guid iid = IID_IPropertyStore;
+                int hr = SHGetPropertyStoreForWindow(hwnd, ref iid, out store);
+                if (hr != 0 || store == null) return false;
+                PropVariant pv = PropVariant.FromString(appId);
+                PropertyKey key = AppUserModel_ID;
+                hr = store.SetValue(ref key, ref pv);
+                if (hr == 0) store.Commit();
+                Marshal.ReleaseComObject(store);
+                return hr == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential)]

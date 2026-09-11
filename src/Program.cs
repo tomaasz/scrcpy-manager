@@ -42,6 +42,7 @@ namespace ScrcpyManager
                 {
                     KeyboardHook.Stop();
                     NavBarManager.Shutdown();
+                    AppWindowIconManager.Shutdown();
                 };
                 Application.Run(new MainForm(args, runtimeDir));
             }
