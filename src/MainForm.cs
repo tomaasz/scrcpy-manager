@@ -1196,6 +1196,7 @@ namespace ScrcpyManager
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.BtnAppText,
                             AutoEllipsis = true,
+                            UseCompatibleTextRendering = true,
                             Cursor = Cursors.Hand
                         };
                         btn.FlatAppearance.BorderSize = 1;
