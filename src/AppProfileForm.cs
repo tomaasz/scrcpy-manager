@@ -8,6 +8,7 @@ namespace ScrcpyManager
     {
         private readonly AppEntry _app;
         private readonly bool _polish;
+        private readonly ToolTip _toolTip;
         private readonly TextBox _name;
         private readonly ComboBox _preset;
         private readonly ComboBox _display;
@@ -44,6 +45,14 @@ namespace ScrcpyManager
             if (icon != null) Icon = icon;
             NativeMethods.UseImmersiveDarkMode(Handle, colors == ThemeColors.Dark);
 
+            _toolTip = new ToolTip
+            {
+                AutoPopDelay = 12000,
+                InitialDelay = 350,
+                ReshowDelay = 150,
+                ShowAlways = true
+            };
+
             TableLayoutPanel table = new TableLayoutPanel
             {
                 Location = new Point(16, 14),
@@ -57,7 +66,10 @@ namespace ScrcpyManager
             for (int i = 0; i < 12; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 10 ? 96 : 34));
             Controls.Add(table);
 
-            _name = AddText(table, 0, _polish ? "Nazwa kafelka" : "Tile name", app.name, colors);
+            _name = AddText(table, 0, _polish ? "Nazwa kafelka" : "Tile name", app.name, colors,
+                _polish ? "Wyświetlana nazwa kafelka w menedżerze oraz tytuł tworzonego okna scrcpy."
+                        : "Display name on the dashboard tile and the title of the created scrcpy window.");
+
             _preset = AddCombo(table, 1, _polish ? "Preset" : "Preset", new[]
             {
                 _polish ? "Domyślny" : "Default",
@@ -66,35 +78,78 @@ namespace ScrcpyManager
                 _polish ? "Oszczędny Wi-Fi" : "Wi-Fi saver",
                 _polish ? "Prezentacja" : "Presentation",
                 _polish ? "Terminal / Duży tekst" : "Terminal / Large text"
-            }, colors);
+            }, colors, editable: false, tooltip:
+                _polish ? "Szybki zestaw ustawień zoptymalizowany dla konkretnych scenariuszy. Wybranie presetu automatycznie uzupełnia poniższe pola."
+                        : "Preconfigured quality profile. Selecting a preset automatically configures the fields below.");
+
             _display = AddCombo(table, 2, _polish ? "Rozdzielczość / DPI" : "Resolution / DPI", new[]
             {
                 "1920x1080/320", "1920x1080/240", "1920x1080/160",
                 "2560x1440/320", "2560x1440/240", "2560x1440/160", "2560x1440/140",
                 "1280x720/240", "3840x2160/320", "3840x2160/240", "1080x2400"
-            }, colors, editable: true);
-            _fps = AddNumber(table, 3, _polish ? "Limit FPS" : "FPS limit", 15, 240, colors);
-            _bitRate = AddCombo(table, 4, _polish ? "Bitrate obrazu" : "Video bitrate", new[] { "2M", "4M", "8M", "12M", "16M", "24M", "32M" }, colors);
-            _codec = AddCombo(table, 5, _polish ? "Kodek obrazu" : "Video codec", new[] { "h264", "h265", "av1", "vp8", "vp9" }, colors);
-            _orientation = AddCombo(table, 6, _polish ? "Orientacja" : "Orientation", new[] { "auto", "0", "90", "180", "270" }, colors);
-            _keyboard = AddCombo(table, 7, _polish ? "Klawiatura" : "Keyboard", new[] { "sdk", "uhid", "disabled" }, colors);
-            _mouse = AddCombo(table, 8, _polish ? "Mysz" : "Mouse", new[] { "sdk", "uhid", "disabled" }, colors);
+            }, colors, editable: true, tooltip:
+                _polish ? "Rozdzielczość wirtualnego ekranu i gęstość DPI w formacie SZERxWYS/DPI (np. 1920x1080/320).\n• Wyższa wartość DPI (np. /320 zamiast /160) powiększa tekst, przyciski i cały interfejs aplikacji.\n• Możesz wybrać opcję z listy lub wpisać własne wartości."
+                        : "Virtual display resolution and DPI density (WIDTHxHEIGHT/DPI format).\n• Higher DPI (e.g. /320 vs /160) enlarges text, buttons, and app interface.\n• You can pick from the list or type custom values.");
+
+            _fps = AddNumber(table, 3, _polish ? "Limit FPS" : "FPS limit", 15, 240, colors,
+                _polish ? "Maksymalna liczba klatek na sekundę strumieniowanych ze scrcpy (15–240).\n• 60 FPS zapewnia pełną płynność animacji.\n• Mniejsze wartości (np. 30 FPS) redukują obciążenie procesora, baterię i pasmo Wi-Fi."
+                        : "Maximum streamed frames per second (15–240).\n• 60 FPS provides smooth motion.\n• Lower values (e.g. 30 FPS) save CPU, battery, and Wi-Fi bandwidth.");
+
+            _bitRate = AddCombo(table, 4, _polish ? "Bitrate obrazu" : "Video bitrate", new[] { "2M", "4M", "8M", "12M", "16M", "24M", "32M" }, colors, editable: false, tooltip:
+                _polish ? "Przepustowość kodowania wideo (np. 8M, 12M, 16M).\n• Wyższy bitrate eliminuje rozmycia i artefakty wokół drobnego tekstu.\n• Niższy bitrate (np. 4M) jest zalecany przy słabym sygnale Wi-Fi."
+                        : "Video streaming bitrate (e.g. 8M, 12M, 16M).\n• Higher bitrate produces crisp text without compression artifacts.\n• Lower bitrate is recommended on weaker Wi-Fi networks.");
+
+            _codec = AddCombo(table, 5, _polish ? "Kodek obrazu" : "Video codec", new[] { "h264", "h265", "av1", "vp8", "vp9" }, colors, editable: false, tooltip:
+                _polish ? "Format kompresji strumienia wideo:\n• h264: maksymalna kompatybilność ze wszystkimi urządzeniami.\n• h265 / av1: lepsza jakość obrazu przy mniejszym zużyciu sieci (wymaga sprzętowego dekodera w PC)."
+                        : "Video compression format:\n• h264: universal compatibility.\n• h265 / av1: superior visual quality at lower bitrates (requires hardware decoder).");
+
+            _orientation = AddCombo(table, 6, _polish ? "Orientacja" : "Orientation", new[] { "auto", "0", "90", "180", "270" }, colors, editable: false, tooltip:
+                _polish ? "Wymuszenie orientacji wirtualnego ekranu:\n• auto: automatycznie według preferencji aplikacji,\n• 0: pionowa (portrait),\n• 90 / 270: pozioma (landscape),\n• 180: pionowa odwrócona."
+                        : "Display orientation lock:\n• auto: app default,\n• 0: portrait,\n• 90 / 270: landscape,\n• 180: reverse portrait.");
+
+            _keyboard = AddCombo(table, 7, _polish ? "Klawiatura" : "Keyboard", new[] { "sdk", "uhid", "disabled" }, colors, editable: false, tooltip:
+                _polish ? "Sposób przesyłania naciśnięć klawiatury:\n• uhid: symulacja fizycznej klawiatury USB na telefonie (obsługuje wszystkie skróty terminala, Ctrl+C, Ctrl+D, Alt, ESC i polskie znaki z AltGr),\n• sdk: wprowadzanie znaków przez klawiaturę ekranową Androida (IME),\n• disabled: klawiatura wyłączona."
+                        : "Keyboard simulation mode:\n• uhid: hardware USB keyboard simulation (supports terminal shortcuts, Alt, ESC, and AltGr diacritics),\n• sdk: characters injected via Android IME,\n• disabled: keyboard input disabled.");
+
+            _mouse = AddCombo(table, 8, _polish ? "Mysz" : "Mouse", new[] { "sdk", "uhid", "disabled" }, colors, editable: false, tooltip:
+                _polish ? "Sposób obsługi myszy:\n• sdk: kliknięcia są traktowane jak dotyk palcem na ekranie telefonu,\n• uhid: komputerowa mysz fizyczna podłączona do telefonu,\n• disabled: kursor wyłączony."
+                        : "Mouse simulation mode:\n• sdk: clicks simulate touchscreen taps,\n• uhid: raw physical USB mouse simulation,\n• disabled: mouse input disabled.");
+
             _audio = AddCombo(table, 9, _polish ? "Dźwięk" : "Audio", new[]
             {
                 _polish ? "Ustawienie główne" : "Global setting",
                 _polish ? "Zawsze włączony" : "Always enabled",
                 _polish ? "Zawsze wyłączony" : "Always disabled"
-            }, colors);
+            }, colors, editable: false, tooltip:
+                _polish ? "Przesyłanie dźwięku z Androida:\n• Ustawienie główne: zgodnie z przełącznikiem 'Przesyłaj dźwięk' w oknie głównym,\n• Zawsze włączony: dźwięk z tej aplikacji zawsze trafia do głośników PC,\n• Zawsze wyłączony: całkowite wyciszenie dźwięku scrcpy."
+                        : "Audio playback forwarding:\n• Global setting: follows main window audio toggle,\n• Always enabled: sound from this app always streams to PC speakers,\n• Always disabled: audio muted.");
 
             FlowLayoutPanel toggles = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = false, WrapContents = true };
             table.SetColumnSpan(toggles, 2);
             table.Controls.Add(toggles, 0, 10);
-            _alwaysOnTop = AddCheck(toggles, _polish ? "Zawsze na wierzchu" : "Always on top", colors);
-            _borderless = AddCheck(toggles, _polish ? "Okno bez ramek" : "Borderless window", colors);
-            _fullscreen = AddCheck(toggles, _polish ? "Pełny ekran" : "Fullscreen", colors);
-            _turnScreenOff = AddCheck(toggles, _polish ? "Wyłącz ekran telefonu" : "Turn phone screen off", colors);
-            _record = AddCheck(toggles, _polish ? "Nagrywaj sesję MP4" : "Record MP4 session", colors);
-            _forwardClicks = AddCheck(toggles, _polish ? "Przekazuj wszystkie kliknięcia" : "Forward all clicks", colors);
+            _alwaysOnTop = AddCheck(toggles, _polish ? "Zawsze na wierzchu" : "Always on top", colors,
+                _polish ? "Utrzymuje okno aplikacji nad wszystkimi innymi otwartymi oknami w systemie Windows."
+                        : "Keeps this application window floating above all other desktop windows.");
+
+            _borderless = AddCheck(toggles, _polish ? "Okno bez ramek" : "Borderless window", colors,
+                _polish ? "Ukrywa pasek tytułowy i ramki systemowe Windows, tworząc czyste, pływające okno."
+                        : "Removes window borders and title bar for a modern borderless look.");
+
+            _fullscreen = AddCheck(toggles, _polish ? "Pełny ekran" : "Fullscreen", colors,
+                _polish ? "Uruchamia aplikację natychmiast w trybie pełnoekranowym (skrót do wyjścia: Lewy Alt + F)."
+                        : "Launches the application directly in fullscreen mode (toggle: Left Alt + F).");
+
+            _turnScreenOff = AddCheck(toggles, _polish ? "Wyłącz ekran telefonu" : "Turn phone screen off", colors,
+                _polish ? "Wyłącza fizyczny wyświetlacz telefonu podczas korzystania z aplikacji na PC. Oszczędza baterię i zapobiega nagrzewaniu się urządzenia."
+                        : "Turns off the physical device screen while streaming. Saves battery and reduces heating.");
+
+            _record = AddCheck(toggles, _polish ? "Nagrywaj sesję MP4" : "Record MP4 session", colors,
+                _polish ? "Automatycznie rejestruje całą sesję do pliku wideo MP4 w folderze 'Wideo\\scrcpy-manager'."
+                        : "Records the session directly into timestamped MP4 files in 'Videos\\scrcpy-manager'.");
+
+            _forwardClicks = AddCheck(toggles, _polish ? "Przekazuj wszystkie kliknięcia" : "Forward all clicks", colors,
+                _polish ? "Przesyła prawy przycisk myszy i kółko bezpośrednio do aplikacji Androida zamiast wykonywać akcje systemowe scrcpy (np. cofanie)."
+                        : "Passes right-click and middle-click directly into the app instead of triggering scrcpy shortcuts.");
 
             Label packageLabel = new Label
             {
@@ -104,6 +159,7 @@ namespace ScrcpyManager
                 ForeColor = colors.TextMuted,
                 AutoEllipsis = true
             };
+            _toolTip.SetToolTip(packageLabel, _polish ? "Identyfikator pakietu Androida uruchamianego w tym oknie." : "Android package identifier executed in this window.");
             Controls.Add(packageLabel);
 
             Button save = new Button
@@ -117,6 +173,7 @@ namespace ScrcpyManager
             };
             save.FlatAppearance.BorderSize = 0;
             save.Click += OnSave;
+            _toolTip.SetToolTip(save, _polish ? "Zapisuje profil i stosuje konfigurację przy kolejnych uruchomieniach kafelka." : "Saves profile and applies configuration on next launch.");
             Controls.Add(save);
             AcceptButton = save;
 
@@ -130,6 +187,7 @@ namespace ScrcpyManager
                 FlatStyle = FlatStyle.Flat,
                 DialogResult = DialogResult.Cancel
             };
+            _toolTip.SetToolTip(cancel, _polish ? "Zamyka okno bez zapisywania zmian." : "Closes window without saving changes.");
             Controls.Add(cancel);
             CancelButton = cancel;
 
@@ -137,17 +195,26 @@ namespace ScrcpyManager
             _preset.SelectedIndexChanged += (s, e) => ApplyPreset(_preset.SelectedIndex);
         }
 
-        private TextBox AddText(TableLayoutPanel table, int row, string label, string value, ThemeColors c)
+        private Label AddLabel(TableLayoutPanel table, int row, string text, ThemeColors c, string tooltip = null)
         {
-            AddLabel(table, row, label, c);
+            Label lbl = new Label { Text = text, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = c.Text };
+            if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(lbl, tooltip);
+            table.Controls.Add(lbl, 0, row);
+            return lbl;
+        }
+
+        private TextBox AddText(TableLayoutPanel table, int row, string label, string value, ThemeColors c, string tooltip = null)
+        {
+            AddLabel(table, row, label, c, tooltip);
             TextBox control = new TextBox { Dock = DockStyle.Fill, Text = value ?? "", BackColor = c.InputBg, ForeColor = c.InputText, BorderStyle = BorderStyle.FixedSingle };
+            if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(control, tooltip);
             table.Controls.Add(control, 1, row);
             return control;
         }
 
-        private ComboBox AddCombo(TableLayoutPanel table, int row, string label, string[] values, ThemeColors c, bool editable = false)
+        private ComboBox AddCombo(TableLayoutPanel table, int row, string label, string[] values, ThemeColors c, bool editable = false, string tooltip = null)
         {
-            AddLabel(table, row, label, c);
+            AddLabel(table, row, label, c, tooltip);
             ComboBox control = new ComboBox
             {
                 Dock = DockStyle.Fill,
@@ -156,26 +223,24 @@ namespace ScrcpyManager
                 ForeColor = c.InputText
             };
             control.Items.AddRange(values);
+            if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(control, tooltip);
             table.Controls.Add(control, 1, row);
             return control;
         }
 
-        private NumericUpDown AddNumber(TableLayoutPanel table, int row, string label, int min, int max, ThemeColors c)
+        private NumericUpDown AddNumber(TableLayoutPanel table, int row, string label, int min, int max, ThemeColors c, string tooltip = null)
         {
-            AddLabel(table, row, label, c);
+            AddLabel(table, row, label, c, tooltip);
             NumericUpDown control = new NumericUpDown { Dock = DockStyle.Fill, Minimum = min, Maximum = max, BackColor = c.InputBg, ForeColor = c.InputText };
+            if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(control, tooltip);
             table.Controls.Add(control, 1, row);
             return control;
         }
 
-        private static void AddLabel(TableLayoutPanel table, int row, string text, ThemeColors c)
-        {
-            table.Controls.Add(new Label { Text = text, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft, ForeColor = c.Text }, 0, row);
-        }
-
-        private static CheckBox AddCheck(FlowLayoutPanel panel, string text, ThemeColors c)
+        private CheckBox AddCheck(FlowLayoutPanel panel, string text, ThemeColors c, string tooltip = null)
         {
             CheckBox check = new CheckBox { Text = text, AutoSize = true, ForeColor = c.Text, Margin = new Padding(3, 5, 12, 3) };
+            if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(check, tooltip);
             panel.Controls.Add(check);
             return check;
         }
@@ -230,9 +295,6 @@ namespace ScrcpyManager
 
         private void ApplyPreset(int index)
         {
-            // Work/RDP mirrors the tuning that used to be hardcoded for the Remote Desktop
-            // package (higher bitrate + UHID keyboard/mouse for full key passthrough like
-            // Ctrl+Alt+Del) so any remote-desktop app can opt into it, not just one package id.
             if (index == 1) SetQuality("2560x1440/160", 60, "16M", "h264", false, false, "uhid", "uhid", true);
             else if (index == 2) SetQuality("1920x1080/160", 90, "16M", "h264", false, false, "sdk", "sdk", false);
             else if (index == 3) SetQuality("1920x1080/160", 30, "4M", "h264", false, false, "sdk", "sdk", false);
@@ -282,6 +344,7 @@ namespace ScrcpyManager
             p.recordSession = _record.Checked;
             p.forwardAllClicks = _forwardClicks.Checked;
             _app.profile = p;
+
             DialogResult = DialogResult.OK;
             Close();
         }
