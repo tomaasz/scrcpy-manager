@@ -77,6 +77,7 @@ namespace ScrcpyManager
         private Button _btnLang;
         private ContextMenuStrip _ctxLang;
         private Button _btnUpdateBadge;
+        private Label _lblVersion;
 
         private Button _btnScrcpy;
         private CheckBox _chkFullScreen;
@@ -87,6 +88,9 @@ namespace ScrcpyManager
         private ComboBox _cmbRes;
         private CheckBox _chkAudio;
         private CheckBox _chkAutoTaskbar;
+        private Button _btnInstallTaskbar;
+        private bool _isTaskbarInstalled = false;
+        private bool _isInstallingTaskbar = false;
         private Button _btnWifi;
         private Button _btnKeyFix;
         private Button _btnClipFix;
@@ -177,7 +181,7 @@ namespace ScrcpyManager
 
         private void InitializeMainWindow()
         {
-            Text = "scrcpy Manager";
+            Text = "scrcpy Manager v" + UpdateService.CurrentVersion;
             ClientSize = new Size(404, 706);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
@@ -397,6 +401,26 @@ namespace ScrcpyManager
             };
             _pnlStatus.Controls.Add(_btnUpdateBadge);
 
+            _lblVersion = new Label
+            {
+                Text = "v" + UpdateService.CurrentVersion,
+                Font = _fontSmall,
+                Location = new Point(254, 34),
+                Size = new Size(110, 20),
+                TextAlign = ContentAlignment.MiddleRight,
+                ForeColor = _isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted,
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+            _lblVersion.Click += (s, e) =>
+            {
+                ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
+                Localization.Strings t = Localization.Get(_currentLang);
+                _updates.ShowUpdateDialog(this, c, t, Icon);
+            };
+            _tipMain.SetToolTip(_lblVersion, "scrcpy Manager v" + UpdateService.CurrentVersion);
+            _pnlStatus.Controls.Add(_lblVersion);
+
             // 2. Główny przycisk Hero: Uruchom scrcpy
             _btnScrcpy = new Button
             {
@@ -483,6 +507,18 @@ namespace ScrcpyManager
                 SavePreferences();
             };
             Controls.Add(_chkAutoTaskbar);
+
+            _btnInstallTaskbar = new Button
+            {
+                Location = new Point(205, 220),
+                Size = new Size(183, 26),
+                Font = _fontSmall,
+                Visible = false,
+                Cursor = Cursors.Hand
+            };
+            UiThemeHelper.SetupModernButton(_btnInstallTaskbar, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
+            _btnInstallTaskbar.Click += async (s, e) => await InstallTaskbarAsync();
+            Controls.Add(_btnInstallTaskbar);
 
             _btnWifi = new Button
             {
@@ -856,6 +892,7 @@ namespace ScrcpyManager
             _btnUpdateBadge.ForeColor = c.BadgeUpdateText;
             _btnUpdateBadge.FlatAppearance.BorderColor = c.BadgeUpdateBorder;
             _btnUpdateBadge.FlatAppearance.MouseOverBackColor = c.BtnHeroHover;
+            if (_lblVersion != null) _lblVersion.ForeColor = c.TextMuted;
 
             _btnScrcpy.BackColor = c.BtnHero;
             _btnScrcpy.ForeColor = c.BtnHeroText;
@@ -868,6 +905,13 @@ namespace ScrcpyManager
             _lblRes.ForeColor = c.TextMuted;
             _chkAudio.ForeColor = c.Text;
             _chkAutoTaskbar.ForeColor = c.Text;
+            if (_btnInstallTaskbar != null)
+            {
+                _btnInstallTaskbar.BackColor = c.BtnTool;
+                _btnInstallTaskbar.ForeColor = c.BtnToolText;
+                _btnInstallTaskbar.FlatAppearance.BorderColor = c.BtnToolBorder;
+                _btnInstallTaskbar.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
+            }
 
             _cmbRes.BackColor = c.Card;
             _cmbRes.ForeColor = c.Text;
@@ -1022,7 +1066,16 @@ namespace ScrcpyManager
         {
             Localization.Strings t = Localization.Get(_currentLang);
 
+            if (_pnlStatus != null)
+            {
+                _tipMain.SetToolTip(_pnlStatus, t.DeviceStatusTooltip);
+                if (_lblStatusDot != null) _tipMain.SetToolTip(_lblStatusDot, t.DeviceStatusTooltip);
+                if (_lblDeviceTitle != null) _tipMain.SetToolTip(_lblDeviceTitle, t.DeviceStatusTooltip);
+                if (_lblStatusDetail != null) _tipMain.SetToolTip(_lblStatusDetail, t.DeviceStatusTooltip);
+            }
+
             _btnTheme.Text = _isDarkMode ? t.ThemeDark : t.ThemeLight;
+            _tipMain.SetToolTip(_btnTheme, t.ThemeTooltip);
             _btnLang.Text = _currentLang;
             _tipMain.SetToolTip(_btnLang, t.LangTooltip);
             _btnUpdateBadge.Text = t.UpdateBadge;
@@ -1030,6 +1083,7 @@ namespace ScrcpyManager
             _btnScrcpy.Text = t.LaunchHero;
             _tipMain.SetToolTip(_btnScrcpy, t.LaunchHeroTooltip);
             _chkFullScreen.Text = t.FullScreenOpt;
+            _tipMain.SetToolTip(_chkFullScreen, t.FullScreenTooltip);
             if (_chkNavBar != null)
             {
                 _chkNavBar.Text = t.OptNavBar;
@@ -1038,12 +1092,26 @@ namespace ScrcpyManager
 
             _lblSectionOptions.Text = t.SectionOptions;
             _lblRes.Text = t.ResLabel;
+            _tipMain.SetToolTip(_lblRes, t.ResTooltip);
+            _tipMain.SetToolTip(_cmbRes, t.ResTooltip);
             _chkAudio.Text = t.AudioPass;
+            _tipMain.SetToolTip(_chkAudio, t.AudioTooltip);
             _chkAutoTaskbar.Text = t.AutoTaskbar;
             _tipMain.SetToolTip(_chkAutoTaskbar, t.AutoTaskbarTooltip);
+            if (_btnInstallTaskbar != null)
+            {
+                if (!_isInstallingTaskbar)
+                {
+                    _btnInstallTaskbar.Text = t.InstallTaskbar;
+                }
+                _tipMain.SetToolTip(_btnInstallTaskbar, t.InstallTaskbarTooltip);
+            }
             _btnWifi.Text = t.WifiBtn;
+            _tipMain.SetToolTip(_btnWifi, t.WifiTooltip);
             _btnKeyFix.Text = t.KeyBtn;
+            _tipMain.SetToolTip(_btnKeyFix, t.KeyFixTooltip);
             _btnClipFix.Text = t.ClipBtn;
+            _tipMain.SetToolTip(_btnClipFix, t.ClipFixTooltip);
 
             _lblSectionApps.Text = t.SectionApps;
             _lblAppsSubtitle.Text = t.AppsSubtitle;
@@ -1056,8 +1124,10 @@ namespace ScrcpyManager
             _tipMain.SetToolTip(_btnLayout3, t.Layout3Tooltip);
 
             _lblCustom.Text = t.CustomLabel;
+            _tipMain.SetToolTip(_lblCustom, t.CustomSearchTooltip);
+            _tipMain.SetToolTip(_txtCustom, t.CustomSearchTooltip);
             _btnCustom.Text = t.CustomBtn;
-            _tipMain.SetToolTip(_btnCustom, t.AppsStandaloneHint);
+            _tipMain.SetToolTip(_btnCustom, t.CustomLaunchTooltip);
             _btnAddCustom.Text = t.CustomAddBtn;
             _tipMain.SetToolTip(_btnAddCustom, t.CustomAddTooltip);
             NativeMethods.SetCueBanner(_txtCustom.Handle, t.CustomPlaceholder);
@@ -1066,15 +1136,17 @@ namespace ScrcpyManager
             _btnDesktop.Text = t.DesktopMode;
             _tipMain.SetToolTip(_btnDesktop, t.DesktopModeTooltip);
             _btnNormal.Text = t.RestoreDefault;
+            _tipMain.SetToolTip(_btnNormal, t.RestoreDefaultTooltip);
             _btnReboot.Text = t.RebootBtn;
+            _tipMain.SetToolTip(_btnReboot, t.RebootTooltip);
             if (_btnNavBack != null)
             {
                 _btnNavBack.Text = t.NavBack;
                 _btnNavHome.Text = t.NavHome;
                 _btnNavRecents.Text = t.NavRecents;
-                _tipMain.SetToolTip(_btnNavBack, "Cofnij (ESC / Keycode 4)");
-                _tipMain.SetToolTip(_btnNavHome, "Ekran główny (Home / Keycode 3)");
-                _tipMain.SetToolTip(_btnNavRecents, "Ostatnie aplikacje (Recents / Keycode 187)");
+                _tipMain.SetToolTip(_btnNavBack, t.NavBackTooltip);
+                _tipMain.SetToolTip(_btnNavHome, t.NavHomeTooltip);
+                _tipMain.SetToolTip(_btnNavRecents, t.NavRecentsTooltip);
             }
 
             int currIdx = _cmbRes.SelectedIndex;
@@ -1219,7 +1291,7 @@ namespace ScrcpyManager
                         };
                         UiThemeHelper.SetupModernButton(btnRename, 5, () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder);
                         btnRename.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
-                        _tipMain.SetToolTip(btnRename, (_currentLang == "PL" ? "Profil uruchamiania: " : "Launch profile: ") + currentApp.name);
+                        _tipMain.SetToolTip(btnRename, string.Format(t.AppsRenameTooltip, currentApp.name));
                         btnRename.MouseEnter += (s, e) => btnRename.ForeColor = Color.FromArgb(100, 180, 255);
                         btnRename.MouseLeave += (s, e) => btnRename.ForeColor = (_isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted);
                         btnRename.Click += (s, e) => EditAppProfile(currentApp);
@@ -1370,6 +1442,7 @@ namespace ScrcpyManager
                 await _adb.GetDeviceInfoAsync();
                 SetAppLanguage(_captureScreenshotLang, false);
                 ApplyTheme();
+                UpdateTaskbarControlState(true, true);
 
                 // Dostosowanie nazw aplikacji dla języków obcych (jak w testach README)
                 if (_captureScreenshotLang == "EN")
@@ -1468,6 +1541,18 @@ namespace ScrcpyManager
                 _currentDevice = next;
                 UpdateStatusDisplay();
 
+                if (_currentDevice.IsOnline)
+                {
+                    bool taskbarInstalled = await _adb.IsPackageInstalledAsync("com.farmerbb.taskbar");
+                    _isTaskbarInstalled = taskbarInstalled;
+                    UpdateTaskbarControlState(true, taskbarInstalled);
+                }
+                else
+                {
+                    _isTaskbarInstalled = false;
+                    UpdateTaskbarControlState(false, false);
+                }
+
                 bool discoveryPending = string.Equals(_pref.initialDiscovery, "pending", StringComparison.OrdinalIgnoreCase);
                 if (_currentDevice.IsOnline && _appButtons.Count == 0 && !_appsConfigLoaded && discoveryPending && !_hasPromptedForInitialApps)
                 {
@@ -1477,6 +1562,116 @@ namespace ScrcpyManager
             }
             catch { }
             finally { _statusRefreshGate.Release(); }
+        }
+
+        private void UpdateTaskbarControlState(bool isOnline, bool isTaskbarInstalled)
+        {
+            if (_isInstallingTaskbar) return;
+
+            if (!isOnline)
+            {
+                _chkAutoTaskbar.Visible = true;
+                _chkAutoTaskbar.Enabled = false;
+                if (_btnInstallTaskbar != null) _btnInstallTaskbar.Visible = false;
+            }
+            else if (isTaskbarInstalled)
+            {
+                _chkAutoTaskbar.Visible = true;
+                _chkAutoTaskbar.Enabled = true;
+                if (_btnInstallTaskbar != null) _btnInstallTaskbar.Visible = false;
+            }
+            else
+            {
+                _chkAutoTaskbar.Visible = false;
+                if (_btnInstallTaskbar != null)
+                {
+                    _btnInstallTaskbar.Visible = true;
+                    _btnInstallTaskbar.Enabled = true;
+                }
+            }
+        }
+
+        private async Task InstallTaskbarAsync()
+        {
+            if (_isInstallingTaskbar) return;
+            if (!await _adb.IsDeviceConnectedAsync())
+            {
+                ShowNoDeviceWarning();
+                return;
+            }
+
+            Localization.Strings t = Localization.Get(_currentLang);
+            _isInstallingTaskbar = true;
+            if (_btnInstallTaskbar != null)
+            {
+                _btnInstallTaskbar.Enabled = false;
+                _btnInstallTaskbar.Text = t.InstallingTaskbar;
+            }
+
+            bool shouldOpenStore = false;
+            try
+            {
+                System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+                string tempDir = Path.GetTempPath();
+                string apkPath = Path.Combine(tempDir, "Taskbar-6.2.2.apk");
+
+                if (!File.Exists(apkPath) || new FileInfo(apkPath).Length < 1000000)
+                {
+                    string downloadUrl = "https://github.com/farmerbb/Taskbar/releases/download/207/Taskbar-6.2.2.apk";
+                    using (var client = new System.Net.WebClient())
+                    {
+                        client.Headers.Add("User-Agent", "scrcpy-manager/" + UpdateService.CurrentVersion);
+                        await client.DownloadFileTaskAsync(new Uri(downloadUrl), apkPath);
+                    }
+                }
+
+                bool ok = await _adb.InstallPackageAsync(apkPath);
+                if (ok)
+                {
+                    await _adb.GrantTaskbarPermissionsAsync();
+                    _isTaskbarInstalled = true;
+                    _pref.autoTaskbar = true;
+                    _chkAutoTaskbar.Checked = true;
+                    SavePreferences();
+
+                    UpdateTaskbarControlState(true, true);
+                    MessageBox.Show(this, t.MsgTaskbarInstalled, "Taskbar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    DialogResult dr = MessageBox.Show(this, string.Format(t.MsgTaskbarInstallFailed, "ADB install failed"), "Taskbar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (dr == DialogResult.Yes)
+                    {
+                        shouldOpenStore = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DialogResult dr = MessageBox.Show(this, string.Format(t.MsgTaskbarInstallFailed, ex.Message), "Taskbar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (dr == DialogResult.Yes)
+                {
+                    shouldOpenStore = true;
+                }
+            }
+            finally
+            {
+                _isInstallingTaskbar = false;
+                if (_btnInstallTaskbar != null)
+                {
+                    _btnInstallTaskbar.Text = t.InstallTaskbar;
+                    _btnInstallTaskbar.Enabled = true;
+                }
+                if (_isTaskbarInstalled)
+                {
+                    UpdateTaskbarControlState(true, true);
+                }
+            }
+
+            if (shouldOpenStore)
+            {
+                await _adb.OpenPlayStoreAsync("com.farmerbb.taskbar");
+            }
         }
 
         private async Task CheckAndPromptInitialAppsAsync()
@@ -1558,6 +1753,7 @@ namespace ScrcpyManager
             bool updateAvailable = await _updates.CheckForUpdateAsync();
             if (updateAvailable)
             {
+                if (_lblVersion != null) _lblVersion.Visible = false;
                 _btnUpdateBadge.Visible = true;
                 _btnUpdateBadge.Text = Localization.Get(_currentLang).UpdateBadge;
                 ApplyTheme();

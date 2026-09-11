@@ -21,27 +21,43 @@ namespace ScrcpyManager
                 { "StatusActive", "Czuwanie aktywne" },
                 { "ThemeDark", "☀ Jasny" },
                 { "ThemeLight", "☾ Ciemny" },
+                { "ThemeTooltip", "Zmień motyw programu\nPrzełącza pomiędzy motywem ciemnym a jasnym." },
                 { "LangSwitch", "EN" },
                 { "LangTooltip", "Język: Polski (kliknij, aby zmienić na EN / DE / ES)" },
+                { "DeviceStatusTooltip", "Status podłączonego telefonu\nWyświetla model urządzenia, stan naładowania baterii\noraz aktywny tryb połączenia (USB lub Wi‑Fi)." },
 
                 { "LaunchHero", "▶  Uruchom scrcpy" },
-                { "LaunchHeroTooltip", "Uruchamia pełny pulpit Androida lub ekran telefonu.\n\n💡 Wskazówka: Aby otworzyć pojedynczą aplikację, kliknij bezpośrednio jej kafelek poniżej – nie musisz najpierw wciskać tego przycisku!" },
+                { "LaunchHeroTooltip", "Uruchom pełny ekran scrcpy\nOtwiera pełny pulpit Androida lub ekran telefonu w oknie na PC.\n\n💡 Wskazówka: Aby otworzyć pojedynczą aplikację, kliknij bezpośrednio\nw jej kafelek poniżej – nie musisz najpierw wciskać tego przycisku!" },
                 { "FullScreenOpt", "Pełny ekran (-f)" },
+                { "FullScreenTooltip", "Pełny ekran (-f)\nUruchamia okno scrcpy w trybie pełnoekranowym na monitorze komputera." },
 
                 { "SectionOptions", "OBRAZ, DŹWIĘK I STEROWANIE" },
                 { "ResLabel", "Rozdzielczość wirtualnego ekranu (RDP):" },
+                { "ResTooltip", "Rozdzielczość wirtualnego ekranu (RDP)\nOkreśla wymiary i gęstość DPI dla okien aplikacji.\n• 2K QHD (zalecane): wysoka ostrość tekstu i wygoda pracy." },
                 { "AudioPass", "Przesyłaj dźwięk do PC" },
+                { "AudioTooltip", "Przesyłaj dźwięk do PC\nPrzekierowuje strumień audio z telefonu\ndo głośników komputera w czasie rzeczywistym." },
                 { "AutoTaskbar", "Uruchamiaj Taskbar" },
-                { "AutoTaskbarTooltip", "Gdy włączone, na dole wirtualnego ekranu scrcpy wyświetla się dolny pasek zadań Androida. Gdy wyłączone (zalecane), scrcpy ukrywa pasek (--no-vd-system-decorations), dzięki czemu zmaksymalizowane okna aplikacji nie są przesłaniane od dołu." },
+                { "AutoTaskbarTooltip", "Dolny pasek zadań Androida (Taskbar)\n• Włączone: wyświetla dolny pasek zadań na wirtualnym ekranie.\n• Wyłączone (zalecane): ukrywa pasek (--no-vd-system-decorations),\ndzięki czemu zmaksymalizowane okna nie są przesłaniane od dołu." },
+                { "InstallTaskbar", "⬇ Zainstaluj Taskbar" },
+                { "InstallTaskbarTooltip", "Aplikacja Taskbar nie jest zainstalowana na telefonie.\nKliknij, aby pobrać oficjalną wersję (farmerbb)\ni zainstalować na urządzeniu przez ADB." },
+                { "InstallingTaskbar", "Instalowanie Taskbar..." },
+                { "MsgTaskbarInstalled", "Aplikacja Taskbar została pomyślnie zainstalowana i skonfigurowana na telefonie!" },
+                { "MsgTaskbarInstallFailed", "Nie udało się automatycznie zainstalować aplikacji Taskbar: {0}\n\nCzy chcesz otworzyć stronę aplikacji w Google Play na telefonie?" },
                 { "WifiBtn", "Połącz przez Wi‑Fi" },
+                { "WifiTooltip", "Połącz bezprzewodowo przez Wi‑Fi\nPrzełącza ADB na połączenie sieciowe (port 5555).\nPozwala sterować telefonem bez kabla USB w tej samej sieci Wi‑Fi." },
                 { "KeyBtn", "Klawiatura fizyczna" },
+                { "KeyFixTooltip", "Konfiguracja klawiatury fizycznej\nOtwiera ustawienia klawiatury fizycznej w telefonie.\nUpewnij się, że wybrano układ 'Polski (programisty)'." },
                 { "ClipBtn", "Naprawa schowka" },
+                { "ClipFixTooltip", "Naprawa synchronizacji schowka\nOptymalizuje priorytety schowka i kopiuje skrypt naprawczy\ndla sesji pulpitu zdalnego (RDP).\n• Alt + V : wklej schowek PC do sesji\n• Alt + C : pobierz schowek do PC" },
                 { "OptNavBar", "Pasek nawigacji okien" },
-                { "OptNavBarTooltip", "Wyświetla dotykowy pasek nawigacyjny (Cofnij, Home, Ostatnie) pod oknem każdej aplikacji" },
+                { "OptNavBarTooltip", "Pasek nawigacji okien\nWyświetla dotykowy pasek nawigacyjny (Cofnij, Home, Ostatnie)\npod oknem każdej uruchomionej aplikacji." },
                 { "SectionNavigation", "NAWIGACJA ANDROIDA" },
                 { "NavBack", "◀  Cofnij (Esc)" },
+                { "NavBackTooltip", "Cofnij (Esc / Keycode 4)\nSymuluje wciśnięcie przycisku 'Wstecz' na telefonie." },
                 { "NavHome", "●  Ekran główny" },
+                { "NavHomeTooltip", "Ekran główny (Home / Keycode 3)\nMinimalizuje aplikacje i przechodzi do ekranu głównego." },
                 { "NavRecents", "▢  Ostatnie" },
+                { "NavRecentsTooltip", "Ostatnie aplikacje (Recents / Keycode 187)\nOtwiera listę ostatnio uruchamianych aplikacji." },
 
                 { "SectionApps", "APLIKACJE W OKNACH" },
                 { "AppsSubtitle", "Uruchom w oknie lub kliknij [Edytuj], by dostosować listę" },
@@ -52,7 +68,9 @@ namespace ScrcpyManager
                 { "AppsAddPrompt", "+ Dodaj aplikacje z telefonu (kliknij tutaj lub [Edytuj])" },
                 { "CustomLabel", "Inny pakiet Androida (np. com.spotify.music):" },
                 { "CustomPlaceholder", "Szukaj pakietu (np. spotify, maps)..." },
+                { "CustomSearchTooltip", "Szukaj lub wpisz nazwę pakietu Androida\nNp. com.spotify.music, maps itp.\nMożesz uruchomić pakiet jednorazowo lub dodać stały kafelek." },
                 { "CustomBtn", "Uruchom" },
+                { "CustomLaunchTooltip", "Uruchom aplikację w oknie\nUruchamia podany wyżej pakiet w niezależnym wirtualnym oknie scrcpy." },
                 { "CustomAddBtn", "+ Dodaj" },
                 { "CustomAddTooltip", "Dodaj wpisany/wybrany pakiet jako stały kafelek na liście aplikacji" },
                 { "AppsRemoveTooltip", "Usuń kafelek '{0}' z listy" },
@@ -99,9 +117,11 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "OPERACJE NA URZĄDZENIU" },
                 { "DesktopMode", "Włącz tryb pulpitu" },
-                { "DesktopModeTooltip", "Wymusza systemowy tryb pulpitu na telefonie (eksperymentalne ustawienie deweloperskie Androida).\n\n💡 Wskazówka: Kafelki aplikacji powyżej tworzą własne pływające okna automatycznie – nie wymagają włączania trybu pulpitu!" },
+                { "DesktopModeTooltip", "Włącz tryb pulpitu Androida\nWymusza systemowy tryb pulpitu (ustawienie deweloperskie).\nZmienia DPI na 250 i przyspiesza animacje systemowe.\n\n💡 Wskazówka: Kafelki aplikacji powyżej tworzą pływające okna\nautomatycznie – nie wymagają włączania trybu pulpitu!" },
                 { "RestoreDefault", "Przywróć standardowy widok" },
+                { "RestoreDefaultTooltip", "Przywróć standardowy widok telefonu\nPrzywraca domyślne DPI telefonu, resetuje skalę animacji,\nwłącza automatyczny obrót ekranu i zamyka aplikację Taskbar." },
                 { "RebootBtn", "⚠  Uruchom telefon ponownie" },
+                { "RebootTooltip", "Uruchom telefon ponownie (adb reboot)\nWysyła bezpieczne polecenie restartu do telefonu.\nWymaga wcześniejszego potwierdzenia." },
 
                 { "TitleRestartConfirm", "Potwierdzenie restartu" },
                 { "MsgRestartConfirm", "Czy na pewno chcesz uruchomić telefon ponownie?" },
@@ -148,27 +168,43 @@ namespace ScrcpyManager
                 { "StatusActive", "Keep-awake active" },
                 { "ThemeDark", "☀ Light" },
                 { "ThemeLight", "☾ Dark" },
+                { "ThemeTooltip", "Toggle application theme\nSwitches between dark and light appearance." },
                 { "LangSwitch", "DE" },
                 { "LangTooltip", "Language: English (click to switch to DE / ES / PL)" },
+                { "DeviceStatusTooltip", "Connected device status\nDisplays phone model, battery charge level,\nand active connection type (USB or Wi‑Fi)." },
 
                 { "LaunchHero", "▶  Launch scrcpy" },
-                { "LaunchHeroTooltip", "Launches the full Android desktop or phone screen.\n\n💡 Tip: To launch a single app, click its tile below directly – you don't need to click this button first!" },
+                { "LaunchHeroTooltip", "Launch full scrcpy screen\nOpens full Android desktop or phone screen in a PC window.\n\n💡 Tip: To launch a single app, click its tile below directly\nwithout needing to click this button first!" },
                 { "FullScreenOpt", "Fullscreen (-f)" },
+                { "FullScreenTooltip", "Fullscreen mode (-f)\nLaunches scrcpy in fullscreen mode on your PC monitor." },
 
                 { "SectionOptions", "DISPLAY, AUDIO & CONTROL" },
                 { "ResLabel", "Virtual display resolution (RDP):" },
+                { "ResTooltip", "Virtual display resolution (RDP)\nSets display dimensions and DPI for windowed apps.\n• 2K QHD (recommended): crisp text and comfortable workspace." },
                 { "AudioPass", "Forward audio to PC" },
+                { "AudioTooltip", "Forward audio to PC\nRoutes phone audio stream to PC speakers in real time." },
                 { "AutoTaskbar", "Start Taskbar" },
-                { "AutoTaskbarTooltip", "When enabled, the Android bottom taskbar is displayed on the virtual screen. When disabled (recommended), scrcpy hides the taskbar (--no-vd-system-decorations) so maximized app windows are not obscured." },
+                { "AutoTaskbarTooltip", "Android bottom taskbar\n• Enabled: displays Android system taskbar on the virtual screen.\n• Disabled (recommended): hides taskbar (--no-vd-system-decorations)\nso maximized application windows are not obscured from below." },
+                { "InstallTaskbar", "⬇ Install Taskbar" },
+                { "InstallTaskbarTooltip", "Taskbar app is not installed on your phone.\nClick to download official APK (farmerbb)\nand install on device via ADB." },
+                { "InstallingTaskbar", "Installing Taskbar..." },
+                { "MsgTaskbarInstalled", "Taskbar app has been successfully installed and configured on your phone!" },
+                { "MsgTaskbarInstallFailed", "Failed to automatically install Taskbar app: {0}\n\nWould you like to open Taskbar in Google Play on your phone?" },
                 { "WifiBtn", "Connect via Wi‑Fi" },
+                { "WifiTooltip", "Connect wirelessly via Wi‑Fi\nSwitches ADB debugging to network mode (port 5555).\nAllows controlling phone without USB cable on the same Wi‑Fi network." },
                 { "KeyBtn", "Hardware keyboard" },
+                { "KeyFixTooltip", "Hardware keyboard settings\nOpens physical keyboard settings on the phone.\nEnsure physical keyboard layout is configured correctly for your language." },
                 { "ClipBtn", "Fix clipboard" },
+                { "ClipFixTooltip", "Fix clipboard synchronization\nOptimizes Android clipboard priority and copies PC helper script\nfor Remote Desktop (RDP) sessions.\n• Alt + V : paste PC clipboard into session\n• Alt + C : copy session clipboard to PC" },
                 { "OptNavBar", "Window navigation bar" },
-                { "OptNavBarTooltip", "Shows bottom navigation bar (Back, Home, Recents) beneath each app window" },
+                { "OptNavBarTooltip", "Window navigation bar\nShows bottom navigation bar (Back, Home, Recents)\nbeneath each running application window." },
                 { "SectionNavigation", "ANDROID NAVIGATION" },
                 { "NavBack", "◀  Back (Esc)" },
+                { "NavBackTooltip", "Back (Esc / Keycode 4)\nSimulates pressing the Back button on the phone." },
                 { "NavHome", "●  Home" },
+                { "NavHomeTooltip", "Home screen (Home / Keycode 3)\nMinimizes apps and returns to the phone home screen." },
                 { "NavRecents", "▢  Recents" },
+                { "NavRecentsTooltip", "Recent applications (Recents / Keycode 187)\nOpens the Android recent tasks overview." },
 
                 { "SectionApps", "WINDOWED APPLICATIONS" },
                 { "AppsSubtitle", "Run in window or click [Edit] to customize your list" },
@@ -179,7 +215,9 @@ namespace ScrcpyManager
                 { "AppsAddPrompt", "+ Add apps from phone (click here or [Edit])" },
                 { "CustomLabel", "Custom Android package (e.g. com.spotify.music):" },
                 { "CustomPlaceholder", "Search package (e.g. spotify, maps)..." },
+                { "CustomSearchTooltip", "Search or enter Android package name\nE.g. com.spotify.music, maps, etc.\nYou can launch it once or add it as a permanent tile." },
                 { "CustomBtn", "Launch" },
+                { "CustomLaunchTooltip", "Launch application in window\nRuns the specified package in an independent virtual scrcpy window." },
                 { "CustomAddBtn", "+ Add" },
                 { "CustomAddTooltip", "Add the typed/selected package as a permanent tile in the app list" },
                 { "AppsRemoveTooltip", "Remove '{0}' tile from the list" },
@@ -226,9 +264,11 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "DEVICE OPERATIONS" },
                 { "DesktopMode", "Enable desktop mode" },
-                { "DesktopModeTooltip", "Forces system desktop mode on the phone (Android developer setting).\n\n💡 Tip: App tiles above create standalone floating windows automatically – they do not require desktop mode!" },
+                { "DesktopModeTooltip", "Enable Android desktop mode\nForces system desktop mode on phone (developer setting).\nSets display density to 250 DPI and accelerates animations.\n\n💡 Tip: App tiles above launch floating windows automatically\nwithout needing desktop mode!" },
                 { "RestoreDefault", "Restore default view" },
+                { "RestoreDefaultTooltip", "Restore standard phone view\nRestores default phone DPI, resets system animation scales,\nenables automatic screen rotation, and closes Taskbar." },
                 { "RebootBtn", "⚠  Restart phone" },
+                { "RebootTooltip", "Reboot phone (adb reboot)\nSends safe reboot command to connected Android device.\nRequires confirmation before restarting." },
 
                 { "TitleRestartConfirm", "Confirm Restart" },
                 { "MsgRestartConfirm", "Are you sure you want to restart the phone?" },
@@ -275,27 +315,43 @@ namespace ScrcpyManager
                 { "StatusActive", "Wachmodus aktiv" },
                 { "ThemeDark", "☀ Hell" },
                 { "ThemeLight", "☾ Dunkel" },
+                { "ThemeTooltip", "Design wechseln\nSchaltet zwischen dunklem und hellem Modus um." },
                 { "LangSwitch", "ES" },
                 { "LangTooltip", "Sprache: Deutsch (Klicken für Wechsel zu ES / PL / EN)" },
+                { "DeviceStatusTooltip", "Status des verbundenen Geräts\nZeigt Telefonmodell, Akkustand und\naktiven Verbindungstyp (USB oder WLAN) an." },
 
                 { "LaunchHero", "▶  scrcpy starten" },
-                { "LaunchHeroTooltip", "Startet den vollständigen Android-Desktop oder den Telefonbildschirm.\n\n💡 Tipp: Um eine einzelne App zu starten, klicke direkt auf ihre Kachel unten – dieser Button ist dafür nicht nötig!" },
+                { "LaunchHeroTooltip", "Vollständigen Bildschirm starten\nÖffnet den Android-Desktop oder Telefonbildschirm im PC-Fenster.\n\n💡 Tipp: Um eine einzelne App zu starten, klicken Sie direkt\nauf ihre Kachel unten – dieser Button ist dafür nicht nötig!" },
                 { "FullScreenOpt", "Vollbild (-f)" },
+                { "FullScreenTooltip", "Vollbildmodus (-f)\nStartet scrcpy im Vollbildmodus auf dem PC-Monitor." },
 
                 { "SectionOptions", "ANZEIGE, AUDIO & STEUERUNG" },
                 { "ResLabel", "Virtuelle Bildschirmauflösung (RDP):" },
+                { "ResTooltip", "Virtuelle Bildschirmauflösung (RDP)\nLegt Auflösung und DPI für Anwendungsfenster fest.\n• 2K QHD (empfohlen): scharfer Text und optimale Arbeitsfläche." },
                 { "AudioPass", "Audio an PC übertragen" },
+                { "AudioTooltip", "Audio an PC übertragen\nLeitet den Audiostream des Telefons in Echtzeit\nan die PC-Lautsprecher weiter." },
                 { "AutoTaskbar", "Taskbar starten" },
-                { "AutoTaskbarTooltip", "Wenn aktiviert, wird die Android-Taskleiste auf dem virtuellen Bildschirm angezeigt. Wenn deaktiviert (empfohlen), blendet scrcpy die Taskleiste aus (--no-vd-system-decorations)." },
+                { "AutoTaskbarTooltip", "Android-Taskleiste\n• Aktiviert: zeigt die System-Taskleiste auf dem virtuellen Bildschirm an.\n• Deaktiviert (empfohlen): blendet die Leiste aus (--no-vd-system-decorations),\ndamit maximierte Fenster unten nicht verdeckt werden." },
+                { "InstallTaskbar", "⬇ Taskbar installieren" },
+                { "InstallTaskbarTooltip", "Die Taskbar-App ist nicht auf dem Telefon installiert.\nKlicken Sie hier, um das offizielle APK (farmerbb)\nherunterzuladen und über ADB zu installieren." },
+                { "InstallingTaskbar", "Taskbar wird installiert..." },
+                { "MsgTaskbarInstalled", "Die Taskbar-App wurde erfolgreich auf Ihrem Telefon installiert und eingerichtet!" },
+                { "MsgTaskbarInstallFailed", "Taskbar-App konnte nicht automatisch installiert werden: {0}\n\nMöchten Sie Taskbar im Google Play Store auf Ihrem Telefon öffnen?" },
                 { "WifiBtn", "Über WLAN verbinden" },
+                { "WifiTooltip", "Drahtlos über WLAN verbinden\nSchaltet ADB-Debugging in den Netzwerkmodus (Port 5555).\nErmöglicht die Steuerung ohne USB-Kabel im selben WLAN." },
                 { "KeyBtn", "Physische Tastatur" },
+                { "KeyFixTooltip", "Physische Tastatur einrichten\nÖffnet die Einstellungen für die externe Tastatur auf dem Telefon.\nStellen Sie sicher, dass das passende Tastaturlayout gewählt ist." },
                 { "ClipBtn", "Zwischenablage reparieren" },
+                { "ClipFixTooltip", "Zwischenablage synchronisieren\nOptimiert die Android-Zwischenablage und kopiert PC-Reparaturskript\nfür Remote-Desktop-Sitzungen (RDP).\n• Alt + V : PC-Zwischenablage einfügen\n• Alt + C : Sitzungszwischenablage kopieren" },
                 { "OptNavBar", "Fenster-Navigationsleiste" },
-                { "OptNavBarTooltip", "Zeigt Navigationsleiste (Zurück, Start, Apps) unter jedem Anwendungsfenster an" },
+                { "OptNavBarTooltip", "Fenster-Navigationsleiste\nZeigt Navigationsleiste (Zurück, Start, Apps)\nunter jedem laufenden Anwendungsfenster an." },
                 { "SectionNavigation", "ANDROID-NAVIGATION" },
                 { "NavBack", "◀  Zurück (Esc)" },
+                { "NavBackTooltip", "Zurück (Esc / Keycode 4)\nSimuliert das Drücken der Zurück-Taste auf dem Telefon." },
                 { "NavHome", "●  Start" },
+                { "NavHomeTooltip", "Startbildschirm (Home / Keycode 3)\nMinimiert Apps und kehrt zum Startbildschirm zurück." },
                 { "NavRecents", "▢  Apps" },
+                { "NavRecentsTooltip", "Letzte Apps (Recents / Keycode 187)\nÖffnet die Android-App-Übersicht." },
 
                 { "SectionApps", "ANWENDUNGEN IN FENSTERN" },
                 { "AppsSubtitle", "Im Fenster starten oder [Bearbeiten] zum Anpassen" },
@@ -306,7 +362,9 @@ namespace ScrcpyManager
                 { "AppsAddPrompt", "+ Apps vom Telefon hinzufügen (hier oder [Bearbeiten] klicken)" },
                 { "CustomLabel", "Anderes Android-Paket (z. B. com.spotify.music):" },
                 { "CustomPlaceholder", "Paket suchen (z. B. spotify, maps)..." },
+                { "CustomSearchTooltip", "Android-Paket suchen oder eingeben\nZ. B. com.spotify.music, maps usw.\nDirekt starten oder als dauerhafte Kachel hinzufügen." },
                 { "CustomBtn", "Starten" },
+                { "CustomLaunchTooltip", "App im Fenster starten\nStartet das angegebene Paket in einem separaten scrcpy-Fenster." },
                 { "CustomAddBtn", "+ Hinzufügen" },
                 { "CustomAddTooltip", "Eingegebenes/ausgewähltes Paket als Kachel zur App-Liste hinzufügen" },
                 { "AppsRemoveTooltip", "Kachel '{0}' aus der Liste entfernen" },
@@ -353,9 +411,11 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "GERÄTEOPERATIONEN" },
                 { "DesktopMode", "Desktop-Modus aktivieren" },
-                { "DesktopModeTooltip", "Erzwingt den systemweiten Desktop-Modus auf dem Telefon (Entwickleroption).\n\n💡 Tipp: Die App-Kacheln oben erstellen automatisch eigene Fenster – Desktop-Modus ist nicht erforderlich!" },
+                { "DesktopModeTooltip", "Android Desktop-Modus aktivieren\nErzwingt den Desktop-Modus auf dem Telefon (Entwickleroption).\nStellt die Pixeldichte auf 250 DPI und beschleunigt Animationen.\n\n💡 Tipp: Die App-Kacheln oben öffnen Fenster automatisch,\nohne dass der Desktop-Modus aktiviert werden muss!" },
                 { "RestoreDefault", "Standardansicht wiederherstellen" },
+                { "RestoreDefaultTooltip", "Standard-Telefonansicht wiederherstellen\nStellt Standard-DPI wieder her, setzt Animationen zurück,\naktiviert automatische Bildschirmdrehung und schließt Taskbar." },
                 { "RebootBtn", "⚠  Telefon neu starten" },
+                { "RebootTooltip", "Telefon neu starten (adb reboot)\nSendet sicheren Neustartbefehl an das verbundene Telefon.\nErfordert vorherige Bestätigung." },
 
                 { "TitleRestartConfirm", "Neustart bestätigen" },
                 { "MsgRestartConfirm", "Möchten Sie das Telefon wirklich neu starten?" },
@@ -402,27 +462,43 @@ namespace ScrcpyManager
                 { "StatusActive", "Modo activo" },
                 { "ThemeDark", "☀ Claro" },
                 { "ThemeLight", "☾ Oscuro" },
+                { "ThemeTooltip", "Cambiar tema del programa\nAlterna entre la apariencia oscura y clara." },
                 { "LangSwitch", "PL" },
                 { "LangTooltip", "Idioma: Español (clic para cambiar a PL / EN / DE)" },
+                { "DeviceStatusTooltip", "Estado del teléfono conectado\nMuestra el modelo del dispositivo, nivel de batería\ny modo de conexión activo (USB o Wi‑Fi)." },
 
                 { "LaunchHero", "▶  Iniciar scrcpy" },
-                { "LaunchHeroTooltip", "Inicia el escritorio completo de Android o la pantalla del teléfono.\n\n💡 Consejo: Para abrir una sola app, haz clic directamente en su mosaico abajo – ¡no necesitas pulsar este botón primero!" },
+                { "LaunchHeroTooltip", "Iniciar pantalla completa de scrcpy\nAbre el escritorio Android o la pantalla del teléfono en PC.\n\n💡 Consejo: Para abrir una sola app, haz clic directamente\nen su mosaico abajo – ¡no necesitas pulsar este botón primero!" },
                 { "FullScreenOpt", "Pantalla completa (-f)" },
+                { "FullScreenTooltip", "Modo de pantalla completa (-f)\nInicia scrcpy a pantalla completa en el monitor del PC." },
 
                 { "SectionOptions", "PANTALLA, AUDIO Y CONTROL" },
                 { "ResLabel", "Resolución de pantalla virtual (RDP):" },
+                { "ResTooltip", "Resolución de pantalla virtual (RDP)\nDefine dimensiones y DPI para ventanas de aplicaciones.\n• 2K QHD (recomendado): texto nítido y espacio óptimo." },
                 { "AudioPass", "Transmitir audio al PC" },
+                { "AudioTooltip", "Transmitir audio al PC\nEnvía el sonido del teléfono a los altavoces\ndel PC en tiempo real." },
                 { "AutoTaskbar", "Iniciar Taskbar" },
-                { "AutoTaskbarTooltip", "Cuando está habilitado, la barra de tareas de Android se muestra en la pantalla virtual. Cuando está deshabilitado (recomendado), scrcpy oculta la barra (--no-vd-system-decorations)." },
+                { "AutoTaskbarTooltip", "Barra de tareas inferior de Android (Taskbar)\n• Activado: muestra la barra de tareas en la pantalla virtual.\n• Desactivado (recomendado): oculta la barra (--no-vd-system-decorations)\npara no tapar las ventanas maximizadas por abajo." },
+                { "InstallTaskbar", "⬇ Instalar Taskbar" },
+                { "InstallTaskbarTooltip", "La aplicación Taskbar no está instalada en el teléfono.\nHaz clic para descargar e instalar la versión oficial (farmerbb) mediante ADB." },
+                { "InstallingTaskbar", "Instalando Taskbar..." },
+                { "MsgTaskbarInstalled", "¡La aplicación Taskbar se ha instalado y configurado con éxito en tu teléfono!" },
+                { "MsgTaskbarInstallFailed", "No se pudo instalar automáticamente la aplicación Taskbar: {0}\n\n¿Deseas abrir Taskbar en Google Play en tu teléfono?" },
                 { "WifiBtn", "Conectar por Wi‑Fi" },
+                { "WifiTooltip", "Conectar de forma inalámbrica por Wi‑Fi\nCambia la depuración ADB a modo red (puerto 5555).\nPermite controlar el teléfono sin cable en la misma red Wi‑Fi." },
                 { "KeyBtn", "Teclado físico" },
+                { "KeyFixTooltip", "Configuración del teclado físico\nAbre los ajustes de teclado físico en el teléfono.\nAsegúrate de seleccionar la distribución correcta de teclado." },
                 { "ClipBtn", "Reparar portapapeles" },
+                { "ClipFixTooltip", "Reparar sincronización del portapapeles\nOptimiza el portapapeles y copia el script de reparación\npara sesiones de escritorio remoto (RDP).\n• Alt + V : pegar portapapeles del PC en la sesión\n• Alt + C : copiar portapapeles de la sesión al PC" },
                 { "OptNavBar", "Barra inferior en ventanas" },
-                { "OptNavBarTooltip", "Muestra barra táctil de navegación (Atrás, Inicio, Recientes) debajo de cada ventana de app" },
+                { "OptNavBarTooltip", "Barra de navegación en ventanas\nMuestra barra táctil (Atrás, Inicio, Recientes)\ndebajo de cada ventana de aplicación abierta." },
                 { "SectionNavigation", "NAVEGACIÓN ANDROID" },
                 { "NavBack", "◀  Atrás (Esc)" },
+                { "NavBackTooltip", "Atrás (Esc / Keycode 4)\nSimula pulsar el botón Atrás en el teléfono." },
                 { "NavHome", "●  Inicio" },
+                { "NavHomeTooltip", "Pantalla de inicio (Home / Keycode 3)\nMinimiza las aplicaciones y vuelve al inicio." },
                 { "NavRecents", "▢  Recientes" },
+                { "NavRecentsTooltip", "Aplicaciones recientes (Recents / Keycode 187)\nAbre la vista de aplicaciones recientes." },
 
                 { "SectionApps", "APLICACIONES EN VENTANAS" },
                 { "AppsSubtitle", "Abrir en ventana o pulse [Editar] para personalizar" },
@@ -433,7 +509,9 @@ namespace ScrcpyManager
                 { "AppsAddPrompt", "+ Añadir aplicaciones del teléfono (clic aquí o [Editar])" },
                 { "CustomLabel", "Otro paquete de Android (ej. com.spotify.music):" },
                 { "CustomPlaceholder", "Buscar paquete (ej. spotify, maps)..." },
+                { "CustomSearchTooltip", "Buscar o introducir nombre del paquete Android\nEj. com.spotify.music, com.google.android.apps.maps, etc.\nPuedes iniciarlo al instante o añadirlo como botón permanente." },
                 { "CustomBtn", "Iniciar" },
+                { "CustomLaunchTooltip", "Iniciar aplicación en ventana\nEjecuta el paquete especificado en una ventana virtual independiente." },
                 { "CustomAddBtn", "+ Añadir" },
                 { "CustomAddTooltip", "Añadir paquete escrito/seleccionado como botón fijo a la lista" },
                 { "AppsRemoveTooltip", "Eliminar botón '{0}' de la lista" },
@@ -480,9 +558,11 @@ namespace ScrcpyManager
 
                 { "SectionDevice", "OPERACIONES DEL DISPOSITIVO" },
                 { "DesktopMode", "Activar modo escritorio" },
-                { "DesktopModeTooltip", "Fuerza el modo de escritorio del sistema en el teléfono (ajuste para desarrolladores).\n\n💡 Consejo: Los mosaicos de apps arriba abren ventanas flotantes automáticamente – ¡no requieren activar el modo escritorio!" },
+                { "DesktopModeTooltip", "Activar modo escritorio de Android\nFuerza el modo de escritorio del sistema en el teléfono (ajuste desarrollador).\nAjusta densidad a 250 DPI y acelera animaciones del sistema.\n\n💡 Consejo: Los mosaicos de apps arriba abren ventanas automáticamente,\n¡no requieren activar el modo escritorio!" },
                 { "RestoreDefault", "Restaurar vista estándar" },
+                { "RestoreDefaultTooltip", "Restaurar vista estándar del teléfono\nRestaura el DPI original, restablece las animaciones,\nactiva la rotación automática y cierra la aplicación Taskbar." },
                 { "RebootBtn", "⚠  Reiniciar teléfono" },
+                { "RebootTooltip", "Reiniciar teléfono (adb reboot)\nEnvía un comando de reinicio seguro al teléfono Android.\nRequiere confirmación previa." },
 
                 { "TitleRestartConfirm", "Confirmar reinicio" },
                 { "MsgRestartConfirm", "¿Está seguro de que desea reiniciar el teléfono?" },
@@ -591,27 +671,43 @@ namespace ScrcpyManager
             public string StatusActive         { get { return Get("StatusActive"); } }
             public string ThemeDark            { get { return Get("ThemeDark"); } }
             public string ThemeLight           { get { return Get("ThemeLight"); } }
+            public string ThemeTooltip         { get { return Get("ThemeTooltip"); } }
             public string LangSwitch           { get { return Get("LangSwitch"); } }
             public string LangTooltip          { get { return Get("LangTooltip"); } }
+            public string DeviceStatusTooltip  { get { return Get("DeviceStatusTooltip"); } }
 
             // Hero & Options
             public string LaunchHero           { get { return Get("LaunchHero"); } }
             public string LaunchHeroTooltip    { get { return Get("LaunchHeroTooltip"); } }
             public string FullScreenOpt        { get { return Get("FullScreenOpt"); } }
+            public string FullScreenTooltip    { get { return Get("FullScreenTooltip"); } }
             public string SectionOptions       { get { return Get("SectionOptions"); } }
             public string ResLabel             { get { return Get("ResLabel"); } }
+            public string ResTooltip           { get { return Get("ResTooltip"); } }
             public string AudioPass            { get { return Get("AudioPass"); } }
+            public string AudioTooltip         { get { return Get("AudioTooltip"); } }
             public string AutoTaskbar          { get { return Get("AutoTaskbar"); } }
             public string AutoTaskbarTooltip   { get { return Get("AutoTaskbarTooltip"); } }
+            public string InstallTaskbar       { get { return Get("InstallTaskbar"); } }
+            public string InstallTaskbarTooltip { get { return Get("InstallTaskbarTooltip"); } }
+            public string InstallingTaskbar    { get { return Get("InstallingTaskbar"); } }
+            public string MsgTaskbarInstalled  { get { return Get("MsgTaskbarInstalled"); } }
+            public string MsgTaskbarInstallFailed { get { return Get("MsgTaskbarInstallFailed"); } }
             public string WifiBtn              { get { return Get("WifiBtn"); } }
+            public string WifiTooltip          { get { return Get("WifiTooltip"); } }
             public string KeyBtn               { get { return Get("KeyBtn"); } }
+            public string KeyFixTooltip        { get { return Get("KeyFixTooltip"); } }
             public string ClipBtn              { get { return Get("ClipBtn"); } }
+            public string ClipFixTooltip       { get { return Get("ClipFixTooltip"); } }
             public string OptNavBar            { get { return Get("OptNavBar"); } }
             public string OptNavBarTooltip     { get { return Get("OptNavBarTooltip"); } }
             public string SectionNavigation    { get { return Get("SectionNavigation"); } }
             public string NavBack              { get { return Get("NavBack"); } }
+            public string NavBackTooltip       { get { return Get("NavBackTooltip"); } }
             public string NavHome              { get { return Get("NavHome"); } }
+            public string NavHomeTooltip       { get { return Get("NavHomeTooltip"); } }
             public string NavRecents           { get { return Get("NavRecents"); } }
+            public string NavRecentsTooltip    { get { return Get("NavRecentsTooltip"); } }
 
             // Apps Section
             public string SectionApps          { get { return Get("SectionApps"); } }
@@ -623,7 +719,9 @@ namespace ScrcpyManager
             public string AppsAddPrompt        { get { return Get("AppsAddPrompt"); } }
             public string CustomLabel          { get { return Get("CustomLabel"); } }
             public string CustomPlaceholder    { get { return Get("CustomPlaceholder"); } }
+            public string CustomSearchTooltip  { get { return Get("CustomSearchTooltip"); } }
             public string CustomBtn            { get { return Get("CustomBtn"); } }
+            public string CustomLaunchTooltip  { get { return Get("CustomLaunchTooltip"); } }
             public string CustomAddBtn         { get { return Get("CustomAddBtn"); } }
             public string CustomAddTooltip     { get { return Get("CustomAddTooltip"); } }
             public string AppsRemoveTooltip    { get { return Get("AppsRemoveTooltip"); } }
@@ -665,7 +763,9 @@ namespace ScrcpyManager
             public string DesktopMode          { get { return Get("DesktopMode"); } }
             public string DesktopModeTooltip   { get { return Get("DesktopModeTooltip"); } }
             public string RestoreDefault       { get { return Get("RestoreDefault"); } }
+            public string RestoreDefaultTooltip { get { return Get("RestoreDefaultTooltip"); } }
             public string RebootBtn            { get { return Get("RebootBtn"); } }
+            public string RebootTooltip        { get { return Get("RebootTooltip"); } }
             public string RebootTitle          { get { return Get("RebootTitle"); } }
 
             // Messages

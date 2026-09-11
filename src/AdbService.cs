@@ -134,6 +134,26 @@ namespace ScrcpyManager
             return SendKeyEventAsync(keycode);
         }
 
+        public Task<bool> IsPackageInstalledAsync(string package, int timeoutMs = 2500)
+        {
+            return CheckPackageInstalledAsync(package, timeoutMs);
+        }
+
+        public Task<bool> InstallPackageAsync(string apkPath, int timeoutMs = 60000)
+        {
+            return ExecuteInstallPackageAsync(apkPath, timeoutMs);
+        }
+
+        public Task GrantTaskbarPermissionsAsync()
+        {
+            return ExecuteGrantTaskbarPermissionsAsync();
+        }
+
+        public Task OpenPlayStoreAsync(string package)
+        {
+            return ExecuteOpenPlayStoreAsync(package);
+        }
+
         // Static Implementations
         public static async Task<string> ExecuteAdbAsync(string args, int timeoutMs = 5000)
         {
@@ -434,6 +454,41 @@ namespace ScrcpyManager
 
             result.Sort(StringComparer.OrdinalIgnoreCase);
             return result;
+        }
+
+        public static async Task<bool> CheckPackageInstalledAsync(string package, int timeoutMs = 2500)
+        {
+            if (string.IsNullOrWhiteSpace(package)) return false;
+            CommandResult res = await ExecuteAdbDetailedAsync("shell pm path " + QuoteWindowsArgument(package), timeoutMs).ConfigureAwait(false);
+            if (res.TimedOut || res.ExitCode != 0) return false;
+            return (res.StandardOutput ?? string.Empty).IndexOf("package:", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        public static async Task<bool> ExecuteInstallPackageAsync(string apkPath, int timeoutMs = 60000)
+        {
+            if (string.IsNullOrWhiteSpace(apkPath) || !File.Exists(apkPath)) return false;
+            CommandResult res = await ExecuteAdbDetailedAsync("install -r " + QuoteWindowsArgument(apkPath), timeoutMs).ConfigureAwait(false);
+            if (res.TimedOut || res.ExitCode != 0) return false;
+            return (res.StandardOutput ?? string.Empty).IndexOf("Success", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        public static async Task ExecuteGrantTaskbarPermissionsAsync()
+        {
+            try
+            {
+                await ExecuteAdbAsync("shell pm grant com.farmerbb.taskbar android.permission.WRITE_SECURE_SETTINGS", 3000).ConfigureAwait(false);
+                await ExecuteAdbAsync("shell appops set com.farmerbb.taskbar SYSTEM_ALERT_WINDOW allow", 3000).ConfigureAwait(false);
+            }
+            catch { }
+        }
+
+        public static async Task ExecuteOpenPlayStoreAsync(string package)
+        {
+            try
+            {
+                await ExecuteAdbAsync("shell am start -a android.intent.action.VIEW -d " + QuoteWindowsArgument("market://details?id=" + package), 3000).ConfigureAwait(false);
+            }
+            catch { }
         }
 
         public static async Task<string> GetDeviceWifiIpAsync()
