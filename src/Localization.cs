@@ -169,6 +169,12 @@ namespace ScrcpyManager
                 { "UpdateDownloading", "Pobieranie..." },
                 { "UpdateInstallSuccess", "Pobrano aktualizację. Aplikacja zostanie zrestartowana." },
                 { "UpdateFailed", "Nie udało się zaktualizować automatycznie: {0}\nCzy chcesz otworzyć stronę wydania w przeglądarce?" },
+                { "GitHubBtn", "GitHub" },
+                { "GitHubTooltip", "Repozytorium scrcpy Manager na GitHubie\nKliknij, aby otworzyć stronę projektu, sprawdzić kod lub zgłosić uwagę." },
+                { "VersionTooltip", "scrcpy Manager v{0}\nKliknij, aby sprawdzić dostępność aktualizacji." },
+                { "UpdateChecking", "Sprawdzanie aktualizacji..." },
+                { "UpdateUpToDate", "Używasz najnowszej wersji scrcpy Manager (v{0}).\n\nCzy chcesz przejść do strony wydań na GitHubie?" },
+                { "UpdateUpToDateTitle", "scrcpy Manager" },
 
                 { "ResName0", "Full HD 1080p (Natywna 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
@@ -338,6 +344,12 @@ namespace ScrcpyManager
                 { "UpdateDownloading", "Downloading..." },
                 { "UpdateInstallSuccess", "Update downloaded. The application will restart." },
                 { "UpdateFailed", "Automatic update failed: {0}\nWould you like to open the release page in your browser?" },
+                { "GitHubBtn", "GitHub" },
+                { "GitHubTooltip", "scrcpy Manager GitHub repository\nClick to open project page, report issues, or view releases." },
+                { "VersionTooltip", "scrcpy Manager v{0}\nClick to check for updates." },
+                { "UpdateChecking", "Checking for updates..." },
+                { "UpdateUpToDate", "You are using the latest version of scrcpy Manager (v{0}).\n\nWould you like to open GitHub releases in your browser?" },
+                { "UpdateUpToDateTitle", "scrcpy Manager" },
 
                 { "ResName0", "Full HD 1080p (Native 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
@@ -507,6 +519,12 @@ namespace ScrcpyManager
                 { "UpdateDownloading", "Wird heruntergeladen..." },
                 { "UpdateInstallSuccess", "Update heruntergeladen. Die Anwendung wird neu gestartet." },
                 { "UpdateFailed", "Automatisches Update fehlgeschlagen: {0}\nMöchten Sie die Release-Seite im Browser öffnen?" },
+                { "GitHubBtn", "GitHub" },
+                { "GitHubTooltip", "scrcpy Manager GitHub-Repository\nKlicken, um die Projektseite zu öffnen oder Feedback zu geben." },
+                { "VersionTooltip", "scrcpy Manager v{0}\nKlicken, um nach Updates zu suchen." },
+                { "UpdateChecking", "Nach Updates suchen..." },
+                { "UpdateUpToDate", "Sie verwenden die neueste Version von scrcpy Manager (v{0}).\n\nMöchten Sie die GitHub-Releases im Browser öffnen?" },
+                { "UpdateUpToDateTitle", "scrcpy Manager" },
 
                 { "ResName0", "Full HD 1080p (Nativ 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
@@ -676,6 +694,12 @@ namespace ScrcpyManager
                 { "UpdateDownloading", "Descargando..." },
                 { "UpdateInstallSuccess", "Actualización descargada. La aplicación se reiniciará." },
                 { "UpdateFailed", "Error en la actualización automática: {0}\n¿Desea abrir la página de la versión en su navegador?" },
+                { "GitHubBtn", "GitHub" },
+                { "GitHubTooltip", "Repositorio de GitHub de scrcpy Manager\nHaz clic para ver la página del proyecto, reportar problemas o ver novedades." },
+                { "VersionTooltip", "scrcpy Manager v{0}\nClic para buscar actualizaciones." },
+                { "UpdateChecking", "Buscando actualizaciones..." },
+                { "UpdateUpToDate", "Estás utilizando la versión más reciente de scrcpy Manager (v{0}).\n\n¿Quieres abrir los lanzamientos de GitHub en el navegador?" },
+                { "UpdateUpToDateTitle", "scrcpy Manager" },
 
                 { "ResName0", "Full HD 1080p (Nativa 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
@@ -911,6 +935,12 @@ namespace ScrcpyManager
             public string UpdateDownloading    { get { return Get("UpdateDownloading"); } }
             public string UpdateInstallSuccess { get { return Get("UpdateInstallSuccess"); } }
             public string UpdateFailed         { get { return Get("UpdateFailed"); } }
+            public string GitHubBtn            { get { return Get("GitHubBtn"); } }
+            public string GitHubTooltip        { get { return Get("GitHubTooltip"); } }
+            public string VersionTooltip       { get { return Get("VersionTooltip"); } }
+            public string UpdateChecking       { get { return Get("UpdateChecking"); } }
+            public string UpdateUpToDate       { get { return Get("UpdateUpToDate"); } }
+            public string UpdateUpToDateTitle  { get { return Get("UpdateUpToDateTitle"); } }
 
             // Resolutions
             public string[] ResNames

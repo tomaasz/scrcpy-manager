@@ -51,17 +51,13 @@ namespace ScrcpyManager
 
                     if (release != null && !string.IsNullOrEmpty(release.tag_name))
                     {
-                        string latestClean = Regex.Replace(Regex.Replace(release.tag_name, @"^v", ""), @"-.*$", "").Trim();
-                        string curClean = Regex.Replace(Regex.Replace(CurrentVersion, @"^v", ""), @"-.*$", "").Trim();
+                        Version vLatest = ParseNormalizedVersion(release.tag_name);
+                        Version vCur = ParseNormalizedVersion(CurrentVersion);
 
-                        Version vLatest, vCur;
-                        if (Version.TryParse(latestClean, out vLatest) && Version.TryParse(curClean, out vCur))
+                        if (vLatest > vCur)
                         {
-                            if (vLatest > vCur)
-                            {
-                                LatestRelease = release;
-                                return true;
-                            }
+                            LatestRelease = release;
+                            return true;
                         }
                     }
                 }
@@ -230,8 +226,11 @@ namespace ScrcpyManager
                 else if (string.Equals(a.name, "ScrcpyManager-Portable.exe.sha256", StringComparison.OrdinalIgnoreCase)) checksumAsset = a;
             }
 
-            if (targetAsset == null || checksumAsset == null ||
-                !IsTrustedReleaseUrl(targetAsset.browser_download_url) || !IsTrustedReleaseUrl(checksumAsset.browser_download_url))
+            if (targetAsset == null || !IsTrustedReleaseUrl(targetAsset.browser_download_url))
+            {
+                return false;
+            }
+            if (checksumAsset != null && !IsTrustedReleaseUrl(checksumAsset.browser_download_url))
             {
                 return false;
             }
@@ -248,17 +247,24 @@ namespace ScrcpyManager
                 {
                     wc.Headers.Add("User-Agent", "scrcpy-manager-desktop");
                     wc.DownloadFile(targetAsset.browser_download_url, tempFile);
-                    wc.DownloadFile(checksumAsset.browser_download_url, checksumFile);
+                    if (checksumAsset != null)
+                    {
+                        wc.DownloadFile(checksumAsset.browser_download_url, checksumFile);
+                    }
                 }
 
-                if (!File.Exists(tempFile) || new FileInfo(tempFile).Length < 100000)
+                if (!File.Exists(tempFile) || new FileInfo(tempFile).Length < 1000000)
                 {
                     return false;
                 }
-                string expectedHash = ExtractSha256(File.ReadAllText(checksumFile, Encoding.UTF8));
-                if (expectedHash == null || !string.Equals(expectedHash, ComputeSha256(tempFile), StringComparison.OrdinalIgnoreCase))
+
+                if (checksumAsset != null && File.Exists(checksumFile))
                 {
-                    return false;
+                    string expectedHash = ExtractSha256(File.ReadAllText(checksumFile, Encoding.UTF8));
+                    if (expectedHash == null || !string.Equals(expectedHash, ComputeSha256(tempFile), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
 
                 string script = string.Format(@"
@@ -336,6 +342,18 @@ if ($updated) {{
                 foreach (byte value in hash) result.Append(value.ToString("x2"));
                 return result.ToString();
             }
+        }
+
+        public static Version ParseNormalizedVersion(string verStr)
+        {
+            if (string.IsNullOrEmpty(verStr)) return new Version(0, 0, 0);
+            string clean = Regex.Replace(Regex.Replace(verStr, @"^v", ""), @"-.*$", "").Trim();
+            string[] parts = clean.Split('.');
+            int major = 0, minor = 0, build = 0;
+            if (parts.Length > 0) int.TryParse(parts[0], out major);
+            if (parts.Length > 1) int.TryParse(parts[1], out minor);
+            if (parts.Length > 2) int.TryParse(parts[2], out build);
+            return new Version(major, minor, build);
         }
     }
 }

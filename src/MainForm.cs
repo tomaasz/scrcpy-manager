@@ -76,6 +76,7 @@ namespace ScrcpyManager
         private Button _btnTheme;
         private Button _btnLang;
         private ContextMenuStrip _ctxLang;
+        private Button _btnGitHub;
         private Button _btnUpdateBadge;
         private Label _lblVersion;
 
@@ -325,7 +326,8 @@ namespace ScrcpyManager
                 Text = "Wyszukiwanie urządzenia...",
                 Font = _fontTitle,
                 Location = new Point(32, 9),
-                Size = new Size(220, 22),
+                Size = new Size(176, 22),
+                AutoEllipsis = true,
                 BackColor = Color.Transparent
             };
             _pnlStatus.Controls.Add(_lblDeviceTitle);
@@ -335,7 +337,8 @@ namespace ScrcpyManager
                 Text = "Inicjalizacja...",
                 Font = _fontSmall,
                 Location = new Point(32, 33),
-                Size = new Size(220, 20),
+                Size = new Size(195, 20),
+                AutoEllipsis = true,
                 BackColor = Color.Transparent
             };
             _pnlStatus.Controls.Add(_lblStatusDetail);
@@ -354,9 +357,9 @@ namespace ScrcpyManager
 
             _btnTheme = new Button
             {
-                Location = new Point(254, 8),
-                Size = new Size(64, 24),
-                Font = _fontSmall
+                Location = new Point(212, 8),
+                Size = new Size(62, 24),
+                Font = _fontBadge
             };
             UiThemeHelper.SetupModernButton(_btnTheme, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _btnTheme.Click += (s, e) =>
@@ -371,9 +374,9 @@ namespace ScrcpyManager
 
             _btnLang = new Button
             {
-                Location = new Point(324, 8),
-                Size = new Size(40, 24),
-                Font = _fontSmall
+                Location = new Point(278, 8),
+                Size = new Size(36, 24),
+                Font = _fontBadge
             };
             UiThemeHelper.SetupModernButton(_btnLang, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _ctxLang = new ContextMenuStrip();
@@ -400,10 +403,24 @@ namespace ScrcpyManager
             };
             _pnlStatus.Controls.Add(_btnLang);
 
+            _btnGitHub = new Button
+            {
+                Location = new Point(318, 8),
+                Size = new Size(48, 24),
+                Font = _fontBadge,
+                Cursor = Cursors.Hand
+            };
+            UiThemeHelper.SetupModernButton(_btnGitHub, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
+            _btnGitHub.Click += (s, e) =>
+            {
+                try { Process.Start("https://github.com/tomaasz/scrcpy-manager"); } catch { }
+            };
+            _pnlStatus.Controls.Add(_btnGitHub);
+
             _btnUpdateBadge = new Button
             {
-                Location = new Point(258, 34),
-                Size = new Size(106, 21),
+                Location = new Point(230, 33),
+                Size = new Size(134, 22),
                 Font = _fontBadge,
                 Visible = false
             };
@@ -420,20 +437,42 @@ namespace ScrcpyManager
             {
                 Text = "v" + UpdateService.CurrentVersion,
                 Font = _fontSmall,
-                Location = new Point(254, 34),
-                Size = new Size(110, 20),
+                Location = new Point(230, 34),
+                Size = new Size(134, 20),
                 TextAlign = ContentAlignment.MiddleRight,
                 ForeColor = _isDarkMode ? ThemeColors.Dark.TextMuted : ThemeColors.Light.TextMuted,
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
-            _lblVersion.Click += (s, e) =>
+            _lblVersion.Click += async (s, e) =>
             {
                 ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
                 Localization.Strings t = Localization.Get(_currentLang);
-                _updates.ShowUpdateDialog(this, c, t, Icon);
+                if (_updates.LatestRelease != null)
+                {
+                    _updates.ShowUpdateDialog(this, c, t, Icon);
+                }
+                else
+                {
+                    _lblVersion.Text = "...";
+                    bool hasUpdate = await _updates.CheckForUpdateAsync();
+                    _lblVersion.Text = "v" + UpdateService.CurrentVersion;
+                    if (hasUpdate && _updates.LatestRelease != null)
+                    {
+                        _btnUpdateBadge.Visible = true;
+                        _lblVersion.Visible = false;
+                        _updates.ShowUpdateDialog(this, c, t, Icon);
+                    }
+                    else
+                    {
+                        string msg = string.Format(t.UpdateUpToDate, UpdateService.CurrentVersion);
+                        if (MessageBox.Show(this, msg, t.UpdateUpToDateTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        {
+                            try { Process.Start("https://github.com/tomaasz/scrcpy-manager/releases"); } catch { }
+                        }
+                    }
+                }
             };
-            _tipMain.SetToolTip(_lblVersion, "scrcpy Manager v" + UpdateService.CurrentVersion);
             _pnlStatus.Controls.Add(_lblVersion);
 
             // 2. Główny przycisk Hero: Uruchom scrcpy
@@ -895,6 +934,14 @@ namespace ScrcpyManager
             _btnLang.FlatAppearance.BorderColor = c.CardBorder;
             _btnLang.FlatAppearance.MouseOverBackColor = c.ToggleHover;
 
+            if (_btnGitHub != null)
+            {
+                _btnGitHub.BackColor = c.ToggleBg;
+                _btnGitHub.ForeColor = c.ToggleText;
+                _btnGitHub.FlatAppearance.BorderColor = c.CardBorder;
+                _btnGitHub.FlatAppearance.MouseOverBackColor = c.ToggleHover;
+            }
+
             _ctxLang.BackColor = c.Card;
             _ctxLang.ForeColor = c.Text;
             foreach (ToolStripItem it in _ctxLang.Items)
@@ -1093,6 +1140,15 @@ namespace ScrcpyManager
             _tipMain.SetToolTip(_btnTheme, t.ThemeTooltip);
             _btnLang.Text = _currentLang;
             _tipMain.SetToolTip(_btnLang, t.LangTooltip);
+            if (_btnGitHub != null)
+            {
+                _btnGitHub.Text = t.GitHubBtn;
+                _tipMain.SetToolTip(_btnGitHub, t.GitHubTooltip);
+            }
+            if (_lblVersion != null)
+            {
+                _tipMain.SetToolTip(_lblVersion, string.Format(t.VersionTooltip, UpdateService.CurrentVersion));
+            }
             _btnUpdateBadge.Text = t.UpdateBadge;
 
             _btnScrcpy.Text = t.LaunchHero;

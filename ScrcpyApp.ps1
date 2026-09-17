@@ -342,6 +342,8 @@ public static class NativeDwmScreenshot {
             UpdateDownloading     = "Pobieranie..."
             UpdateInstallSuccess  = "Pobrano aktualizację. Aplikacja zostanie zrestartowana."
             UpdateFailed          = "Nie udało się zaktualizować automatycznie: {0}`nCzy chcesz otworzyć stronę wydania w przeglądarce?"
+            GitHubBtn             = "GitHub"
+            GitHubTooltip         = "Repozytorium projektu scrcpy Manager na GitHubie`nKliknij, aby przejść do strony projektu, zgłosić problem lub sprawdzić nowości."
             ResNames            = @(
                 "Full HD 1080p (Natywna 1:1)",
                 "2K QHD (2560x1440)",
@@ -473,6 +475,8 @@ public static class NativeDwmScreenshot {
             UpdateDownloading     = "Downloading..."
             UpdateInstallSuccess  = "Update downloaded. The application will restart."
             UpdateFailed          = "Automatic update failed: {0}`nWould you like to open the release page in your browser?"
+            GitHubBtn             = "GitHub"
+            GitHubTooltip         = "scrcpy Manager GitHub repository`nClick to open project page, report issues, or view releases."
             ResNames            = @(
                 "Full HD 1080p (Native 1:1)",
                 "2K QHD (2560x1440)",
@@ -604,6 +608,8 @@ public static class NativeDwmScreenshot {
             UpdateDownloading     = "Wird heruntergeladen..."
             UpdateInstallSuccess  = "Update heruntergeladen. Die Anwendung wird neu gestartet."
             UpdateFailed          = "Automatisches Update fehlgeschlagen: {0}`nMöchten Sie die Release-Seite im Browser öffnen?"
+            GitHubBtn             = "GitHub"
+            GitHubTooltip         = "scrcpy Manager GitHub-Repository`nKlicken, um die Projektseite zu öffnen oder Feedback zu geben."
             ResNames            = @(
                 "Full HD 1080p (Nativ 1:1)",
                 "2K QHD (2560x1440)",
@@ -734,6 +740,8 @@ public static class NativeDwmScreenshot {
             UpdateDownloading     = "Descargando..."
             UpdateInstallSuccess  = "Actualización descargada. La aplicación se reiniciará."
             UpdateFailed          = "Error en la actualización automática: {0}`n¿Desea abrir la página de la versión en su navegador?"
+            GitHubBtn             = "GitHub"
+            GitHubTooltip         = "Repositorio de GitHub de scrcpy Manager`nHaz clic para ver la página del proyecto, reportar problemas o ver novedades."
             ResNames            = @(
                 "Full HD 1080p (Nativa 1:1)",
                 "2K QHD (2560x1440)",
@@ -2093,33 +2101,48 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
     $lblDeviceTitle.Text = "Wyszukiwanie urządzenia..."
     $lblDeviceTitle.Font = $fontTitle
     $lblDeviceTitle.Location = New-Object System.Drawing.Point(28, 9)
-    $lblDeviceTitle.Size = New-Object System.Drawing.Size(225, 20)
+    $lblDeviceTitle.Size = New-Object System.Drawing.Size(170, 20)
+    $lblDeviceTitle.AutoEllipsis = $true
     $pnlStatus.Controls.Add($lblDeviceTitle)
 
     $lblStatusDetail = New-Object System.Windows.Forms.Label
     $lblStatusDetail.Text = "Inicjalizacja..."
     $lblStatusDetail.Font = $fontSmall
     $lblStatusDetail.Location = New-Object System.Drawing.Point(28, 32)
-    $lblStatusDetail.Size = New-Object System.Drawing.Size(225, 20)
+    $lblStatusDetail.Size = New-Object System.Drawing.Size(195, 20)
+    $lblStatusDetail.AutoEllipsis = $true
     $pnlStatus.Controls.Add($lblStatusDetail)
 
-    # Przełączniki motywu i języka w karcie nagłówka
+    # Przełączniki motywu, języka i GitHub w karcie nagłówka
     $btnTheme = New-Object System.Windows.Forms.Button
-    $btnTheme.Location = New-Object System.Drawing.Point(260, 8)
-    $btnTheme.Size = New-Object System.Drawing.Size(62, 24)
+    $btnTheme.Location = New-Object System.Drawing.Point(206, 8)
+    $btnTheme.Size = New-Object System.Drawing.Size(56, 24)
     $btnTheme.Font = $fontSmall
     $btnTheme.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnTheme.FlatAppearance.BorderSize = 1
     $pnlStatus.Controls.Add($btnTheme)
 
     $btnLang = New-Object System.Windows.Forms.Button
-    $btnLang.Location = New-Object System.Drawing.Point(326, 8)
-    $btnLang.Size = New-Object System.Drawing.Size(38, 24)
+    $btnLang.Location = New-Object System.Drawing.Point(266, 8)
+    $btnLang.Size = New-Object System.Drawing.Size(40, 24)
     $btnLang.Font = $fontSmall
     $btnLang.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnLang.FlatAppearance.BorderSize = 1
     $btnLang.Cursor = [System.Windows.Forms.Cursors]::Hand
     $pnlStatus.Controls.Add($btnLang)
+
+    $btnGitHub = New-Object System.Windows.Forms.Button
+    $btnGitHub.Location = New-Object System.Drawing.Point(310, 8)
+    $btnGitHub.Size = New-Object System.Drawing.Size(54, 24)
+    $btnGitHub.Font = $fontSmall
+    $btnGitHub.Text = "GitHub"
+    $btnGitHub.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+    $btnGitHub.FlatAppearance.BorderSize = 1
+    $btnGitHub.Cursor = [System.Windows.Forms.Cursors]::Hand
+    $btnGitHub.Add_Click({
+        try { [System.Diagnostics.Process]::Start("https://github.com/tomaasz/scrcpy-manager") } catch {}
+    })
+    $pnlStatus.Controls.Add($btnGitHub)
 
     $ctxLang = New-Object System.Windows.Forms.ContextMenuStrip
     $ctxLang.ShowImageMargin = $false
@@ -2142,8 +2165,8 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
     $tipLang = New-Object System.Windows.Forms.ToolTip
 
     $btnUpdateBadge = New-Object System.Windows.Forms.Button
-    $btnUpdateBadge.Location = New-Object System.Drawing.Point(260, 34)
-    $btnUpdateBadge.Size = New-Object System.Drawing.Size(104, 21)
+    $btnUpdateBadge.Location = New-Object System.Drawing.Point(230, 33)
+    $btnUpdateBadge.Size = New-Object System.Drawing.Size(134, 22)
     $btnUpdateBadge.Font = New-Object System.Drawing.Font("Segoe UI", [float]7.5, [System.Drawing.FontStyle]::Bold)
     $btnUpdateBadge.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
     $btnUpdateBadge.FlatAppearance.BorderSize = 1
@@ -3299,6 +3322,12 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         $btnLang.ForeColor = $c.ToggleText
         $btnLang.FlatAppearance.BorderColor = $c.CardBorder
 
+        if ($btnGitHub) {
+            $btnGitHub.BackColor = $c.ToggleBg
+            $btnGitHub.ForeColor = $c.ToggleText
+            $btnGitHub.FlatAppearance.BorderColor = $c.CardBorder
+        }
+
         if ($ctxLang) {
             $ctxLang.BackColor = $c.Card
             $ctxLang.ForeColor = $c.Text
@@ -3432,6 +3461,10 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         $btnLang.Text = $script:currentLang
         if ($tipLang) { $tipLang.SetToolTip($btnLang, $t.LangTooltip) }
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnLang, $t.LangTooltip) }
+        if ($btnGitHub) {
+            $btnGitHub.Text = if ($t.GitHubBtn) { $t.GitHubBtn } else { "GitHub" }
+            if ($script:tipMain -and $t.GitHubTooltip) { $script:tipMain.SetToolTip($btnGitHub, $t.GitHubTooltip) }
+        }
         if ($btnUpdateBadge) { $btnUpdateBadge.Text = $t.UpdateBadge }
         $btnScrcpy.Text = $t.LaunchHero
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnScrcpy, $t.LaunchHeroTooltip) }
