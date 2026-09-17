@@ -43,12 +43,12 @@
 * 🖥️ **Nowoczesny, odświeżony interfejs**: Elegancki grafitowy motyw z delikatnie zaokrąglonymi przyciskami, wygładzaniem krawędzi (anti-aliasing) i subtelnymi efektami hover.
 * ⚙️ **Profile uruchamiania per aplikacja**: Dla każdego kafelka zapisz rozdzielczość/DPI, FPS, bitrate, kodek, orientację, klawiaturę, mysz, dźwięk, pełny ekran, okno bez ramek, tryb „zawsze na wierzchu” oraz widoczność paska zadań.
 * 🎛️ **Gotowe presety**: Domyślny, Praca/RDP, Terminal (wysokie DPI dla idealnej czytelności), Gra, Oszczędny Wi-Fi i Prezentacja.
-* 🛡️ **Kontrola paska zadań Androida (Taskbar)**: Opcjonalne ukrywanie dolnego paska zadań (`--no-vd-system-decorations`), dzięki czemu zmaksymalizowane okna aplikacji nie są przesłaniane od dołu.
+* 🛡️ **Kontrola i instalator paska zadań Androida (Taskbar)**: Opcjonalne ukrywanie dolnego paska zadań (`--no-vd-system-decorations`), by okna nie były przesłaniane od dołu, oraz automatyczne wykrywanie i instalacja aplikacji Taskbar 1 kliknięciem przez ADB.
 * 🎥 **Nagrywanie sesji**: Zapisuj sesje wybranych aplikacji jako pliki MP4 z datą w katalogu `Wideo\scrcpy-manager`.
 * 🔎 **Wyszukiwarka pakietów w czasie rzeczywistym**: Błyskawiczne wyszukiwanie i filtrowanie pakietów zainstalowanych na telefonie.
 * 📶 **Bezprzewodowe ADB (Wi‑Fi) jednym kliknięciem**: Automatycznie wykrywa adres IP telefonu w sieci domowej i przełącza połączenie z kabla USB na Wi-Fi.
 * 🔊 **Sterowanie dźwiękiem**: Wygodny przełącznik przesyłania dźwięku z telefonu do głośników lub słuchawek komputera.
-* ⌨️ **Klawiatura fizyczna (UHID) i polskie znaki**: Pełna natywna obsługa prawego Alt (`AltGr + a, e, c, s, l, z, x, o, n`) dzięki sprzętowej symulacji klawiatury (`-K`).
+* ⌨️ **Klawiatura fizyczna i mysz (UHID)**: Pełna obsługa polskich znaków (`AltGr + a, e, c, s, l, z, x, o, n`) i skrótów dzięki emulacji klawiatury (`-K`) oraz sprzętowa emulacja myszy (`--mouse=uhid`, `-ForwardAllClicks`) ułatwiająca zaznaczanie i kopiowanie tekstu.
 * 🖥️ **Zoptymalizowane profile RDP (Windows App)**:
   * `Full HD 1080p (Natywna 1:1)` – Idealna ostrość piksel w piksel.
   * `2K QHD (2560x1440)` – O 77% większa przestrzeń robocza.
@@ -60,9 +60,9 @@
 * 📐 **Elastyczny układ kafelków**: Przełączaj jednym kliknięciem między listą (1 kolumna), siatką 2-kolumnową i zwartą siatką 3-kolumnową.
 * 🌓 **Tryb Ciemny i Jasny**: Szybkie przełączanie motywu (`☀️ Jasny` / `🌙 Ciemny`) z dedykowanymi kontrolkami.
 * 🌐 **Wielojęzyczność (4 języki)**: Błyskawiczna zmiana języka (🇵🇱 Polski, 🇬🇧 Angielski, 🇩🇪 Niemiecki, 🇪🇸 Hiszpański) z zapamiętywaniem w preferencjach.
-* 🔄 **Automatyczne aktualizacje w aplikacji**: Wykrywanie nowych wydań i aktualizacja wersji Portable 1 kliknięciem bez utraty ustawień.
-* 🔌 **Interaktywna instrukcja połączenia i samonaprawa ADB**: Przewodnik krok po kroku dla nowych użytkowników (opcje programistyczne, debugowanie USB, monit autoryzacji RSA), diagnostyka urządzeń oraz automatyczne przywracanie zawieszonego demona ADB.
-* 🔋 **Karta stanu urządzenia**: Wskaźnik połączenia, poziom naładowania baterii ze stanem ładowania oraz status czuwania.
+* 🔄 **Automatyczne aktualizacje w aplikacji i sprawdzacz wersji**: Wykrywanie nowych wydań przy starcie, podgląd zmian i aktualizacja wersji Portable 1 kliknięciem bez utraty ustawień z weryfikacją SHA-256.
+* 🔌 **Interaktywna instrukcja połączenia i samonaprawa ADB**: Przewodnik krok po kroku dla nowych użytkowników (opcje programistyczne, debugowanie USB, monit autoryzacji RSA), diagnostyka urządzeń, skrót do Menedżera urządzeń oraz automatyczne przywracanie zawieszonego demona ADB.
+* 🔋 **Karta stanu urządzenia i przycisk GitHub**: Wskaźnik połączenia, poziom naładowania baterii ze stanem ładowania, status czuwania, bezpośredni link do repozytorium GitHub oraz interaktywny sprawdzacz wersji.
 
 ---
 

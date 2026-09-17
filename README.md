@@ -43,12 +43,12 @@
 * 🖥️ **Modern, Refreshed UI**: Sleek cool-graphite theme with delicately rounded corners, anti-aliased borders, and subtle hover highlights.
 * ⚙️ **Per-App Launch Profiles**: Save resolution/DPI, FPS, bitrate, codec, orientation, keyboard, mouse, audio, fullscreen, borderless, always-on-top, and taskbar visibility for every tile.
 * 🎛️ **Ready-to-Use Presets**: Default, Work/RDP, Terminal (high DPI for maximum font clarity), Gaming, Wi-Fi Saver and Presentation profiles.
-* 🛡️ **Android Taskbar Control**: Optional suppression of the virtual screen taskbar (`--no-vd-system-decorations`) so maximized app windows are never obscured from below.
+* 🛡️ **Android Taskbar Control & Auto-Installer**: Optional suppression of the virtual screen taskbar (`--no-vd-system-decorations`) so maximized app windows are never obscured, plus automatic detection and 1-click installation of the official Taskbar app via ADB.
 * 🎥 **Session Recording**: Record selected application sessions to timestamped MP4 files in `Videos\scrcpy-manager`.
 * 🔎 **Real-Time Package Search**: Instant search and filtering when picking apps from your connected phone.
 * 📶 **One-Click Wireless ADB (Wi‑Fi)**: Automatically detect your phone's Wi‑Fi IP and switch from USB cable to wireless debugging in one click.
 * 🔊 **Audio Passthrough Control**: Toggle real-time audio forwarding from your Android device to PC speakers/headphones.
-* ⌨️ **Hardware Keyboard (UHID) & Diacritics**: Full native support for international characters and AltGr shortcuts with direct hardware keyboard simulation (`-K`).
+* ⌨️ **Hardware Keyboard & Mouse (UHID)**: Direct hardware keyboard simulation (`-K`) and mouse input (`--mouse=uhid`, `--mouse-bind=++++`) for seamless text selection, copy-pasting, and full AltGr international character support.
 * 🖥️ **High-Resolution RDP Presets**:
   * `Full HD 1080p (Native 1:1)` – Pixel-sharp 1:1 scaling.
   * `2K QHD (2560x1440)` – +77% expanded desktop workspace.
@@ -60,9 +60,9 @@
 * 📐 **Flexible Tile Layouts**: Switch between 1-column list, 2-column standard, and 3-column compact view with persistent user preferences.
 * 🌓 **Dark & Light Mode**: 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with smooth custom controls.
 * 🌐 **Multilingual Interface**: 4 languages supported out of the box (🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, 🇪🇸 Spanish) with persistent preference.
-* 🔄 **In-App Auto-Updates**: One-click update detection and seamless upgrading of the Portable edition.
-* 🔌 **Connection Guide & Self-Healing ADB**: Step-by-step guide for first-time users (Developer options, USB debugging, RSA authorization prompt), device troubleshooting, and automatic daemon recovery.
-* 🔋 **Real-Time Status Card**: Connection status dot, battery level with charging state, and keep-awake monitor.
+* 🔄 **In-App Auto-Updates & Version Checker**: Automatic update checks on startup, prominent update notifications, and 1-click seamless upgrading of the Portable edition with SHA-256 verification.
+* 🔌 **Connection Guide & Self-Healing ADB**: 3-step setup guide for first-time users (Developer options, USB debugging, RSA authorization prompt), device troubleshooting tips, Device Manager shortcut, and automatic ADB daemon recovery.
+* 🔋 **Real-Time Status Card & GitHub Link**: Connection status dot, battery level with charging state, keep-awake monitor, direct link to GitHub repository, and on-demand version check.
 
 ---
 
