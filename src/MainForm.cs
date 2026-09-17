@@ -143,6 +143,7 @@ namespace ScrcpyManager
             string baseDir = !string.IsNullOrEmpty(runtimeDir) && Directory.Exists(runtimeDir)
                 ? runtimeDir
                 : AppDomain.CurrentDomain.BaseDirectory;
+            AdbService.RuntimeDirectory = baseDir;
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             _userConfigRoot = Path.Combine(appData, "scrcpy-manager");
             _userPrefFile = Path.Combine(_userConfigRoot, "preferences.json");
@@ -267,6 +268,7 @@ namespace ScrcpyManager
                 if (app.flags != null)
                 {
                     if (app.flags.Contains("-UseUhidKeyboard")) flags.Add("-UseUhidKeyboard");
+                    if (app.flags.Contains("-UseUhidMouse")) flags.Add("-UseUhidMouse");
                     if (app.flags.Contains("-ForwardAllClicks")) flags.Add("-ForwardAllClicks");
                 }
                 AppEntry validated = new AppEntry(app.name.Trim(), app.package, flags);
@@ -290,6 +292,7 @@ namespace ScrcpyManager
             if (legacyFlags != null)
             {
                 if (legacyFlags.Contains("-UseUhidKeyboard")) profile.keyboardMode = "uhid";
+                if (legacyFlags.Contains("-UseUhidMouse")) profile.mouseMode = "uhid";
                 if (legacyFlags.Contains("-ForwardAllClicks")) profile.forwardAllClicks = true;
             }
             return profile;
@@ -336,6 +339,18 @@ namespace ScrcpyManager
                 BackColor = Color.Transparent
             };
             _pnlStatus.Controls.Add(_lblStatusDetail);
+
+            Action onStatusClick = () =>
+            {
+                if (!_currentDevice.IsOnline)
+                {
+                    ShowConnectionGuide();
+                }
+            };
+            _pnlStatus.Click += (s, e) => onStatusClick();
+            _lblStatusDot.Click += (s, e) => onStatusClick();
+            _lblDeviceTitle.Click += (s, e) => onStatusClick();
+            _lblStatusDetail.Click += (s, e) => onStatusClick();
 
             _btnTheme = new Button
             {
@@ -1414,23 +1429,44 @@ namespace ScrcpyManager
 
                 string bat = _currentDevice.BatteryLevel >= 0 ? string.Format("{0}%{1}", _currentDevice.BatteryLevel, _currentDevice.IsCharging ? t.ChargingStr : "") : "---";
                 _lblStatusDetail.Text = string.Format("{0} {1}  |  {2}", t.BatteryLabel, bat, t.StatusActive);
+
+                _lblStatusDot.Cursor = Cursors.Default;
+                _lblDeviceTitle.Cursor = Cursors.Default;
+                _lblStatusDetail.Cursor = Cursors.Default;
+                _pnlStatus.Cursor = Cursors.Default;
+                _tipMain.SetToolTip(_pnlStatus, t.DeviceStatusTooltip);
             }
             else
             {
                 _lblStatusDot.ForeColor = c.StatusDotOffline;
                 if (_currentDevice.ConnectionState == DeviceConnectionState.Unauthorized)
-                    _lblDeviceTitle.Text = "ADB: unauthorized";
+                {
+                    _lblDeviceTitle.Text = t.StatusUnauthorizedTitle;
+                    _lblStatusDetail.Text = t.StatusUnauthorizedDetail;
+                }
                 else if (_currentDevice.ConnectionState == DeviceConnectionState.Offline)
-                    _lblDeviceTitle.Text = "ADB: offline";
-                else if (_currentDevice.ConnectionState == DeviceConnectionState.Recovery)
-                    _lblDeviceTitle.Text = "ADB: recovery";
+                {
+                    _lblDeviceTitle.Text = t.StatusOfflineTitle;
+                    _lblStatusDetail.Text = t.StatusOfflineDetail;
+                }
                 else if (_currentDevice.ConnectionState == DeviceConnectionState.Multiple)
-                    _lblDeviceTitle.Text = "ADB: multiple devices";
+                {
+                    _lblDeviceTitle.Text = t.StatusMultipleTitle;
+                    _lblStatusDetail.Text = t.StatusMultipleDetail;
+                }
                 else
+                {
                     _lblDeviceTitle.Text = t.StatusNoPhone;
-                _lblStatusDetail.Text = !string.IsNullOrWhiteSpace(_currentDevice.ConnectionError)
-                    ? _currentDevice.ConnectionError.Trim()
-                    : t.StatusCheckConn;
+                    _lblStatusDetail.Text = !string.IsNullOrWhiteSpace(_currentDevice.ConnectionError)
+                        ? _currentDevice.ConnectionError.Trim()
+                        : t.StatusCheckConn;
+                }
+
+                _lblStatusDot.Cursor = Cursors.Hand;
+                _lblDeviceTitle.Cursor = Cursors.Hand;
+                _lblStatusDetail.Cursor = Cursors.Hand;
+                _pnlStatus.Cursor = Cursors.Hand;
+                _tipMain.SetToolTip(_pnlStatus, t.StatusGuideTooltip);
             }
         }
 
@@ -1860,6 +1896,11 @@ namespace ScrcpyManager
                 {
                     profile.displaySize = "2560x1440/160";
                 }
+                if (string.IsNullOrEmpty(profile.mouseMode) || profile.mouseMode == "sdk")
+                    profile.mouseMode = "uhid";
+                if (string.IsNullOrEmpty(profile.keyboardMode) || profile.keyboardMode == "sdk")
+                    profile.keyboardMode = "uhid";
+                profile.forwardAllClicks = true;
             }
 
             try
@@ -2200,10 +2241,28 @@ namespace ScrcpyManager
             }
         }
 
+        private void ShowConnectionGuide()
+        {
+            ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
+            using (var guide = new DeviceGuideForm(c, _currentLang, Icon, _adb))
+            {
+                guide.ShowDialog(this);
+            }
+            if (_statusTimer != null) _statusTimer.Start();
+        }
+
         private void ShowNoDeviceWarning()
         {
             Localization.Strings t = Localization.Get(_currentLang);
-            MessageBox.Show(this, t.MsgNoDevice, t.NoDevice, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            DialogResult dr = MessageBox.Show(this,
+                t.MsgNoDeviceGuidePrompt,
+                t.NoDevice,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+            if (dr == DialogResult.Yes)
+            {
+                ShowConnectionGuide();
+            }
         }
 
         protected override void Dispose(bool disposing)

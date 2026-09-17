@@ -61,6 +61,7 @@
 * 🌓 **Tryb Ciemny i Jasny**: Szybkie przełączanie motywu (`☀️ Jasny` / `🌙 Ciemny`) z dedykowanymi kontrolkami.
 * 🌐 **Wielojęzyczność (4 języki)**: Błyskawiczna zmiana języka (🇵🇱 Polski, 🇬🇧 Angielski, 🇩🇪 Niemiecki, 🇪🇸 Hiszpański) z zapamiętywaniem w preferencjach.
 * 🔄 **Automatyczne aktualizacje w aplikacji**: Wykrywanie nowych wydań i aktualizacja wersji Portable 1 kliknięciem bez utraty ustawień.
+* 🔌 **Interaktywna instrukcja połączenia i samonaprawa ADB**: Przewodnik krok po kroku dla nowych użytkowników (opcje programistyczne, debugowanie USB, monit autoryzacji RSA), diagnostyka urządzeń oraz automatyczne przywracanie zawieszonego demona ADB.
 * 🔋 **Karta stanu urządzenia**: Wskaźnik połączenia, poziom naładowania baterii ze stanem ładowania oraz status czuwania.
 
 ---
@@ -106,7 +107,7 @@ Plik `apps.json` definiuje domyślny zestaw kafelków. Za pomocą przycisku **Ed
   {
     "name": "Windows App (RDP)",
     "package": "com.microsoft.rdc.androidx",
-    "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
+    "flags": ["-UseUhidKeyboard", "-UseUhidMouse", "-ForwardAllClicks"]
   }
 ]
 ```

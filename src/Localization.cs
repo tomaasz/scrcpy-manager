@@ -25,6 +25,28 @@ namespace ScrcpyManager
                 { "LangSwitch", "EN" },
                 { "LangTooltip", "Język: Polski (kliknij, aby zmienić na EN / DE / ES)" },
                 { "DeviceStatusTooltip", "Status podłączonego telefonu\nWyświetla model urządzenia, stan naładowania baterii\noraz aktywny tryb połączenia (USB lub Wi‑Fi)." },
+                { "StatusUnauthorizedTitle", "⚠ Zezwól na telefonie" },
+                { "StatusUnauthorizedDetail", "Odblokuj ekran i kliknij \"Zezwól na debugowanie\"" },
+                { "StatusOfflineTitle", "⚠ Telefon offline" },
+                { "StatusOfflineDetail", "Odłącz i podłącz kabel USB ponownie" },
+                { "StatusMultipleTitle", "⚠ Wiele urządzeń" },
+                { "StatusMultipleDetail", "Podłącz tylko jeden telefon USB" },
+                { "StatusGuideTooltip", "Kliknij tutaj, aby otworzyć instrukcję pierwszego połączenia krok po kroku." },
+                { "MsgNoDeviceGuidePrompt", "Nie wykryto podłączonego telefonu.\n\nCzy chcesz otworzyć instrukcję pierwszego połączenia (krok po kroku)?" },
+                { "GuideTitle", "Instrukcja połączenia telefonu" },
+                { "GuideSubtitle", "Wykonaj poniższe 3 proste kroki, aby połączyć telefon z komputerem:" },
+                { "GuideStep1Header", "Krok 1: Włącz Opcje programisty" },
+                { "GuideStep1Text", "W telefonie otwórz Ustawienia ➔ Informacje o telefonie i stuknij szybko 7 razy w pole \"Numer kompilacji\". Pojawi się komunikat: \"Jesteś teraz programistą!\"." },
+                { "GuideStep2Header", "Krok 2: Włącz Debugowanie USB" },
+                { "GuideStep2Text", "Wejdź w Ustawienia ➔ System ➔ Opcje programisty i włącz przełącznik \"Debugowanie USB\"." },
+                { "GuideStep3Header", "Krok 3: Podłącz kabel i zatwierdź dostęp" },
+                { "GuideStep3Text", "Podłącz kabel USB do PC. Odblokuj telefon i w okienku \"Zezwalać na debugowanie USB?\" zaznacz \"Zawsze zezwalaj z tego komputera\" oraz kliknij \"Zezwól\"." },
+                { "GuideTipsHeader", "Wskazówki rozwiązywania problemów:" },
+                { "GuideTipsText", "• Kabel USB: Upewnij się, że kabel przesyła dane (niektóre kable służą tylko do ładowania).\n• Port USB: Podłącz bezpośrednio do portu w obudowie PC (unikaj rozdzielaczy/hubów).\n• Sterowniki: Jeśli Windows nie widzi telefonu, sprawdź w Menedżerze urządzeń." },
+                { "GuideBtnRestartAdb", "🔄 Restartuj ADB" },
+                { "GuideBtnDevMgr", "🔌 Menedżer urządzeń" },
+                { "GuideBtnClose", "Zamknij" },
+                { "GuideAdbRestarted", "Zrestartowano usługę ADB!" },
 
                 { "LaunchHero", "▶  Uruchom scrcpy" },
                 { "LaunchHeroTooltip", "Uruchom pełny ekran scrcpy\nOtwiera pełny pulpit Androida lub ekran telefonu w oknie na PC.\n\n💡 Wskazówka: Aby otworzyć pojedynczą aplikację, kliknij bezpośrednio\nw jej kafelek poniżej – nie musisz najpierw wciskać tego przycisku!" },
@@ -172,6 +194,28 @@ namespace ScrcpyManager
                 { "LangSwitch", "DE" },
                 { "LangTooltip", "Language: English (click to switch to DE / ES / PL)" },
                 { "DeviceStatusTooltip", "Connected device status\nDisplays phone model, battery charge level,\nand active connection type (USB or Wi‑Fi)." },
+                { "StatusUnauthorizedTitle", "⚠ Authorize on phone" },
+                { "StatusUnauthorizedDetail", "Unlock screen and tap \"Allow USB debugging\"" },
+                { "StatusOfflineTitle", "⚠ Phone offline" },
+                { "StatusOfflineDetail", "Reconnect the USB cable" },
+                { "StatusMultipleTitle", "⚠ Multiple devices" },
+                { "StatusMultipleDetail", "Disconnect other USB phones" },
+                { "StatusGuideTooltip", "Click here to open the step-by-step first connection guide." },
+                { "MsgNoDeviceGuidePrompt", "No connected phone detected.\n\nWould you like to open the step-by-step first connection guide?" },
+                { "GuideTitle", "Phone Connection Guide" },
+                { "GuideSubtitle", "Follow these 3 simple steps to connect your phone to the PC:" },
+                { "GuideStep1Header", "Step 1: Enable Developer Options" },
+                { "GuideStep1Text", "On your phone, open Settings ➔ About phone and tap \"Build number\" 7 times quickly. A message will appear: \"You are now a developer!\"." },
+                { "GuideStep2Header", "Step 2: Enable USB Debugging" },
+                { "GuideStep2Text", "Open Settings ➔ System ➔ Developer options and turn on the \"USB debugging\" toggle." },
+                { "GuideStep3Header", "Step 3: Connect cable and authorize PC" },
+                { "GuideStep3Text", "Connect the USB cable to PC. Unlock the phone, check \"Always allow from this computer\" on the \"Allow USB debugging?\" prompt, and tap \"Allow\"." },
+                { "GuideTipsHeader", "Troubleshooting Tips:" },
+                { "GuideTipsText", "• USB Cable: Ensure your cable supports data transfer (some cables are charge-only).\n• USB Port: Connect directly to a motherboard/case USB port (avoid hubs/adapters).\n• Drivers: If Windows doesn't recognize phone, inspect Windows Device Manager." },
+                { "GuideBtnRestartAdb", "🔄 Restart ADB" },
+                { "GuideBtnDevMgr", "🔌 Device Manager" },
+                { "GuideBtnClose", "Close" },
+                { "GuideAdbRestarted", "ADB service restarted!" },
 
                 { "LaunchHero", "▶  Launch scrcpy" },
                 { "LaunchHeroTooltip", "Launch full scrcpy screen\nOpens full Android desktop or phone screen in a PC window.\n\n💡 Tip: To launch a single app, click its tile below directly\nwithout needing to click this button first!" },
@@ -319,6 +363,28 @@ namespace ScrcpyManager
                 { "LangSwitch", "ES" },
                 { "LangTooltip", "Sprache: Deutsch (Klicken für Wechsel zu ES / PL / EN)" },
                 { "DeviceStatusTooltip", "Status des verbundenen Geräts\nZeigt Telefonmodell, Akkustand und\naktiven Verbindungstyp (USB oder WLAN) an." },
+                { "StatusUnauthorizedTitle", "⚠ Am Telefon autorisieren" },
+                { "StatusUnauthorizedDetail", "Bildschirm entsperren und \"USB-Debugging zulassen\" tippen" },
+                { "StatusOfflineTitle", "⚠ Telefon offline" },
+                { "StatusOfflineDetail", "USB-Kabel neu anschließen" },
+                { "StatusMultipleTitle", "⚠ Mehrere Geräte" },
+                { "StatusMultipleDetail", "Andere USB-Telefone trennen" },
+                { "StatusGuideTooltip", "Hier klicken, um die Schritt-für-Schritt-Anleitung zur Ersteinrichtung zu öffnen." },
+                { "MsgNoDeviceGuidePrompt", "Kein verbundenes Telefon erkannt.\n\nMöchten Sie die Schritt-für-Schritt-Anleitung zur Ersteinrichtung öffnen?" },
+                { "GuideTitle", "Anleitung zur Telefonverbindung" },
+                { "GuideSubtitle", "Befolgen Sie diese 3 einfachen Schritte, um Ihr Telefon mit dem PC zu verbinden:" },
+                { "GuideStep1Header", "Schritt 1: Entwickleroptionen aktivieren" },
+                { "GuideStep1Text", "Öffnen Sie Einstellungen ➔ Über das Telefon und tippen Sie 7 Mal schnell auf \"Build-Nummer\". Die Meldung \"Sie sind jetzt ein Entwickler!\" erscheint." },
+                { "GuideStep2Header", "Schritt 2: USB-Debugging aktivieren" },
+                { "GuideStep2Text", "Öffnen Sie Einstellungen ➔ System ➔ Entwickleroptionen und aktivieren Sie den Schalter \"USB-Debugging\"." },
+                { "GuideStep3Header", "Schritt 3: Kabel anschließen & autorisieren" },
+                { "GuideStep3Text", "USB-Kabel an den PC anschließen. Telefon entsperren, bei \"USB-Debugging zulassen?\" die Option \"Von diesem Computer immer zulassen\" anhaken und \"Zulassen\" wählen." },
+                { "GuideTipsHeader", "Tipps zur Fehlerbehebung:" },
+                { "GuideTipsText", "• USB-Kabel: Stellen Sie sicher, dass das Kabel Daten überträgt (manche sind nur Ladekabel).\n• USB-Port: Direkt am PC-Gehäuse anschließen (Hubs/Adapter vermeiden).\n• Treiber: Wenn Windows das Telefon nicht erkennt, Gerätemanager prüfen." },
+                { "GuideBtnRestartAdb", "🔄 ADB neu starten" },
+                { "GuideBtnDevMgr", "🔌 Geräte-Manager" },
+                { "GuideBtnClose", "Schließen" },
+                { "GuideAdbRestarted", "ADB-Dienst neu gestartet!" },
 
                 { "LaunchHero", "▶  scrcpy starten" },
                 { "LaunchHeroTooltip", "Vollständigen Bildschirm starten\nÖffnet den Android-Desktop oder Telefonbildschirm im PC-Fenster.\n\n💡 Tipp: Um eine einzelne App zu starten, klicken Sie direkt\nauf ihre Kachel unten – dieser Button ist dafür nicht nötig!" },
@@ -466,6 +532,28 @@ namespace ScrcpyManager
                 { "LangSwitch", "PL" },
                 { "LangTooltip", "Idioma: Español (clic para cambiar a PL / EN / DE)" },
                 { "DeviceStatusTooltip", "Estado del teléfono conectado\nMuestra el modelo del dispositivo, nivel de batería\ny modo de conexión activo (USB o Wi‑Fi)." },
+                { "StatusUnauthorizedTitle", "⚠ Autorizar en el teléfono" },
+                { "StatusUnauthorizedDetail", "Desbloquea la pantalla y toca \"Permitir depuración\"" },
+                { "StatusOfflineTitle", "⚠ Teléfono desconectado" },
+                { "StatusOfflineDetail", "Vuelve a conectar el cable USB" },
+                { "StatusMultipleTitle", "⚠ Múltiples dispositivos" },
+                { "StatusMultipleDetail", "Desconecta los otros teléfonos USB" },
+                { "StatusGuideTooltip", "Haz clic aquí para abrir la guía paso a paso de la primera conexión." },
+                { "MsgNoDeviceGuidePrompt", "No se detectó ningún teléfono conectado.\n\n¿Deseas abrir la guía paso a paso de la primera conexión?" },
+                { "GuideTitle", "Guía de conexión del teléfono" },
+                { "GuideSubtitle", "Sigue estos 3 sencillos pasos para conectar tu teléfono al PC:" },
+                { "GuideStep1Header", "Paso 1: Habilitar Opciones de desarrollador" },
+                { "GuideStep1Text", "En el teléfono, ve a Ajustes ➔ Acerca del teléfono y toca 7 veces seguidas en \"Número de compilación\". Aparecerá: \"¡Ya eres desarrollador!\"." },
+                { "GuideStep2Header", "Paso 2: Activar depuración USB" },
+                { "GuideStep2Text", "Abre Ajustes ➔ Sistema ➔ Opciones de desarrollador y activa la casilla \"Depuración USB\"." },
+                { "GuideStep3Header", "Paso 3: Conectar cable y autorizar PC" },
+                { "GuideStep3Text", "Conecta el cable USB al PC. Desbloquea el teléfono, marca \"Permitir siempre desde este equipo\" en el mensaje y pulsa \"Permitir\"." },
+                { "GuideTipsHeader", "Consejos para solucionar problemas:" },
+                { "GuideTipsText", "• Cable USB: Asegúrate de que el cable transmita datos (algunos son solo de carga).\n• Puerto USB: Conéctalo directamente al PC (evita concentradores o hubs USB).\n• Controladores: Si Windows no reconoce el teléfono, revisa el Administrador de dispositivos." },
+                { "GuideBtnRestartAdb", "🔄 Reiniciar ADB" },
+                { "GuideBtnDevMgr", "🔌 Administrador dispositivos" },
+                { "GuideBtnClose", "Cerrar" },
+                { "GuideAdbRestarted", "¡Servicio ADB reiniciado!" },
 
                 { "LaunchHero", "▶  Iniciar scrcpy" },
                 { "LaunchHeroTooltip", "Iniciar pantalla completa de scrcpy\nAbre el escritorio Android o la pantalla del teléfono en PC.\n\n💡 Consejo: Para abrir una sola app, haz clic directamente\nen su mosaico abajo – ¡no necesitas pulsar este botón primero!" },
@@ -675,6 +763,28 @@ namespace ScrcpyManager
             public string LangSwitch           { get { return Get("LangSwitch"); } }
             public string LangTooltip          { get { return Get("LangTooltip"); } }
             public string DeviceStatusTooltip  { get { return Get("DeviceStatusTooltip"); } }
+            public string StatusUnauthorizedTitle  { get { return Get("StatusUnauthorizedTitle"); } }
+            public string StatusUnauthorizedDetail { get { return Get("StatusUnauthorizedDetail"); } }
+            public string StatusOfflineTitle       { get { return Get("StatusOfflineTitle"); } }
+            public string StatusOfflineDetail      { get { return Get("StatusOfflineDetail"); } }
+            public string StatusMultipleTitle      { get { return Get("StatusMultipleTitle"); } }
+            public string StatusMultipleDetail     { get { return Get("StatusMultipleDetail"); } }
+            public string StatusGuideTooltip       { get { return Get("StatusGuideTooltip"); } }
+            public string MsgNoDeviceGuidePrompt   { get { return Get("MsgNoDeviceGuidePrompt"); } }
+            public string GuideTitle               { get { return Get("GuideTitle"); } }
+            public string GuideSubtitle            { get { return Get("GuideSubtitle"); } }
+            public string GuideStep1Header         { get { return Get("GuideStep1Header"); } }
+            public string GuideStep1Text           { get { return Get("GuideStep1Text"); } }
+            public string GuideStep2Header         { get { return Get("GuideStep2Header"); } }
+            public string GuideStep2Text           { get { return Get("GuideStep2Text"); } }
+            public string GuideStep3Header         { get { return Get("GuideStep3Header"); } }
+            public string GuideStep3Text           { get { return Get("GuideStep3Text"); } }
+            public string GuideTipsHeader          { get { return Get("GuideTipsHeader"); } }
+            public string GuideTipsText            { get { return Get("GuideTipsText"); } }
+            public string GuideBtnRestartAdb       { get { return Get("GuideBtnRestartAdb"); } }
+            public string GuideBtnDevMgr           { get { return Get("GuideBtnDevMgr"); } }
+            public string GuideBtnClose            { get { return Get("GuideBtnClose"); } }
+            public string GuideAdbRestarted        { get { return Get("GuideAdbRestarted"); } }
 
             // Hero & Options
             public string LaunchHero           { get { return Get("LaunchHero"); } }

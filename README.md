@@ -61,6 +61,7 @@
 * 🌓 **Dark & Light Mode**: 1-click theme switcher (`☀️ Light` / `🌙 Dark`) with smooth custom controls.
 * 🌐 **Multilingual Interface**: 4 languages supported out of the box (🇵🇱 Polish, 🇬🇧 English, 🇩🇪 German, 🇪🇸 Spanish) with persistent preference.
 * 🔄 **In-App Auto-Updates**: One-click update detection and seamless upgrading of the Portable edition.
+* 🔌 **Connection Guide & Self-Healing ADB**: Step-by-step guide for first-time users (Developer options, USB debugging, RSA authorization prompt), device troubleshooting, and automatic daemon recovery.
 * 🔋 **Real-Time Status Card**: Connection status dot, battery level with charging state, and keep-awake monitor.
 
 ---
@@ -106,7 +107,7 @@ If you prefer running the script directly instead of downloading the portable `.
   {
     "name": "Windows App (RDP)",
     "package": "com.microsoft.rdc.androidx",
-    "flags": ["-UseUhidKeyboard", "-ForwardAllClicks"]
+    "flags": ["-UseUhidKeyboard", "-UseUhidMouse", "-ForwardAllClicks"]
   }
 ]
 ```

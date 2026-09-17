@@ -163,7 +163,10 @@ namespace ScrcpyManager
 
         public static Task<CommandResult> ExecuteAdbDetailedAsync(string args, int timeoutMs = 5000)
         {
-            return ExecuteProcessAsync("adb.exe", AddDeviceSelector(args), timeoutMs);
+            string adbPath = (!string.IsNullOrEmpty(RuntimeDirectory) && File.Exists(Path.Combine(RuntimeDirectory, "adb.exe")))
+                ? Path.Combine(RuntimeDirectory, "adb.exe")
+                : "adb.exe";
+            return ExecuteProcessAsync(adbPath, AddDeviceSelector(args), timeoutMs);
         }
 
         private static async Task<CommandResult> ExecuteProcessAsync(string fileName, string args, int timeoutMs)
@@ -379,7 +382,19 @@ namespace ScrcpyManager
         private static async Task<DeviceInfo> DetectDeviceAsync()
         {
             DeviceInfo info = new DeviceInfo();
-            CommandResult result = await ExecuteAdbDetailedAsync("devices -l", 3000).ConfigureAwait(false);
+            CommandResult result = await ExecuteAdbDetailedAsync("devices -l", 6000).ConfigureAwait(false);
+
+            // Automatyczna naprawa zawieszonego lub niespójnego demona ADB
+            if (!result.Succeeded && !string.IsNullOrEmpty(result.StandardError) &&
+                (result.StandardError.IndexOf("server version", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 result.StandardError.IndexOf("protocol fault", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 result.StandardError.IndexOf("connection reset", StringComparison.OrdinalIgnoreCase) >= 0))
+            {
+                await ExecuteAdbDetailedAsync("kill-server", 3000).ConfigureAwait(false);
+                await ExecuteAdbDetailedAsync("start-server", 6000).ConfigureAwait(false);
+                result = await ExecuteAdbDetailedAsync("devices -l", 6000).ConfigureAwait(false);
+            }
+
             if (result.TimedOut)
             {
                 info.ConnectionError = "ADB timeout";
@@ -608,6 +623,16 @@ namespace ScrcpyManager
                 argsList.Add("--no-vd-system-decorations");
             }
 
+            bool isRdc = string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase);
+            if (isRdc)
+            {
+                if (string.IsNullOrEmpty(profile.mouseMode) || profile.mouseMode == "sdk")
+                    profile.mouseMode = "uhid";
+                if (string.IsNullOrEmpty(profile.keyboardMode) || profile.keyboardMode == "sdk")
+                    profile.keyboardMode = "uhid";
+                profile.forwardAllClicks = true;
+            }
+
             int fps = Math.Max(15, Math.Min(240, profile.maxFps > 0 ? profile.maxFps : 60));
             argsList.Add("--max-fps=" + fps);
             if (Regex.IsMatch(profile.videoBitRate ?? string.Empty, @"^\d{1,3}[KM]$", RegexOptions.IgnoreCase))
@@ -642,7 +667,6 @@ namespace ScrcpyManager
             bool effectiveAudio = profile.audioMode == "on" || (profile.audioMode != "off" && audio);
             if (!effectiveAudio) argsList.Add("--no-audio");
 
-            bool isRdc = string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase);
             if (isRdc)
             {
                 argsList.Add("--mouse-bind=++++");

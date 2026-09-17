@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$CaptureScreenshotLang = $null
 )
 
@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "0.5"
+    $script:appVersion = "0.6"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
@@ -246,6 +246,7 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Uruchamiaj Taskbar"
             AutoTaskbarTooltip  = "Dolny pasek zadań Androida (Taskbar)`n• Włączone: wyświetla dolny pasek zadań na wirtualnym ekranie.`n• Wyłączone (zalecane): ukrywa pasek (--no-vd-system-decorations),`ndzięki czemu zmaksymalizowane okna nie są przesłaniane od dołu."
             InstallTaskbar      = "⬇ Zainstaluj Taskbar"
+            InstallTaskbarTooltip = "Aplikacja Taskbar nie jest zainstalowana na telefonie.`nKliknij, aby pobrać i zainstalować oficjalną wersję (farmerbb) przez ADB."
             InstallTaskbarTooltip = "Aplikacja Taskbar nie jest zainstalowana na telefonie.`nKliknij, aby pobrać oficjalną wersję (farmerbb)`ni zainstalować na urządzeniu przez ADB."
             InstallingTaskbar   = "Instalowanie Taskbar..."
             MsgTaskbarInstalled = "Aplikacja Taskbar została pomyślnie zainstalowana i skonfigurowana na telefonie!"
@@ -377,6 +378,7 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Start Taskbar"
             AutoTaskbarTooltip  = "Android bottom taskbar`n• Enabled: displays Android system taskbar on the virtual screen.`n• Disabled (recommended): hides taskbar (--no-vd-system-decorations)`nso maximized application windows are not obscured from below."
             InstallTaskbar      = "⬇ Install Taskbar"
+            InstallTaskbarTooltip = "Taskbar app is not installed on the phone.`nClick to download and install official version (farmerbb) via ADB."
             InstallTaskbarTooltip = "Taskbar app is not installed on your phone.`nClick to download official APK (farmerbb)`nand install on device via ADB."
             InstallingTaskbar   = "Installing Taskbar..."
             MsgTaskbarInstalled = "Taskbar app has been successfully installed and configured on your phone!"
@@ -507,6 +509,7 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Taskbar starten"
             AutoTaskbarTooltip  = "Android-Taskleiste`n• Aktiviert: zeigt die System-Taskleiste auf dem virtuellen Bildschirm an.`n• Deaktiviert (empfohlen): blendet die Leiste aus (--no-vd-system-decorations),`ndamit maximierte Fenster unten nicht verdeckt werden."
             InstallTaskbar      = "⬇ Taskbar installieren"
+            InstallTaskbarTooltip = "Die Taskbar-App ist nicht auf dem Telefon installiert.`nKlicken Sie hier, um die offizielle Version (farmerbb) über ADB herunterzuladen und zu installieren."
             InstallTaskbarTooltip = "Die Taskbar-App ist nicht auf dem Telefon installiert.`nKlicken Sie hier, um das offizielle APK (farmerbb)`nherunterzuladen und über ADB zu installieren."
             InstallingTaskbar   = "Taskbar wird installiert..."
             MsgTaskbarInstalled = "Die Taskbar-App wurde erfolgreich auf Ihrem Telefon installiert und eingerichtet!"
@@ -1067,6 +1070,7 @@ public static class NativeDwmScreenshot {
             [string]$WindowTitle = "",
             [string]$DisplaySize = "1920x1080/160",
             [switch]$UseUhidKeyboard,
+            [switch]$UseUhidMouse,
             [switch]$ForwardAllClicks
         )
 
@@ -1099,6 +1103,10 @@ public static class NativeDwmScreenshot {
         else {
             $argListItems += "-b"
             $argListItems += "16M"
+        }
+
+        if ($UseUhidMouse -or $PackageName -eq "com.microsoft.rdc.androidx") {
+            $argListItems += "--mouse=uhid"
         }
 
         if ($ForwardAllClicks -or $PackageName -eq "com.microsoft.rdc.androidx") {
@@ -2758,8 +2766,9 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
                         }
 
                         $useUhid = $selectedApp.Flags -contains "-UseUhidKeyboard"
+                        $useUhidMouse = $selectedApp.Flags -contains "-UseUhidMouse"
                         $forwardClicks = $selectedApp.Flags -contains "-ForwardAllClicks"
-                        Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -ForwardAllClicks:$forwardClicks -DisplaySize $disp
+                        Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -UseUhidMouse:$useUhidMouse -ForwardAllClicks:$forwardClicks -DisplaySize $disp
                     }.GetNewClosure())
 
                     # Mały przycisk zmiany nazwy kafelka (✎)
@@ -3421,6 +3430,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         $btnTheme.Text = if ($script:isDarkMode) { $t.ThemeDark } else { $t.ThemeLight }
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnTheme, $t.ThemeTooltip) }
         $btnLang.Text = $script:currentLang
+        if ($tipLang) { $tipLang.SetToolTip($btnLang, $t.LangTooltip) }
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnLang, $t.LangTooltip) }
         if ($btnUpdateBadge) { $btnUpdateBadge.Text = $t.UpdateBadge }
         $btnScrcpy.Text = $t.LaunchHero
@@ -3442,6 +3452,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
             if (-not $script:isInstallingTaskbar) {
                 $btnInstallTaskbar.Text = $t.InstallTaskbar
             }
+            if ($tipInstallTaskbar) { $tipInstallTaskbar.SetToolTip($btnInstallTaskbar, $t.InstallTaskbarTooltip) }
             if ($script:tipMain) { $script:tipMain.SetToolTip($btnInstallTaskbar, $t.InstallTaskbarTooltip) }
         }
         $btnWifi.Text = $t.WifiBtn
@@ -3458,6 +3469,11 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
             $script:tipMain.SetToolTip($lblAppsSubtitle, $t.AppsSectionTooltip)
         }
         $btnEditApps.Text = $t.AppsEdit
+        if ($tipEdit) { $tipEdit.SetToolTip($btnEditApps, $t.AppsEditTooltip) }
+        if ($tipLayout) {
+            $tipLayout.SetToolTip($btnLayout1, $t.Layout1Tooltip)
+            $tipLayout.SetToolTip($btnLayout2, $t.Layout2Tooltip)
+            $tipLayout.SetToolTip($btnLayout3, $t.Layout3Tooltip)
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnEditApps, $t.AppsEditTooltip) }
         if ($script:tipMain) {
             $script:tipMain.SetToolTip($btnLayout1, $t.Layout1Tooltip)
@@ -3476,6 +3492,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnCustom, $t.CustomLaunchTooltip) }
         if ($btnAddCustom) {
             $btnAddCustom.Text = $t.CustomAddBtn
+            if ($tipAddCustom) { $tipAddCustom.SetToolTip($btnAddCustom, $t.CustomAddTooltip) }
             if ($script:tipMain) { $script:tipMain.SetToolTip($btnAddCustom, $t.CustomAddTooltip) }
         }
         [WinFormsCueBanner]::SendMessage($txtCustom.Handle, 0x1501, [IntPtr]::Zero, $t.CustomPlaceholder) | Out-Null
