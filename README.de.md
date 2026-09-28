@@ -54,6 +54,12 @@
   * `2K QHD (2560x1440)` – 77 % mehr Arbeitsfläche.
   * `4K UHD (3840x2160)` – Maximale Übersicht für große Monitore.
   * *Hohe Bitrate (16 Mbps)* für gestochen scharfe Schriftarten.
+  * **Tastaturerfassung in RDC anpassen (Dauerhafte Lösung)**: Sie können erzwingen, dass RDC Tastenkombinationen ignoriert und für Ihren lokalen PC belässt:
+    1. Öffnen Sie vor dem Verbinden die **Remotedesktopverbindung** (`mstsc`).
+    2. Klicken Sie unten links auf **Optionen einblenden**.
+    3. Wechseln Sie zum Reiter **Lokale Ressourcen**.
+    4. Ändern Sie unter **Tastatur** die Option *Windows-Tastenkombinationen anwenden* von „Nur im Vollbildmodus“ auf **Auf diesem Computer**.
+    > **Wichtiger Hinweis**: Dadurch fängt Ihr lokales System auch andere Tastenkombinationen ab. Bei `Alt + Tab` oder der `Windows`-Taste wird die Aktion auf Ihrem lokalen Computer statt auf dem Remote-PC ausgeführt.
 * 🔙 **Bequeme Navigation & ESC-Taste**: Das Drücken der `ESC`-Taste in einem App-Fenster löst sofort `Zurück` aus (wie der Pfeil `←` in der App).
 * 🧭 **Angedockte Fenster-Navigationsleiste**: Schwebende Leiste mit `◀` (Zurück), `●` (Startseite) und `▢` (Verlauf) am unteren Fensterrand.
 * 📱 **Navigationsleiste im Manager**: Schnelle Steuerung des Telefons (`◀ Zurück`, `● Home`, `▢ Letzte Apps`) direkt im Dashboard.

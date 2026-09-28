@@ -1,29 +1,26 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Threading.Tasks;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace ScrcpyManager
 {
-    public sealed class DeviceGuideForm : Form
+    public sealed class RdcGuideForm : Form
     {
         private readonly ThemeColors _c;
-        private readonly string _lang;
         private readonly Localization.Strings _t;
-        private readonly AdbService _adb;
-        private readonly Label _lblAdbStatus;
-        private readonly Button _btnRestartAdb;
+        private readonly Label _lblStatus;
+        private readonly Button _btnApplyAuto;
 
-        public DeviceGuideForm(ThemeColors colors, string language, Icon icon, AdbService adb)
+        public RdcGuideForm(ThemeColors colors, string language, Icon icon)
         {
             _c = colors;
-            _lang = language;
             _t = Localization.Get(language);
-            _adb = adb;
 
-            Text = _t.GuideTitle;
-            ClientSize = new Size(500, 560);
+            Text = _t.RdcGuideTitle;
+            ClientSize = new Size(500, 580);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = false;
@@ -47,8 +44,8 @@ namespace ScrcpyManager
 
             Label lblHeader = new Label
             {
-                Text = _t.GuideTitle,
-                Font = new Font("Segoe UI", 12f, FontStyle.Bold),
+                Text = _t.RdcGuideHeader,
+                Font = new Font("Segoe UI", 11.5f, FontStyle.Bold),
                 Location = new Point(16, curY),
                 Size = new Size(468, 26),
                 ForeColor = _c.Text
@@ -58,7 +55,7 @@ namespace ScrcpyManager
 
             Label lblSubtitle = new Label
             {
-                Text = _t.GuideSubtitle,
+                Text = _t.RdcGuideSubtitle,
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
                 Location = new Point(16, curY),
                 Size = new Size(468, 20),
@@ -67,64 +64,45 @@ namespace ScrcpyManager
             pnlMain.Controls.Add(lblSubtitle);
             curY += 26;
 
-            curY = AddStepCard(pnlMain, curY, "1", _t.GuideStep1Header, _t.GuideStep1Text);
-            curY = AddStepCard(pnlMain, curY, "2", _t.GuideStep2Header, _t.GuideStep2Text);
-            curY = AddStepCard(pnlMain, curY, "3", _t.GuideStep3Header, _t.GuideStep3Text);
+            curY = AddStepCard(pnlMain, curY, "1", _t.RdcGuideStep1Header, _t.RdcGuideStep1Text);
+            curY = AddStepCard(pnlMain, curY, "2", _t.RdcGuideStep2Header, _t.RdcGuideStep2Text);
+            curY = AddStepCard(pnlMain, curY, "3", _t.RdcGuideStep3Header, _t.RdcGuideStep3Text);
+            curY = AddStepCard(pnlMain, curY, "4", _t.RdcGuideStep4Header, _t.RdcGuideStep4Text);
 
-            Panel pnlTips = new Panel
+            // Warning note card
+            Panel pnlWarning = new Panel
             {
                 Location = new Point(16, curY),
-                Size = new Size(468, 120),
+                Size = new Size(468, 76),
                 BackColor = _c.Card
             };
-            UiThemeHelper.SetupModernCard(pnlTips, 6, () => _c.CardBorder);
-            pnlMain.Controls.Add(pnlTips);
+            UiThemeHelper.SetupModernCard(pnlWarning, 6, () => _c.CardBorder);
+            pnlMain.Controls.Add(pnlWarning);
 
-            Label lblTipsTitle = new Label
+            Label lblWarningTitle = new Label
             {
-                Text = "💡 " + _t.GuideTipsHeader,
+                Text = "⚠ " + _t.RdcGuideWarningHeader,
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
                 Location = new Point(10, 8),
                 Size = new Size(448, 18),
-                ForeColor = _c.Text,
+                ForeColor = Color.Goldenrod,
                 BackColor = Color.Transparent
             };
-            pnlTips.Controls.Add(lblTipsTitle);
+            pnlWarning.Controls.Add(lblWarningTitle);
 
-            Label lblTipsContent = new Label
+            Label lblWarningContent = new Label
             {
-                Text = _t.GuideTipsText,
+                Text = _t.RdcGuideWarningText,
                 Font = new Font("Segoe UI", 8f, FontStyle.Regular),
-                Location = new Point(10, 28),
-                Size = new Size(448, 48),
+                Location = new Point(10, 26),
+                Size = new Size(448, 44),
                 ForeColor = _c.TextMuted,
                 BackColor = Color.Transparent
             };
-            pnlTips.Controls.Add(lblTipsContent);
+            pnlWarning.Controls.Add(lblWarningContent);
+            curY += 84;
 
-            Button btnRdcGuide = new Button
-            {
-                Text = "⌨ " + _t.RdcGuideTitle,
-                Location = new Point(10, 80),
-                Size = new Size(200, 28),
-                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
-                BackColor = _c.BtnTool,
-                ForeColor = _c.BtnToolText,
-                Cursor = Cursors.Hand
-            };
-            UiThemeHelper.SetupModernButton(btnRdcGuide, 4, () => _c.BtnToolBorder);
-            btnRdcGuide.Click += (s, e) =>
-            {
-                using (var rdcDlg = new RdcGuideForm(_c, _lang, Icon))
-                {
-                    rdcDlg.ShowDialog(this);
-                }
-            };
-            pnlTips.Controls.Add(btnRdcGuide);
-
-            curY += 128;
-
-            _lblAdbStatus = new Label
+            _lblStatus = new Label
             {
                 Location = new Point(16, curY),
                 Size = new Size(468, 18),
@@ -132,7 +110,7 @@ namespace ScrcpyManager
                 ForeColor = _c.StatusDotOnline,
                 TextAlign = ContentAlignment.MiddleLeft
             };
-            pnlMain.Controls.Add(_lblAdbStatus);
+            pnlMain.Controls.Add(_lblStatus);
             curY += 22;
 
             Panel pnlButtons = new Panel
@@ -142,40 +120,40 @@ namespace ScrcpyManager
             };
             pnlMain.Controls.Add(pnlButtons);
 
-            _btnRestartAdb = new Button
+            Button btnMstsc = new Button
             {
-                Text = _t.GuideBtnRestartAdb,
+                Text = _t.RdcGuideBtnOpenMstsc,
                 Location = new Point(0, 2),
-                Size = new Size(135, 32),
+                Size = new Size(180, 32),
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
                 BackColor = _c.BtnTool,
                 ForeColor = _c.BtnToolText,
                 Cursor = Cursors.Hand
             };
-            UiThemeHelper.SetupModernButton(_btnRestartAdb, 5, () => _c.BtnToolBorder);
-            _btnRestartAdb.Click += async (s, e) => await RestartAdbAsync();
-            pnlButtons.Controls.Add(_btnRestartAdb);
-
-            Button btnDevMgr = new Button
+            UiThemeHelper.SetupModernButton(btnMstsc, 5, () => _c.BtnToolBorder);
+            btnMstsc.Click += (s, e) =>
             {
-                Text = _t.GuideBtnDevMgr,
-                Location = new Point(143, 2),
-                Size = new Size(165, 32),
-                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
-                BackColor = _c.BtnTool,
-                ForeColor = _c.BtnToolText,
-                Cursor = Cursors.Hand
-            };
-            UiThemeHelper.SetupModernButton(btnDevMgr, 5, () => _c.BtnToolBorder);
-            btnDevMgr.Click += (s, e) =>
-            {
-                try { Process.Start("devmgmt.msc"); }
+                try { Process.Start("mstsc.exe"); }
                 catch (Exception ex)
                 {
                     MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             };
-            pnlButtons.Controls.Add(btnDevMgr);
+            pnlButtons.Controls.Add(btnMstsc);
+
+            _btnApplyAuto = new Button
+            {
+                Text = _t.RdcGuideBtnAutoApply,
+                Location = new Point(186, 2),
+                Size = new Size(170, 32),
+                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
+                BackColor = _c.BtnTool,
+                ForeColor = _c.BtnToolText,
+                Cursor = Cursors.Hand
+            };
+            UiThemeHelper.SetupModernButton(_btnApplyAuto, 5, () => _c.BtnToolBorder);
+            _btnApplyAuto.Click += (s, e) => ApplyRdpKeyboardSetting();
+            pnlButtons.Controls.Add(_btnApplyAuto);
 
             Button btnClose = new Button
             {
@@ -198,7 +176,7 @@ namespace ScrcpyManager
             Panel card = new Panel
             {
                 Location = new Point(16, top),
-                Size = new Size(468, 66),
+                Size = new Size(468, 64),
                 BackColor = _c.Card
             };
             UiThemeHelper.SetupModernCard(card, 6, () => _c.CardBorder);
@@ -238,28 +216,55 @@ namespace ScrcpyManager
             };
             card.Controls.Add(lblDesc);
 
-            return top + 72;
+            return top + 70;
         }
 
-        private async Task RestartAdbAsync()
+        private void ApplyRdpKeyboardSetting()
         {
-            _btnRestartAdb.Enabled = false;
-            _lblAdbStatus.Text = "Restartowanie usługi ADB...";
             try
             {
-                await AdbService.ExecuteAdbDetailedAsync("kill-server", 3000).ConfigureAwait(true);
-                await AdbService.ExecuteAdbDetailedAsync("start-server", 6000).ConfigureAwait(true);
-                _lblAdbStatus.Text = "✔ " + _t.GuideAdbRestarted;
+                string docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string rdpFile = Path.Combine(docs, "Default.rdp");
+                string setting = "keyboardhook:i:0";
+
+                if (File.Exists(rdpFile))
+                {
+                    FileAttributes attrs = File.GetAttributes(rdpFile);
+                    bool wasHidden = (attrs & FileAttributes.Hidden) != 0;
+                    if (wasHidden)
+                    {
+                        File.SetAttributes(rdpFile, attrs & ~FileAttributes.Hidden);
+                    }
+
+                    string content = File.ReadAllText(rdpFile);
+                    if (Regex.IsMatch(content, @"^keyboardhook:i:\d+", RegexOptions.Multiline))
+                    {
+                        content = Regex.Replace(content, @"^keyboardhook:i:\d+", setting, RegexOptions.Multiline);
+                    }
+                    else
+                    {
+                        content = content.TrimEnd() + Environment.NewLine + setting + Environment.NewLine;
+                    }
+
+                    File.WriteAllText(rdpFile, content);
+                    if (wasHidden)
+                    {
+                        File.SetAttributes(rdpFile, attrs);
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(rdpFile, setting + Environment.NewLine);
+                }
+
+                _lblStatus.ForeColor = _c.StatusDotOnline;
+                _lblStatus.Text = "✔ " + _t.RdcGuideAutoSuccess;
             }
             catch (Exception ex)
             {
-                _lblAdbStatus.Text = "Błąd: " + ex.Message;
-            }
-            finally
-            {
-                _btnRestartAdb.Enabled = true;
+                _lblStatus.ForeColor = Color.OrangeRed;
+                _lblStatus.Text = "Błąd: " + ex.Message;
             }
         }
     }
 }
-

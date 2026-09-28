@@ -176,6 +176,24 @@ namespace ScrcpyManager
                 { "UpdateUpToDate", "Używasz najnowszej wersji scrcpy Manager (v{0}).\n\nCzy chcesz przejść do strony wydań na GitHubie?" },
                 { "UpdateUpToDateTitle", "scrcpy Manager" },
 
+                { "RdcGuideTitle", "Klawiatura w RDC" },
+                { "RdcGuideHeader", "Zmiana ustawień przechwytywania klawiatury w RDC (Trwałe rozwiązanie)" },
+                { "RdcGuideSubtitle", "Możesz wymusić, aby RDC ignorowało kombinacje klawiszowe i zostawiało je dla Twojego lokalnego komputera." },
+                { "RdcGuideStep1Header", "Krok 1: Otwórz aplikację" },
+                { "RdcGuideStep1Text", "Przed połączeniem otwórz aplikację Podłączanie pulpitu zdalnego." },
+                { "RdcGuideStep2Header", "Krok 2: Pokaż opcje" },
+                { "RdcGuideStep2Text", "Kliknij Pokaż opcje w lewym dolnym rogu." },
+                { "RdcGuideStep3Header", "Krok 3: Zasoby lokalne" },
+                { "RdcGuideStep3Text", "Przejdź do zakładki Zasoby lokalne." },
+                { "RdcGuideStep4Header", "Krok 4: Ustawienia klawiatury" },
+                { "RdcGuideStep4Text", "W sekcji Klawiatura zmień opcję Zastosuj kombinacje klawiszy klawiatury systemu Windows z \"Tylko na pełnym ekranie\" na Na tym komputerze." },
+                { "RdcGuideWarningHeader", "Ważna uwaga:" },
+                { "RdcGuideWarningText", "To sprawi, że Twój lokalny system przejmie również inne systemowe skróty. Używając Alt + Tab czy klawisza Windows, wywołasz akcję na swoim lokalnym komputerze, a nie na tym zdalnym." },
+                { "RdcGuideBtnOpenMstsc", "🖥 Otwórz Podłączanie pulpitu" },
+                { "RdcGuideBtnAutoApply", "⚡ Zastosuj do Default.rdp" },
+                { "RdcGuideAutoSuccess", "Pomyślnie zaktualizowano Default.rdp (keyboardhook:i:0)!" },
+                { "RdcGuideTooltip", "Zmiana ustawień przechwytywania klawiatury w RDC (Trwałe rozwiązanie)\nOtwiera instrukcję i narzędzie konfiguracji skrótów klawiszowych dla Podłączania pulpitu zdalnego." },
+
                 { "ResName0", "Full HD 1080p (Natywna 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
                 { "ResName2", "2K QHD Kompakt (DPI 140)" },
@@ -350,6 +368,24 @@ namespace ScrcpyManager
                 { "UpdateChecking", "Checking for updates..." },
                 { "UpdateUpToDate", "You are using the latest version of scrcpy Manager (v{0}).\n\nWould you like to open GitHub releases in your browser?" },
                 { "UpdateUpToDateTitle", "scrcpy Manager" },
+
+                { "RdcGuideTitle", "RDC Keyboard" },
+                { "RdcGuideHeader", "Change keyboard capture settings in RDC (Permanent fix)" },
+                { "RdcGuideSubtitle", "You can force RDC to ignore key combinations and leave them for your local computer." },
+                { "RdcGuideStep1Header", "Step 1: Open app" },
+                { "RdcGuideStep1Text", "Before connecting, open the Remote Desktop Connection app." },
+                { "RdcGuideStep2Header", "Step 2: Show Options" },
+                { "RdcGuideStep2Text", "Click Show Options in the bottom-left corner." },
+                { "RdcGuideStep3Header", "Step 3: Local Resources" },
+                { "RdcGuideStep3Text", "Go to the Local Resources tab." },
+                { "RdcGuideStep4Header", "Step 4: Keyboard settings" },
+                { "RdcGuideStep4Text", "In the Keyboard section, change Apply Windows key combinations from \"Only when using the full screen\" to On this computer." },
+                { "RdcGuideWarningHeader", "Important note:" },
+                { "RdcGuideWarningText", "This means your local system will also intercept other system shortcuts. Pressing Alt + Tab or the Windows key will trigger actions on your local computer, not on the remote one." },
+                { "RdcGuideBtnOpenMstsc", "🖥 Open Remote Desktop" },
+                { "RdcGuideBtnAutoApply", "⚡ Apply to Default.rdp" },
+                { "RdcGuideAutoSuccess", "Successfully updated Default.rdp (keyboardhook:i:0)!" },
+                { "RdcGuideTooltip", "Change keyboard capture settings in RDC (Permanent fix)\nOpens the guide and configuration tool for Remote Desktop key combinations." },
 
                 { "ResName0", "Full HD 1080p (Native 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
@@ -526,6 +562,24 @@ namespace ScrcpyManager
                 { "UpdateUpToDate", "Sie verwenden die neueste Version von scrcpy Manager (v{0}).\n\nMöchten Sie die GitHub-Releases im Browser öffnen?" },
                 { "UpdateUpToDateTitle", "scrcpy Manager" },
 
+                { "RdcGuideTitle", "RDC-Tastatur" },
+                { "RdcGuideHeader", "Tastaturerfassung in RDC anpassen (Dauerhafte Lösung)" },
+                { "RdcGuideSubtitle", "Sie können erzwingen, dass RDC Tastenkombinationen ignoriert und für Ihren lokalen PC belässt." },
+                { "RdcGuideStep1Header", "Schritt 1: Anwendung öffnen" },
+                { "RdcGuideStep1Text", "Öffnen Sie vor dem Verbinden die Remotedesktopverbindung (mstsc)." },
+                { "RdcGuideStep2Header", "Schritt 2: Optionen anzeigen" },
+                { "RdcGuideStep2Text", "Klicken Sie unten links auf Optionen einblenden." },
+                { "RdcGuideStep3Header", "Schritt 3: Lokale Ressourcen" },
+                { "RdcGuideStep3Text", "Wechseln Sie zum Reiter Lokale Ressourcen." },
+                { "RdcGuideStep4Header", "Schritt 4: Tastatureinstellungen" },
+                { "RdcGuideStep4Text", "Ändern Sie unter Tastatur die Option Windows-Tastenkombinationen anwenden von \"Nur im Vollbildmodus\" auf Auf diesem Computer." },
+                { "RdcGuideWarningHeader", "Wichtiger Hinweis:" },
+                { "RdcGuideWarningText", "Dadurch fängt Ihr lokales System auch andere Systemkürzel ab. Bei Alt + Tab oder der Windows-Taste wird die Aktion auf Ihrem lokalen Computer statt auf dem Remote-PC ausgeführt." },
+                { "RdcGuideBtnOpenMstsc", "🖥 Remotedesktop öffnen" },
+                { "RdcGuideBtnAutoApply", "⚡ Auf Default.rdp anwenden" },
+                { "RdcGuideAutoSuccess", "Default.rdp (keyboardhook:i:0) erfolgreich aktualisiert!" },
+                { "RdcGuideTooltip", "Tastaturerfassung in RDC anpassen (Dauerhafte Lösung)\nÖffnet Anleitung und Konfiguration für Remotedesktop-Tastenkombinationen." },
+
                 { "ResName0", "Full HD 1080p (Nativ 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
                 { "ResName2", "2K QHD Kompakt (DPI 140)" },
@@ -701,6 +755,24 @@ namespace ScrcpyManager
                 { "UpdateUpToDate", "Estás utilizando la versión más reciente de scrcpy Manager (v{0}).\n\n¿Quieres abrir los lanzamientos de GitHub en el navegador?" },
                 { "UpdateUpToDateTitle", "scrcpy Manager" },
 
+                { "RdcGuideTitle", "Teclado en RDC" },
+                { "RdcGuideHeader", "Cambiar captura de teclado en RDC (Solución permanente)" },
+                { "RdcGuideSubtitle", "Puedes hacer que RDC ignore combinaciones de teclas y las reserve para tu equipo local." },
+                { "RdcGuideStep1Header", "Paso 1: Abrir aplicación" },
+                { "RdcGuideStep1Text", "Antes de conectar, abre la aplicación Conexión a Escritorio Remoto." },
+                { "RdcGuideStep2Header", "Paso 2: Mostrar opciones" },
+                { "RdcGuideStep2Text", "Haz clic en Mostrar opciones en la esquina inferior izquierda." },
+                { "RdcGuideStep3Header", "Paso 3: Recursos locales" },
+                { "RdcGuideStep3Text", "Ve a la pestaña Recursos locales." },
+                { "RdcGuideStep4Header", "Paso 4: Ajustes del teclado" },
+                { "RdcGuideStep4Text", "En Teclado, cambia Aplicar combinaciones de teclas de Windows de \"Solo en pantalla completa\" a En este equipo." },
+                { "RdcGuideWarningHeader", "Nota importante:" },
+                { "RdcGuideWarningText", "Esto hará que tu sistema local también capture otros accesos directos. Al usar Alt + Tab o la tecla Windows, la acción se ejecutará en tu equipo local y no en el remoto." },
+                { "RdcGuideBtnOpenMstsc", "🖥 Abrir Escritorio Remoto" },
+                { "RdcGuideBtnAutoApply", "⚡ Aplicar a Default.rdp" },
+                { "RdcGuideAutoSuccess", "¡Default.rdp (keyboardhook:i:0) actualizado con éxito!" },
+                { "RdcGuideTooltip", "Cambiar captura de teclado en RDC (Solución permanente)\nAbre la guía y configuración de atajos para Conexión a Escritorio Remoto." },
+
                 { "ResName0", "Full HD 1080p (Nativa 1:1)" },
                 { "ResName1", "2K QHD (2560x1440)" },
                 { "ResName2", "2K QHD Compacta (DPI 140)" },
@@ -809,6 +881,24 @@ namespace ScrcpyManager
             public string GuideBtnDevMgr           { get { return Get("GuideBtnDevMgr"); } }
             public string GuideBtnClose            { get { return Get("GuideBtnClose"); } }
             public string GuideAdbRestarted        { get { return Get("GuideAdbRestarted"); } }
+
+            public string RdcGuideTitle            { get { return Get("RdcGuideTitle"); } }
+            public string RdcGuideHeader           { get { return Get("RdcGuideHeader"); } }
+            public string RdcGuideSubtitle         { get { return Get("RdcGuideSubtitle"); } }
+            public string RdcGuideStep1Header      { get { return Get("RdcGuideStep1Header"); } }
+            public string RdcGuideStep1Text        { get { return Get("RdcGuideStep1Text"); } }
+            public string RdcGuideStep2Header      { get { return Get("RdcGuideStep2Header"); } }
+            public string RdcGuideStep2Text        { get { return Get("RdcGuideStep2Text"); } }
+            public string RdcGuideStep3Header      { get { return Get("RdcGuideStep3Header"); } }
+            public string RdcGuideStep3Text        { get { return Get("RdcGuideStep3Text"); } }
+            public string RdcGuideStep4Header      { get { return Get("RdcGuideStep4Header"); } }
+            public string RdcGuideStep4Text        { get { return Get("RdcGuideStep4Text"); } }
+            public string RdcGuideWarningHeader    { get { return Get("RdcGuideWarningHeader"); } }
+            public string RdcGuideWarningText      { get { return Get("RdcGuideWarningText"); } }
+            public string RdcGuideBtnOpenMstsc     { get { return Get("RdcGuideBtnOpenMstsc"); } }
+            public string RdcGuideBtnAutoApply     { get { return Get("RdcGuideBtnAutoApply"); } }
+            public string RdcGuideAutoSuccess      { get { return Get("RdcGuideAutoSuccess"); } }
+            public string RdcGuideTooltip          { get { return Get("RdcGuideTooltip"); } }
 
             // Hero & Options
             public string LaunchHero           { get { return Get("LaunchHero"); } }

@@ -54,6 +54,12 @@
   * `2K QHD (2560x1440)` – +77% expanded desktop workspace.
   * `4K UHD (3840x2160)` – Maximum productivity view.
   * *High bitrate (16 Mbps)* enabled for razor-sharp text and fonts.
+  * **Configure Keyboard Capture in RDC (Permanent Solution)**: You can force RDC to ignore keyboard combinations and leave them for your local PC:
+    1. Before connecting, open the **Remote Desktop Connection** (`mstsc`) application.
+    2. Click **Show Options** in the lower left corner.
+    3. Navigate to the **Local Resources** tab.
+    4. In the **Keyboard** section, change *Apply Windows key combinations* from "Only when using the full screen" to **On this computer**.
+    > **Important Note**: This will cause your local system to also intercept other system shortcuts. Using `Alt + Tab` or the `Windows` key will execute the action on your local PC rather than on the remote machine.
 * 🔙 **Convenient Navigation & ESC Key**: Pressing `ESC` in any Android app window immediately triggers `Back` (just like clicking the app's top-left `←` arrow).
 * 🧭 **Docked Window Navigation Bar**: Floating bottom bar with `◀` (Back), `●` (Home), and `▢` (Recents) seamlessly attached to scrcpy windows.
 * 📱 **Dashboard Navigation Buttons**: Instant phone control (`◀ Back`, `● Home`, `▢ Recents`) right from the manager window.

@@ -174,7 +174,7 @@ namespace ScrcpyManager
             Card             = Color.FromArgb(24, 31, 43),       // grafitowa karta (#181F2B)
             CardBorder       = Color.FromArgb(44, 57, 75),       // delikatne, spójne obramowanie (#2C394B)
             Text             = Color.FromArgb(248, 250, 252),    // wyrazisty, czysty biały (#F8FAFC)
-            TextMuted        = Color.FromArgb(148, 163, 184),    // czytelny, jasny odcień pomocniczy slate (#94A3B8)
+            TextMuted        = Color.FromArgb(172, 183, 199),    // jaśniejszy odcień pomocniczy — kontrast ≥ 7:1 na karcie (#ACB7C7)
             StatusDotOnline  = Color.FromArgb(34, 197, 94),      // żywa zieleń (#22C55E)
             StatusDotOffline = Color.FromArgb(100, 116, 139),    // stonowany slate (#64748B)
             BtnHero          = Color.FromArgb(28, 144, 80),      // wyrazisty zielony przycisk (#1C9050)
@@ -215,7 +215,7 @@ namespace ScrcpyManager
             Card             = Color.FromArgb(255, 255, 255),
             CardBorder       = Color.FromArgb(216, 220, 230),
             Text             = Color.FromArgb(25, 28, 36),
-            TextMuted        = Color.FromArgb(100, 105, 121),
+            TextMuted        = Color.FromArgb(75, 82, 99),       // ciemniejszy — kontrast ≥ 7:1 na bieli (#4B5263)
             StatusDotOnline  = Color.FromArgb(39, 174, 96),
             StatusDotOffline = Color.FromArgb(189, 195, 199),
             BtnHero          = Color.FromArgb(27, 138, 70),

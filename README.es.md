@@ -54,6 +54,12 @@
   * `2K QHD (2560x1440)` – 77 % más de área de trabajo.
   * `4K UHD (3840x2160)` – Máxima resolución para pantallas grandes.
   * *Tasa de bits alta (16 Mbps)* para fuentes nítidas en sesiones remotas.
+  * **Cambiar la configuración de captura de teclado en RDC (Solución permanente)**: Puede obligar a RDC a ignorar las combinaciones de teclas y dejarlas para su ordenador local:
+    1. Antes de conectarse, abra la aplicación **Conexión a Escritorio remoto** (`mstsc`).
+    2. Haga clic en **Mostrar opciones** en la esquina inferior izquierda.
+    3. Vaya a la pestaña **Recursos locales**.
+    4. En la sección **Teclado**, cambie la opción *Aplicar combinaciones de teclas de Windows* de "Solo en pantalla completa" a **En este equipo**.
+    > **Nota importante**: Esto hará que su sistema local intercepte también otros accesos directos. Al pulsar `Alt + Tab` o la tecla `Windows`, la acción se ejecutará en su PC local y no en el equipo remoto.
 * 🔙 **Navegación cómoda con tecla ESC**: Al pulsar `ESC` en cualquier ventana de app se ejecuta de inmediato la acción `Atrás` (igual que la flecha `←` de la app).
 * 🧭 **Barra de navegación anclada**: Barra flotante inferior con botones `◀` (Atrás), `●` (Inicio) y `▢` (Recientes) acoplada a las ventanas de scrcpy.
 * 📱 **Botones de control en el panel**: Manejo rápido del dispositivo (`◀ Atrás`, `● Inicio`, `▢ Recientes`) directamente desde el dashboard.

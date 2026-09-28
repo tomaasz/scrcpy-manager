@@ -62,6 +62,9 @@ namespace ScrcpyManager
 
             ApplyRoundedCorners(btn, radius);
 
+            btn.GotFocus += (s, e) => btn.Invalidate();
+            btn.LostFocus += (s, e) => btn.Invalidate();
+
             btn.Paint += (s, e) =>
             {
                 if (btn.Width <= 2 || btn.Height <= 2) return;
@@ -75,7 +78,23 @@ namespace ScrcpyManager
                         e.Graphics.DrawPath(pen, path);
                     }
                 }
+                DrawFocusRing(btn, e.Graphics, radius);
             };
+        }
+
+        // Kolor wskaźnika fokusu klawiatury (widoczny w obu motywach)
+        public static readonly Color FocusRingColor = Color.FromArgb(56, 152, 255);
+
+        public static void DrawFocusRing(ButtonBase btn, Graphics g, int radius)
+        {
+            if (btn == null || !btn.Focused) return;
+            if (btn.Width <= 6 || btn.Height <= 6) return;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (GraphicsPath path = GetRoundedPath(new Rectangle(1, 1, btn.Width - 3, btn.Height - 3), Math.Max(1, radius - 1)))
+            using (Pen pen = new Pen(FocusRingColor, 2f))
+            {
+                g.DrawPath(pen, path);
+            }
         }
 
         public static void SetupModernCard(Panel pnl, int radius, Func<Color> getBorderColor)

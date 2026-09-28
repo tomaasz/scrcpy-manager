@@ -165,6 +165,31 @@ namespace ScrcpyManager
             Invalidate();
         }
 
+        protected override void OnGotFocus(EventArgs e)
+        {
+            base.OnGotFocus(e);
+            Invalidate();
+        }
+
+        protected override void OnLostFocus(EventArgs e)
+        {
+            base.OnLostFocus(e);
+            Invalidate();
+        }
+
+        /// <summary>Czy nazwa aplikacji mieści się w kafelku bez skracania (wielokropka).</summary>
+        public bool IsTextTruncated
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Text)) return false;
+                int contentX = _paddingLeft + (_appIcon != null ? _iconSize + _iconGap : 0);
+                int textW = Math.Max(0, Width - contentX - 4);
+                Size sz = TextRenderer.MeasureText(Text, Font, new Size(int.MaxValue, Height), TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+                return sz.Width > textW;
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             Graphics g = pevent.Graphics;
@@ -233,7 +258,8 @@ namespace ScrcpyManager
                 if (textW > 0)
                 {
                     Rectangle textRect = new Rectangle(contentX, 0, textW, Height);
-                    Color textColor = Enabled ? ForeColor : Color.Gray;
+                    // Wyłączony stan: przygaszony kolor tekstu wymieszany z tłem (czytelniejszy niż sztywny Color.Gray)
+                    Color textColor = Enabled ? ForeColor : Blend(ForeColor, BackColor, 0.55f);
                     TextRenderer.DrawText(
                         g,
                         Text,
@@ -248,6 +274,17 @@ namespace ScrcpyManager
                     );
                 }
             }
+
+            UiThemeHelper.DrawFocusRing(this, g, _borderRadius);
+        }
+
+        private static Color Blend(Color a, Color b, float amountA)
+        {
+            float amountB = 1f - amountA;
+            return Color.FromArgb(
+                (int)(a.R * amountA + b.R * amountB),
+                (int)(a.G * amountA + b.G * amountB),
+                (int)(a.B * amountA + b.B * amountB));
         }
     }
 }
