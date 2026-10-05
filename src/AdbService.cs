@@ -685,7 +685,7 @@ namespace ScrcpyManager
                 argsList.Add("--mouse=" + profile.mouseMode);
             if (profile.alwaysOnTop) argsList.Add("--always-on-top");
             if (profile.borderless && !argsList.Contains("--window-borderless")) argsList.Add("--window-borderless");
-            if (profile.fullscreen) argsList.Add("--fullscreen");
+            if (profile.fullscreen && !isDualMonitor) argsList.Add("--fullscreen");
             if (profile.turnScreenOff) argsList.Add("--turn-screen-off");
             if (profile.recordSession)
             {

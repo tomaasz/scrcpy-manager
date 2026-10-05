@@ -75,6 +75,7 @@ namespace ScrcpyManager
             {
                 _polish ? "Domyślny" : "Default",
                 _polish ? "Praca / RDP" : "Work / RDP",
+                _polish ? "Podwójny ekran / RDP" : "Dual Monitor / RDP",
                 _polish ? "Gra" : "Gaming",
                 _polish ? "Oszczędny Wi-Fi" : "Wi-Fi saver",
                 _polish ? "Prezentacja" : "Presentation",
@@ -87,6 +88,7 @@ namespace ScrcpyManager
             {
                 "1920x1080/320", "1920x1080/240", "1920x1080/160",
                 "2560x1440/320", "2560x1440/240", "2560x1440/160", "2560x1440/140",
+                "3840x1080/140", "3840x1080/160", "5120x1440/140",
                 "1280x720/240", "3840x2160/320", "3840x2160/240", "1080x2400"
             }, colors, editable: true, tooltip:
                 _polish ? "Rozdzielczość wirtualnego ekranu i gęstość DPI w formacie SZERxWYS/DPI (np. 1920x1080/320).\n• Wyższa wartość DPI (np. /320 zamiast /160) powiększa tekst, przyciski i cały interfejs aplikacji.\n• Możesz wybrać opcję z listy lub wpisać własne wartości."
@@ -299,20 +301,22 @@ namespace ScrcpyManager
         private static int PresetIndex(string preset)
         {
             if (preset == "work") return 1;
-            if (preset == "gaming") return 2;
-            if (preset == "wifi") return 3;
-            if (preset == "presentation") return 4;
-            if (preset == "terminal") return 5;
+            if (preset == "dual") return 2;
+            if (preset == "gaming") return 3;
+            if (preset == "wifi") return 4;
+            if (preset == "presentation") return 5;
+            if (preset == "terminal") return 6;
             return 0;
         }
 
         private void ApplyPreset(int index)
         {
             if (index == 1) SetQuality("2560x1440/160", 60, "16M", "h264", false, false, "uhid", "uhid", true);
-            else if (index == 2) SetQuality("1920x1080/160", 90, "16M", "h264", false, false, "sdk", "sdk", false);
-            else if (index == 3) SetQuality("1920x1080/160", 30, "4M", "h264", false, false, "sdk", "sdk", false);
-            else if (index == 4) SetQuality("2560x1440/160", 60, "8M", "h264", true, true, "sdk", "sdk", false);
-            else if (index == 5) SetQuality("1920x1080/320", 60, "12M", "h264", false, false, "uhid", "sdk", false);
+            else if (index == 2) SetQuality("3840x1080/140", 60, "16M", "h264", false, true, "uhid", "uhid", true);
+            else if (index == 3) SetQuality("1920x1080/160", 90, "16M", "h264", false, false, "sdk", "sdk", false);
+            else if (index == 4) SetQuality("1920x1080/160", 30, "4M", "h264", false, false, "sdk", "sdk", false);
+            else if (index == 5) SetQuality("2560x1440/160", 60, "8M", "h264", true, true, "sdk", "sdk", false);
+            else if (index == 6) SetQuality("1920x1080/320", 60, "12M", "h264", false, false, "uhid", "sdk", false);
             else SetQuality("2560x1440/160", 60, "8M", "h264", false, false, "sdk", "sdk", false);
         }
 
@@ -325,6 +329,7 @@ namespace ScrcpyManager
             Select(_codec, codec, "h264");
             _alwaysOnTop.Checked = top;
             _borderless.Checked = borderless;
+            _fullscreen.Checked = false;
             Select(_keyboard, keyboardMode, "sdk");
             Select(_mouse, mouseMode, "sdk");
             _forwardClicks.Checked = forwardClicks;
@@ -341,7 +346,7 @@ namespace ScrcpyManager
 
             _app.name = name;
             AppLaunchProfile p = _app.profile ?? new AppLaunchProfile();
-            p.preset = new[] { "default", "work", "gaming", "wifi", "presentation", "terminal" }[_preset.SelectedIndex];
+            p.preset = new[] { "default", "work", "dual", "gaming", "wifi", "presentation", "terminal" }[_preset.SelectedIndex];
             p.displaySize = _display.Text;
             p.maxFps = (int)_fps.Value;
             p.videoBitRate = _bitRate.Text;

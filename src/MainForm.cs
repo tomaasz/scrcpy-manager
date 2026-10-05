@@ -1963,6 +1963,8 @@ namespace ScrcpyManager
                 {
                     if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M")
                         profile.videoBitRate = "16M";
+                    profile.fullscreen = false;
+                    profile.borderless = true;
                 }
             }
 
