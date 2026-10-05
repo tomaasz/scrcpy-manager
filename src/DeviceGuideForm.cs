@@ -9,7 +9,6 @@ namespace ScrcpyManager
     public sealed class DeviceGuideForm : Form
     {
         private readonly ThemeColors _c;
-        private readonly string _lang;
         private readonly Localization.Strings _t;
         private readonly AdbService _adb;
         private readonly Label _lblAdbStatus;
@@ -18,7 +17,6 @@ namespace ScrcpyManager
         public DeviceGuideForm(ThemeColors colors, string language, Icon icon, AdbService adb)
         {
             _c = colors;
-            _lang = language;
             _t = Localization.Get(language);
             _adb = adb;
 
@@ -74,7 +72,7 @@ namespace ScrcpyManager
             Panel pnlTips = new Panel
             {
                 Location = new Point(16, curY),
-                Size = new Size(468, 120),
+                Size = new Size(468, 88),
                 BackColor = _c.Card
             };
             UiThemeHelper.SetupModernCard(pnlTips, 6, () => _c.CardBorder);
@@ -96,33 +94,12 @@ namespace ScrcpyManager
                 Text = _t.GuideTipsText,
                 Font = new Font("Segoe UI", 8f, FontStyle.Regular),
                 Location = new Point(10, 28),
-                Size = new Size(448, 48),
+                Size = new Size(448, 54),
                 ForeColor = _c.TextMuted,
                 BackColor = Color.Transparent
             };
             pnlTips.Controls.Add(lblTipsContent);
-
-            Button btnRdcGuide = new Button
-            {
-                Text = "⌨ " + _t.RdcGuideTitle,
-                Location = new Point(10, 80),
-                Size = new Size(200, 28),
-                Font = new Font("Segoe UI", 8.5f, FontStyle.Regular),
-                BackColor = _c.BtnTool,
-                ForeColor = _c.BtnToolText,
-                Cursor = Cursors.Hand
-            };
-            UiThemeHelper.SetupModernButton(btnRdcGuide, 4, () => _c.BtnToolBorder);
-            btnRdcGuide.Click += (s, e) =>
-            {
-                using (var rdcDlg = new RdcGuideForm(_c, _lang, Icon))
-                {
-                    rdcDlg.ShowDialog(this);
-                }
-            };
-            pnlTips.Controls.Add(btnRdcGuide);
-
-            curY += 128;
+            curY += 96;
 
             _lblAdbStatus = new Label
             {

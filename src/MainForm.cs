@@ -64,6 +64,7 @@ namespace ScrcpyManager
             "1920x1080/160",
             "2560x1440/160",
             "2560x1440/140",
+            "3840x1080/140",
             "3840x2160/240",
             "AUTO"
         };
@@ -87,7 +88,6 @@ namespace ScrcpyManager
         private Label _lblSectionOptions;
         private Label _lblRes;
         private ComboBox _cmbRes;
-        private Button _btnRdcKeyGuide;
         private CheckBox _chkAudio;
         private CheckBox _chkAutoTaskbar;
         private Button _btnInstallTaskbar;
@@ -96,10 +96,6 @@ namespace ScrcpyManager
         private Button _btnWifi;
         private Button _btnKeyFix;
         private Button _btnClipFix;
-        private ToolStripMenuItem _itemKeyAndroid;
-        private ToolStripMenuItem _itemKeyRdc;
-        private ToolStripMenuItem _itemClipFix;
-        private ToolStripMenuItem _itemClipRdc;
 
         private Label _lblSectionApps;
         private Label _lblAppsSubtitle;
@@ -531,17 +527,6 @@ namespace ScrcpyManager
             };
             Controls.Add(_lblRes);
 
-            _btnRdcKeyGuide = new Button
-            {
-                Location = new Point(252, 168),
-                Size = new Size(136, 20),
-                Font = _fontSmall,
-                Cursor = Cursors.Hand
-            };
-            UiThemeHelper.SetupModernButton(_btnRdcKeyGuide, 4, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
-            _btnRdcKeyGuide.Click += (s, e) => ShowRdcGuide();
-            Controls.Add(_btnRdcKeyGuide);
-
             _cmbRes = new ComboBox
             {
                 Location = new Point(16, 190),
@@ -607,17 +592,15 @@ namespace ScrcpyManager
                 Font = _fontSmall
             };
             UiThemeHelper.SetupModernButton(_btnKeyFix, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
-            _btnKeyFix.Click += async (s, e) => await OpenHardKeyboardSettingsAsync();
-
-            ContextMenuStrip ctxKey = new ContextMenuStrip();
-            _itemKeyAndroid = new ToolStripMenuItem();
-            _itemKeyAndroid.Click += async (s, e) => await OpenHardKeyboardSettingsAsync();
-            _itemKeyRdc = new ToolStripMenuItem();
-            _itemKeyRdc.Click += (s, e) => ShowRdcGuide();
-            ctxKey.Items.Add(_itemKeyAndroid);
-            ctxKey.Items.Add(_itemKeyRdc);
-            _btnKeyFix.ContextMenuStrip = ctxKey;
-
+            _btnKeyFix.Click += async (s, e) =>
+            {
+                if (await _adb.IsDeviceConnectedAsync())
+                {
+                    await _adb.RunAdbAsync("shell am start -a android.settings.HARD_KEYBOARD_SETTINGS");
+                }
+                Localization.Strings t = Localization.Get(_currentLang);
+                MessageBox.Show(this, t.MsgKeyDone, t.KeyBtn, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
             Controls.Add(_btnKeyFix);
 
             _btnClipFix = new Button
@@ -627,17 +610,17 @@ namespace ScrcpyManager
                 Font = _fontSmall
             };
             UiThemeHelper.SetupModernButton(_btnClipFix, 5, () => _isDarkMode ? ThemeColors.Dark.BtnToolBorder : ThemeColors.Light.BtnToolBorder);
-            _btnClipFix.Click += async (s, e) => await FixClipboardAsync();
-
-            ContextMenuStrip ctxClip = new ContextMenuStrip();
-            _itemClipFix = new ToolStripMenuItem();
-            _itemClipFix.Click += async (s, e) => await FixClipboardAsync();
-            _itemClipRdc = new ToolStripMenuItem();
-            _itemClipRdc.Click += (s, e) => ShowRdcGuide();
-            ctxClip.Items.Add(_itemClipFix);
-            ctxClip.Items.Add(_itemClipRdc);
-            _btnClipFix.ContextMenuStrip = ctxClip;
-
+            _btnClipFix.Click += async (s, e) =>
+            {
+                if (await _adb.IsDeviceConnectedAsync())
+                {
+                    await _adb.RunAdbAsync("shell am broadcast -a clipper.get");
+                }
+                string remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe";
+                try { Clipboard.SetText(remoteFixCmd); } catch {}
+                Localization.Strings t = Localization.Get(_currentLang);
+                MessageBox.Show(this, string.Format(t.MsgClipDone, remoteFixCmd), t.ClipBtn, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
             Controls.Add(_btnClipFix);
 
             // 4. Aplikacje w oknach
@@ -996,14 +979,6 @@ namespace ScrcpyManager
             _cmbRes.BackColor = c.Card;
             _cmbRes.ForeColor = c.Text;
 
-            if (_btnRdcKeyGuide != null)
-            {
-                _btnRdcKeyGuide.BackColor = c.BtnTool;
-                _btnRdcKeyGuide.ForeColor = c.BtnToolText;
-                _btnRdcKeyGuide.FlatAppearance.BorderColor = c.BtnToolBorder;
-                _btnRdcKeyGuide.FlatAppearance.MouseOverBackColor = c.BtnToolHover;
-            }
-
             _btnWifi.BackColor = c.BtnTool;
             _btnWifi.ForeColor = c.BtnToolText;
             _btnWifi.FlatAppearance.BorderColor = c.BtnToolBorder;
@@ -1191,11 +1166,6 @@ namespace ScrcpyManager
             _lblRes.Text = t.ResLabel;
             _tipMain.SetToolTip(_lblRes, t.ResTooltip);
             _tipMain.SetToolTip(_cmbRes, t.ResTooltip);
-            if (_btnRdcKeyGuide != null)
-            {
-                _btnRdcKeyGuide.Text = "⌨ " + t.RdcGuideTitle;
-                _tipMain.SetToolTip(_btnRdcKeyGuide, t.RdcGuideTooltip);
-            }
             _chkAudio.Text = t.AudioPass;
             _tipMain.SetToolTip(_chkAudio, t.AudioTooltip);
             _chkAutoTaskbar.Text = t.AutoTaskbar;
@@ -1212,13 +1182,8 @@ namespace ScrcpyManager
             _tipMain.SetToolTip(_btnWifi, t.WifiTooltip);
             _btnKeyFix.Text = t.KeyBtn;
             _tipMain.SetToolTip(_btnKeyFix, t.KeyFixTooltip);
-            if (_itemKeyAndroid != null) _itemKeyAndroid.Text = t.KeyBtn + " (Android)";
-            if (_itemKeyRdc != null) _itemKeyRdc.Text = "⌨ " + t.RdcGuideTitle + "...";
-
             _btnClipFix.Text = t.ClipBtn;
             _tipMain.SetToolTip(_btnClipFix, t.ClipFixTooltip);
-            if (_itemClipFix != null) _itemClipFix.Text = t.ClipBtn;
-            if (_itemClipRdc != null) _itemClipRdc.Text = "⌨ " + t.RdcGuideTitle + "...";
 
             _lblSectionApps.Text = t.SectionApps;
             _lblAppsSubtitle.Text = t.AppsSubtitle;
@@ -1429,13 +1394,6 @@ namespace ScrcpyManager
                         itemDel.Click += (s, e) => btnDel.PerformClick();
                         ctx.Items.Add(itemRename);
                         ctx.Items.Add(itemDel);
-                        if (string.Equals(currentApp.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase))
-                        {
-                            ctx.Items.Add(new ToolStripSeparator());
-                            ToolStripMenuItem itemRdc = new ToolStripMenuItem("⌨ " + t.RdcGuideTitle + "...");
-                            itemRdc.Click += (s, e) => ShowRdcGuide();
-                            ctx.Items.Add(itemRdc);
-                        }
                         btn.ContextMenuStrip = ctx;
 
                         pnlTile.Controls.Add(btn);
@@ -2000,6 +1958,12 @@ namespace ScrcpyManager
                 if (string.IsNullOrEmpty(profile.keyboardMode) || profile.keyboardMode == "sdk")
                     profile.keyboardMode = "uhid";
                 profile.forwardAllClicks = true;
+                if (profile.displaySize.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ||
+                    profile.displaySize.StartsWith("5120x1440", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M")
+                        profile.videoBitRate = "16M";
+                }
             }
 
             try
@@ -2337,37 +2301,6 @@ namespace ScrcpyManager
             else
             {
                 MessageBox.Show(this, string.Format("Nie udało się nawiązać połączenia bezprzewodowego z adresem {0}:5555.", ip), t.WifiBtn, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private async Task OpenHardKeyboardSettingsAsync()
-        {
-            if (await _adb.IsDeviceConnectedAsync())
-            {
-                await _adb.RunAdbAsync("shell am start -a android.settings.HARD_KEYBOARD_SETTINGS");
-            }
-            Localization.Strings t = Localization.Get(_currentLang);
-            MessageBox.Show(this, t.MsgKeyDone, t.KeyBtn, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private async Task FixClipboardAsync()
-        {
-            if (await _adb.IsDeviceConnectedAsync())
-            {
-                await _adb.RunAdbAsync("shell am broadcast -a clipper.get");
-            }
-            string remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe";
-            try { Clipboard.SetText(remoteFixCmd); } catch {}
-            Localization.Strings t = Localization.Get(_currentLang);
-            MessageBox.Show(this, string.Format(t.MsgClipDone, remoteFixCmd), t.ClipBtn, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void ShowRdcGuide()
-        {
-            ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
-            using (var guide = new RdcGuideForm(c, _currentLang, Icon))
-            {
-                guide.ShowDialog(this);
             }
         }
 

@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ScrcpyManager
 {
@@ -617,6 +618,43 @@ namespace ScrcpyManager
                 "-w"
             };
 
+            bool isDualMonitor = disp.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ||
+                                 disp.StartsWith("5120x1440", StringComparison.OrdinalIgnoreCase);
+            if (isDualMonitor)
+            {
+                int winX = 0;
+                int winY = 0;
+                int winW = disp.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ? 3840 : 5120;
+                int winH = disp.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ? 1080 : 1440;
+
+                try
+                {
+                    var screens = Screen.AllScreens;
+                    if (screens != null && screens.Length > 1)
+                    {
+                        int minX = int.MaxValue;
+                        int minY = int.MaxValue;
+                        foreach (var s in screens)
+                        {
+                            if (s.Bounds.X < minX) minX = s.Bounds.X;
+                            if (s.Bounds.Y < minY) minY = s.Bounds.Y;
+                        }
+                        if (minX != int.MaxValue) winX = minX;
+                        winY = Math.Max(0, minY == int.MaxValue ? 0 : minY);
+                    }
+                }
+                catch { }
+
+                argsList.Add(string.Format("--window-x={0}", winX));
+                argsList.Add(string.Format("--window-y={0}", winY));
+                argsList.Add(string.Format("--window-width={0}", winW));
+                argsList.Add(string.Format("--window-height={0}", winH));
+                if (!profile.fullscreen && !argsList.Contains("--window-borderless"))
+                {
+                    argsList.Add("--window-borderless");
+                }
+            }
+
             bool hideTaskbar = profile.taskbarMode == "hidden" || (profile.taskbarMode != "shown" && !autoTaskbar);
             if (hideTaskbar)
             {
@@ -646,7 +684,7 @@ namespace ScrcpyManager
             if (Regex.IsMatch(profile.mouseMode ?? string.Empty, @"^(sdk|uhid|disabled)$"))
                 argsList.Add("--mouse=" + profile.mouseMode);
             if (profile.alwaysOnTop) argsList.Add("--always-on-top");
-            if (profile.borderless) argsList.Add("--window-borderless");
+            if (profile.borderless && !argsList.Contains("--window-borderless")) argsList.Add("--window-borderless");
             if (profile.fullscreen) argsList.Add("--fullscreen");
             if (profile.turnScreenOff) argsList.Add("--turn-screen-off");
             if (profile.recordSession)

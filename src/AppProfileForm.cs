@@ -8,7 +8,6 @@ namespace ScrcpyManager
     {
         private readonly AppEntry _app;
         private readonly bool _polish;
-        private readonly string _lang;
         private readonly ToolTip _toolTip;
         private readonly TextBox _name;
         private readonly ComboBox _preset;
@@ -31,8 +30,7 @@ namespace ScrcpyManager
         public AppProfileForm(AppEntry app, ThemeColors colors, string language, Icon icon)
         {
             _app = app;
-            _lang = language ?? "en";
-            _polish = string.Equals(_lang, "PL", StringComparison.OrdinalIgnoreCase);
+            _polish = string.Equals(language, "PL", StringComparison.OrdinalIgnoreCase);
             AppLaunchProfile profile = app.profile ?? new AppLaunchProfile();
 
             Text = _polish ? "Profil uruchamiania aplikacji" : "Application launch profile";
@@ -173,31 +171,6 @@ namespace ScrcpyManager
             };
             _toolTip.SetToolTip(packageLabel, _polish ? "Identyfikator pakietu Androida uruchamianego w tym oknie." : "Android package identifier executed in this window.");
             Controls.Add(packageLabel);
-
-            if (app.package == "com.microsoft.rdc.androidx")
-            {
-                var t = Localization.Get(_lang);
-                Button btnRdcGuide = new Button
-                {
-                    Text = "⌨ " + t.RdcGuideTitle,
-                    Location = new Point(18, 588),
-                    Size = new Size(160, 30),
-                    BackColor = colors.BtnTool,
-                    ForeColor = colors.BtnToolText,
-                    Cursor = Cursors.Hand
-                };
-                UiThemeHelper.SetupModernButton(btnRdcGuide, 5, () => colors.BtnToolBorder);
-                btnRdcGuide.FlatAppearance.MouseOverBackColor = colors.BtnToolHover;
-                _toolTip.SetToolTip(btnRdcGuide, t.RdcGuideSubtitle);
-                btnRdcGuide.Click += (s, e) =>
-                {
-                    using (var rdcDlg = new RdcGuideForm(colors, _lang, Icon))
-                    {
-                        rdcDlg.ShowDialog(this);
-                    }
-                };
-                Controls.Add(btnRdcGuide);
-            }
 
             Button save = new Button
             {

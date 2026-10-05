@@ -52,14 +52,9 @@
 * 🖥️ **Zoptymalizowane profile RDP (Windows App)**:
   * `Full HD 1080p (Natywna 1:1)` – Idealna ostrość piksel w piksel.
   * `2K QHD (2560x1440)` – O 77% większa przestrzeń robocza.
+  * `Podwójny ekran (2x 1080p - 3840x1080)` – Automatyczne rozciąganie sesji bez ramek na dwa monitory 1080p.
   * `4K UHD (3840x2160)` – Maksymalna rozdzielczość dla dużych ekranów.
   * *Wysoki bitrate (16 Mbps)* gwarantujący żyletkowo ostre czcionki.
-  * **Zmiana ustawień przechwytywania klawiatury w RDC (Trwałe rozwiązanie)**: Możesz wymusić, aby RDC ignorowało kombinacje klawiszowe i zostawiało je dla Twojego lokalnego komputera:
-    1. Przed połączeniem otwórz aplikację **Podłączanie pulpitu zdalnego** (`mstsc`).
-    2. Kliknij **Pokaż opcje** w lewym dolnym rogu.
-    3. Przejdź do zakładki **Zasoby lokalne**.
-    4. W sekcji **Klawiatura** zmień opcję *Zastosuj kombinacje klawiszy klawiatury systemu Windows* z „Tylko na pełnym ekranie” na **Na tym komputerze**.
-    > **Ważna uwaga**: To sprawi, że Twój lokalny system przejmie również inne systemowe skróty. Używając `Alt + Tab` czy klawisza `Windows`, wywołasz akcję na swoim lokalnym komputerze, a nie na tym zdalnym.
 * 🔙 **Wygodna nawigacja i klawisz ESC**: Naciśnięcie klawisza `ESC` w oknie dowolnej aplikacji Androida natychmiast wywołuje `Cofnij` (to samo co strzałka `←` w aplikacji).
 * 🧭 **Zadokowany pasek nawigacyjny okien**: Pływający dolny pasek z przyciskami `◀` (Cofnij), `●` (Ekran główny) i `▢` (Ostatnie) przyczepiony do okna scrcpy.
 * 📱 **Przyciski nawigacji w panelu**: Szybkie sterowanie telefonem (`◀ Cofnij`, `● Home`, `▢ Ostatnie`) bezpośrednio z poziomu managera.
