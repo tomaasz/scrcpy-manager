@@ -936,7 +936,8 @@ namespace ScrcpyManager
                     rdcApp.profile.preset = "dual";
                     rdcApp.profile.borderless = true;
                     rdcApp.profile.fullscreen = false;
-                    rdcApp.profile.videoBitRate = "16M";
+                    rdcApp.profile.videoBitRate = "32M";
+                    rdcApp.profile.videoCodec = "h265";
                     rdcApp.profile.mouseMode = "sdk";
                 }
                 SaveAppsConfigFile();
@@ -2052,10 +2053,11 @@ namespace ScrcpyManager
                 if (profile.displaySize.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ||
                     profile.displaySize.StartsWith("5120x1440", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M")
-                        profile.videoBitRate = "16M";
+                    if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M" || profile.videoBitRate == "16M")
+                        profile.videoBitRate = "32M";
+                    if (string.IsNullOrEmpty(profile.videoCodec) || profile.videoCodec == "h264")
+                        profile.videoCodec = "h265";
                     profile.fullscreen = false;
-                    profile.borderless = true;
                     profile.mouseMode = "sdk";
                 }
             }

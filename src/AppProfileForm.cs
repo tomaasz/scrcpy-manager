@@ -88,7 +88,7 @@ namespace ScrcpyManager
             {
                 "1920x1080/320", "1920x1080/240", "1920x1080/160",
                 "2560x1440/320", "2560x1440/240", "2560x1440/160", "2560x1440/140",
-                "3840x1080/140", "3840x1080/160", "5120x1440/140",
+                "3840x1080/120", "3840x1080/140", "3840x1080/160", "3840x1080/96", "5120x1440/140",
                 "1280x720/240", "3840x2160/320", "3840x2160/240", "1080x2400"
             }, colors, editable: true, tooltip:
                 _polish ? "Rozdzielczość wirtualnego ekranu i gęstość DPI w formacie SZERxWYS/DPI (np. 1920x1080/320).\n• Wyższa wartość DPI (np. /320 zamiast /160) powiększa tekst, przyciski i cały interfejs aplikacji.\n• Możesz wybrać opcję z listy lub wpisać własne wartości."
@@ -98,7 +98,7 @@ namespace ScrcpyManager
                 _polish ? "Maksymalna liczba klatek na sekundę strumieniowanych ze scrcpy (15–240).\n• 60 FPS zapewnia pełną płynność animacji.\n• Mniejsze wartości (np. 30 FPS) redukują obciążenie procesora, baterię i pasmo Wi-Fi."
                         : "Maximum streamed frames per second (15–240).\n• 60 FPS provides smooth motion.\n• Lower values (e.g. 30 FPS) save CPU, battery, and Wi-Fi bandwidth.");
 
-            _bitRate = AddCombo(table, 4, _polish ? "Bitrate obrazu" : "Video bitrate", new[] { "2M", "4M", "8M", "12M", "16M", "24M", "32M" }, colors, editable: false, tooltip:
+            _bitRate = AddCombo(table, 4, _polish ? "Bitrate obrazu" : "Video bitrate", new[] { "2M", "4M", "8M", "12M", "16M", "24M", "32M", "48M", "64M" }, colors, editable: false, tooltip:
                 _polish ? "Przepustowość kodowania wideo (np. 8M, 12M, 16M).\n• Wyższy bitrate eliminuje rozmycia i artefakty wokół drobnego tekstu.\n• Niższy bitrate (np. 4M) jest zalecany przy słabym sygnale Wi-Fi."
                         : "Video streaming bitrate (e.g. 8M, 12M, 16M).\n• Higher bitrate produces crisp text without compression artifacts.\n• Lower bitrate is recommended on weaker Wi-Fi networks.");
 
@@ -312,7 +312,7 @@ namespace ScrcpyManager
         private void ApplyPreset(int index)
         {
             if (index == 1) SetQuality("2560x1440/160", 60, "16M", "h264", false, false, "uhid", "sdk", true);
-            else if (index == 2) SetQuality("3840x1080/140", 60, "16M", "h264", false, true, "uhid", "sdk", true);
+            else if (index == 2) SetQuality("3840x1080/140", 60, "32M", "h265", false, true, "uhid", "sdk", true);
             else if (index == 3) SetQuality("1920x1080/160", 90, "16M", "h264", false, false, "sdk", "sdk", false);
             else if (index == 4) SetQuality("1920x1080/160", 30, "4M", "h264", false, false, "sdk", "sdk", false);
             else if (index == 5) SetQuality("2560x1440/160", 60, "8M", "h264", true, true, "sdk", "sdk", false);

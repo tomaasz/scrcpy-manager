@@ -645,11 +645,21 @@ namespace ScrcpyManager
                 }
                 catch { }
 
+                if (!profile.borderless)
+                {
+                    try
+                    {
+                        int maxWorkH = Screen.PrimaryScreen.WorkingArea.Height;
+                        if (maxWorkH > 0 && maxWorkH < winH) winH = maxWorkH;
+                    }
+                    catch { }
+                }
+
                 argsList.Add(string.Format("--window-x={0}", winX));
                 argsList.Add(string.Format("--window-y={0}", winY));
                 argsList.Add(string.Format("--window-width={0}", winW));
                 argsList.Add(string.Format("--window-height={0}", winH));
-                if (!argsList.Contains("--window-borderless"))
+                if (profile.borderless && !argsList.Contains("--window-borderless"))
                 {
                     argsList.Add("--window-borderless");
                 }
@@ -674,6 +684,18 @@ namespace ScrcpyManager
             if (isDualMonitor)
             {
                 profile.mouseMode = "sdk";
+                if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M" || profile.videoBitRate == "16M")
+                    profile.videoBitRate = "32M";
+                if (string.IsNullOrEmpty(profile.videoCodec) || profile.videoCodec == "h264")
+                    profile.videoCodec = "h265";
+            }
+
+            if (isRdc || profile.keyboardMode == "uhid")
+            {
+                if (!argsList.Exists(a => a.StartsWith("--shortcut-mod=")))
+                {
+                    argsList.Add("--shortcut-mod=rctrl");
+                }
             }
 
             int fps = Math.Max(15, Math.Min(240, profile.maxFps > 0 ? profile.maxFps : 60));
