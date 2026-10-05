@@ -54,10 +54,12 @@ namespace ScrcpyManager
                 if (msg == NativeMethods.WM_KEYDOWN || msg == NativeMethods.WM_SYSKEYDOWN)
                 {
                     NativeMethods.KBDLLHOOKSTRUCT kb = (NativeMethods.KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(NativeMethods.KBDLLHOOKSTRUCT));
-                    if (kb.vkCode == NativeMethods.VK_ESCAPE)
+                    IntPtr fg = NativeMethods.GetForegroundWindow();
+                    bool isScrcpy = fg != IntPtr.Zero && IsScrcpyWindow(fg);
+
+                    if (isScrcpy)
                     {
-                        IntPtr fg = NativeMethods.GetForegroundWindow();
-                        if (fg != IntPtr.Zero && IsScrcpyWindow(fg))
+                        if (kb.vkCode == NativeMethods.VK_ESCAPE)
                         {
                             if ((DateTime.UtcNow - _lastBackTime).TotalMilliseconds > 120)
                             {
@@ -66,17 +68,45 @@ namespace ScrcpyManager
                             }
                             return (IntPtr)1; // Consume raw ESC
                         }
+
+                        // Klawisz F12: natychmiastowe przywrócenie rozciągnięcia 3840x1080 na dwa monitory
+                        if (kb.vkCode == NativeMethods.VK_F12)
+                        {
+                            RestoreDualMonitorSpan(fg);
+                            return (IntPtr)1;
+                        }
+
+                        // Przechwytywanie Win + Strzałki:
+                        // System Windows 11 przechwytuje Win+Strzałki globalnie i kafelkuje/maksymalizuje
+                        // okno scrcpy do POJEDYNCZEGO monitora (niszcząc rozciągnięcie 3840x1080).
+                        // Blokujemy przechwycenie przez system Windows i przekazujemy skrót do Androida/RDP.
+                        bool isWinDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) < 0 || NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) < 0);
+                        if (isWinDown && (kb.vkCode == NativeMethods.VK_LEFT || kb.vkCode == NativeMethods.VK_RIGHT || kb.vkCode == NativeMethods.VK_UP || kb.vkCode == NativeMethods.VK_DOWN))
+                        {
+                            int dpad = kb.vkCode == NativeMethods.VK_LEFT ? 21 :
+                                       kb.vkCode == NativeMethods.VK_RIGHT ? 22 :
+                                       kb.vkCode == NativeMethods.VK_UP ? 19 : 20;
+                            System.Threading.Tasks.Task ignored = AdbService.ExecuteAdbAsync("shell input keycombination 117 " + dpad, 1000);
+                            return (IntPtr)1; // Blokujemy dla lokalnego hosta Windows!
+                        }
                     }
                 }
                 else if (msg == NativeMethods.WM_KEYUP || msg == NativeMethods.WM_SYSKEYUP)
                 {
                     NativeMethods.KBDLLHOOKSTRUCT kb = (NativeMethods.KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(NativeMethods.KBDLLHOOKSTRUCT));
-                    if (kb.vkCode == NativeMethods.VK_ESCAPE)
+                    IntPtr fg = NativeMethods.GetForegroundWindow();
+                    bool isScrcpy = fg != IntPtr.Zero && IsScrcpyWindow(fg);
+
+                    if (isScrcpy)
                     {
-                        IntPtr fg = NativeMethods.GetForegroundWindow();
-                        if (fg != IntPtr.Zero && IsScrcpyWindow(fg))
+                        if (kb.vkCode == NativeMethods.VK_ESCAPE || kb.vkCode == NativeMethods.VK_F12)
                         {
-                            return (IntPtr)1; // Consume raw ESC keyup
+                            return (IntPtr)1;
+                        }
+                        bool isWinDown = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) < 0 || NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) < 0);
+                        if (isWinDown && (kb.vkCode == NativeMethods.VK_LEFT || kb.vkCode == NativeMethods.VK_RIGHT || kb.vkCode == NativeMethods.VK_UP || kb.vkCode == NativeMethods.VK_DOWN))
+                        {
+                            return (IntPtr)1;
                         }
                     }
                 }
@@ -136,6 +166,45 @@ namespace ScrcpyManager
             }
             catch { }
             return false;
+        }
+
+        public static void RestoreDualMonitorSpan(IntPtr scrcpyHwnd)
+        {
+            if (scrcpyHwnd == IntPtr.Zero) return;
+            try
+            {
+                int minX = 0;
+                int minY = 0;
+                int totalW = 3840;
+                int totalH = 1080;
+                try
+                {
+                    var screens = System.Windows.Forms.Screen.AllScreens;
+                    if (screens != null && screens.Length > 1)
+                    {
+                        int mx = int.MaxValue;
+                        int my = int.MaxValue;
+                        int maxR = int.MinValue;
+                        int maxB = int.MinValue;
+                        foreach (var s in screens)
+                        {
+                            if (s.Bounds.X < mx) mx = s.Bounds.X;
+                            if (s.Bounds.Y < my) my = s.Bounds.Y;
+                            if (s.Bounds.Right > maxR) maxR = s.Bounds.Right;
+                            if (s.Bounds.Bottom > maxB) maxB = s.Bounds.Bottom;
+                        }
+                        if (mx != int.MaxValue) minX = mx;
+                        if (my != int.MaxValue) minY = my;
+                        if (maxR > minX) totalW = maxR - minX;
+                        if (maxB > minY) totalH = maxB - minY;
+                    }
+                }
+                catch { }
+
+                NativeMethods.SetWindowPos(scrcpyHwnd, IntPtr.Zero, minX, minY, totalW, totalH,
+                    NativeMethods.SWP_NOZORDER | NativeMethods.SWP_SHOWWINDOW);
+            }
+            catch { }
         }
     }
 }

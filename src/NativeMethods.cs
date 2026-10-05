@@ -85,6 +85,12 @@ namespace ScrcpyManager
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [DllImport("user32.dll")]
+        public static extern short GetAsyncKeyState(int vKey);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
         public const int WH_KEYBOARD_LL = 13;
         public const int WM_KEYDOWN = 0x0100;
         public const int WM_KEYUP = 0x0101;
@@ -96,6 +102,15 @@ namespace ScrcpyManager
         public const byte VK_B = 0x42;      // 'B' (scrcpy BACK)
         public const byte VK_H = 0x48;      // 'H' (scrcpy HOME)
         public const byte VK_S = 0x53;      // 'S' (scrcpy APP_SWITCH)
+        public const int VK_LEFT = 0x25;
+        public const int VK_UP = 0x26;
+        public const int VK_RIGHT = 0x27;
+        public const int VK_DOWN = 0x28;
+        public const int VK_LWIN = 0x5B;
+        public const int VK_RWIN = 0x5C;
+        public const int VK_F12 = 0x7B;
+        public const uint SWP_NOZORDER = 0x0004;
+        public const uint SWP_SHOWWINDOW = 0x0040;
         public const uint KEYEVENTF_KEYUP = 0x0002;
 
         [StructLayout(LayoutKind.Sequential)]
