@@ -640,7 +640,7 @@ namespace ScrcpyManager
                             if (s.Bounds.Y < minY) minY = s.Bounds.Y;
                         }
                         if (minX != int.MaxValue) winX = minX;
-                        winY = Math.Max(0, minY == int.MaxValue ? 0 : minY);
+                        if (minY != int.MaxValue) winY = minY;
                     }
                 }
                 catch { }
@@ -649,7 +649,7 @@ namespace ScrcpyManager
                 argsList.Add(string.Format("--window-y={0}", winY));
                 argsList.Add(string.Format("--window-width={0}", winW));
                 argsList.Add(string.Format("--window-height={0}", winH));
-                if (!profile.fullscreen && !argsList.Contains("--window-borderless"))
+                if (!argsList.Contains("--window-borderless"))
                 {
                     argsList.Add("--window-borderless");
                 }

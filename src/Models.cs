@@ -91,6 +91,7 @@ namespace ScrcpyManager
         public bool navBar { get; set; }
         public bool autoTaskbar { get; set; }
         public string initialDiscovery { get; set; }
+        public string rdpResolution { get; set; }
 
         public UserPreferences()
         {
@@ -100,6 +101,7 @@ namespace ScrcpyManager
             navBar = true;
             autoTaskbar = false;
             initialDiscovery = "pending";
+            rdpResolution = "2560x1440/160";
         }
     }
 

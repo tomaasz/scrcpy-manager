@@ -88,6 +88,7 @@ namespace ScrcpyManager
         private Label _lblSectionOptions;
         private Label _lblRes;
         private ComboBox _cmbRes;
+        private bool _isUpdatingCmbRes = false;
         private CheckBox _chkAudio;
         private CheckBox _chkAutoTaskbar;
         private Button _btnInstallTaskbar;
@@ -236,6 +237,10 @@ namespace ScrcpyManager
                 _pref.theme = _isDarkMode ? "dark" : "light";
                 _pref.lang = _currentLang;
                 _pref.layout = _appsLayout;
+                if (_cmbRes != null && _cmbRes.SelectedIndex >= 0 && _cmbRes.SelectedIndex < _resValues.Length)
+                {
+                    _pref.rdpResolution = _resValues[_cmbRes.SelectedIndex];
+                }
 
                 ConfigStore.SaveAtomic(_userPrefFile, _pref);
             }
@@ -537,6 +542,7 @@ namespace ScrcpyManager
                 Font = _fontRegular
             };
             _cmbRes.DrawItem += OnCmbResDrawItem;
+            _cmbRes.SelectedIndexChanged += OnCmbResSelectedIndexChanged;
             UiThemeHelper.ApplyRoundedCorners(_cmbRes, 5);
             Controls.Add(_cmbRes);
 
@@ -912,6 +918,59 @@ namespace ScrcpyManager
             }
         }
 
+        private void OnCmbResSelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_isUpdatingCmbRes) return;
+            if (_cmbRes == null || _cmbRes.SelectedIndex < 0 || _cmbRes.SelectedIndex >= _resValues.Length) return;
+            string selectedVal = _resValues[_cmbRes.SelectedIndex];
+            string targetDisplaySize = selectedVal == "AUTO" ? "1080x2400" : selectedVal;
+
+            AppEntry rdcApp = _appButtons != null ? _appButtons.Find(a => string.Equals(a.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase)) : null;
+            if (rdcApp != null && rdcApp.profile != null)
+            {
+                rdcApp.profile.displaySize = targetDisplaySize;
+                bool isDual = targetDisplaySize.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ||
+                              targetDisplaySize.StartsWith("5120x1440", StringComparison.OrdinalIgnoreCase);
+                if (isDual)
+                {
+                    rdcApp.profile.preset = "dual";
+                    rdcApp.profile.borderless = true;
+                    rdcApp.profile.fullscreen = false;
+                    rdcApp.profile.videoBitRate = "16M";
+                }
+                SaveAppsConfigFile();
+                UpdateAppButtonGrid();
+            }
+            if (_pref != null)
+            {
+                _pref.rdpResolution = selectedVal;
+                SavePreferences();
+            }
+        }
+
+        private void SyncCmbResFromRdcApp()
+        {
+            if (_cmbRes == null || _appButtons == null) return;
+            AppEntry rdcApp = _appButtons.Find(a => string.Equals(a.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase));
+            if (rdcApp != null && rdcApp.profile != null && !string.IsNullOrEmpty(rdcApp.profile.displaySize))
+            {
+                for (int i = 0; i < _resValues.Length; i++)
+                {
+                    if (string.Equals(_resValues[i], rdcApp.profile.displaySize, StringComparison.OrdinalIgnoreCase) ||
+                        (_resValues[i] == "AUTO" && rdcApp.profile.displaySize == "1080x2400"))
+                    {
+                        if (_cmbRes.SelectedIndex != i)
+                        {
+                            _isUpdatingCmbRes = true;
+                            try { _cmbRes.SelectedIndex = i; }
+                            finally { _isUpdatingCmbRes = false; }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
         private void ApplyTheme()
         {
             ThemeColors c = _isDarkMode ? ThemeColors.Dark : ThemeColors.Light;
@@ -1222,14 +1281,42 @@ namespace ScrcpyManager
             }
 
             int currIdx = _cmbRes.SelectedIndex;
-            // QHD 2560x1440 / 160 DPI is the default virtual display profile.
-            if (currIdx < 0) currIdx = 1;
-            _cmbRes.Items.Clear();
-            foreach (string rn in t.ResNames)
+            if (currIdx < 0)
             {
-                _cmbRes.Items.Add(rn);
+                AppEntry rdc = _appButtons != null ? _appButtons.Find(a => string.Equals(a.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase)) : null;
+                string preferredRes = rdc != null && rdc.profile != null && !string.IsNullOrEmpty(rdc.profile.displaySize)
+                    ? rdc.profile.displaySize
+                    : (_pref != null ? _pref.rdpResolution : null);
+
+                if (!string.IsNullOrEmpty(preferredRes))
+                {
+                    for (int i = 0; i < _resValues.Length; i++)
+                    {
+                        if (string.Equals(_resValues[i], preferredRes, StringComparison.OrdinalIgnoreCase) ||
+                            (_resValues[i] == "AUTO" && preferredRes == "1080x2400"))
+                        {
+                            currIdx = i;
+                            break;
+                        }
+                    }
+                }
             }
-            _cmbRes.SelectedIndex = Math.Min(currIdx, _cmbRes.Items.Count - 1);
+            if (currIdx < 0) currIdx = 1;
+
+            _isUpdatingCmbRes = true;
+            try
+            {
+                _cmbRes.Items.Clear();
+                foreach (string rn in t.ResNames)
+                {
+                    _cmbRes.Items.Add(rn);
+                }
+                _cmbRes.SelectedIndex = Math.Min(currIdx, _cmbRes.Items.Count - 1);
+            }
+            finally
+            {
+                _isUpdatingCmbRes = false;
+            }
 
             UpdateStatusDisplay();
         }
@@ -1943,15 +2030,18 @@ namespace ScrcpyManager
             AppLaunchProfile profile = ValidateProfile(app.profile, app.flags);
             if (string.Equals(app.package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase))
             {
-                int idx = _cmbRes.SelectedIndex;
-                if (idx >= 0 && idx < _resValues.Length)
+                if (!AdbService.IsValidDisplaySize(profile.displaySize))
                 {
-                    string val = _resValues[idx];
-                    profile.displaySize = val == "AUTO" ? "1080x2400" : val;
-                }
-                else
-                {
-                    profile.displaySize = "2560x1440/160";
+                    int idx = _cmbRes.SelectedIndex;
+                    if (idx >= 0 && idx < _resValues.Length)
+                    {
+                        string val = _resValues[idx];
+                        profile.displaySize = val == "AUTO" ? "1080x2400" : val;
+                    }
+                    else
+                    {
+                        profile.displaySize = "2560x1440/160";
+                    }
                 }
                 if (string.IsNullOrEmpty(profile.mouseMode) || profile.mouseMode == "sdk")
                     profile.mouseMode = "uhid";
@@ -2038,6 +2128,7 @@ namespace ScrcpyManager
                 {
                     SaveAppsConfigFile();
                     UpdateAppButtonGrid();
+                    SyncCmbResFromRdcApp();
                 }
             }
         }
@@ -2126,6 +2217,7 @@ namespace ScrcpyManager
                 if (editor.ShowDialog(this) == DialogResult.OK)
                 {
                     UpdateAppButtonGrid();
+                    SyncCmbResFromRdcApp();
                     DownloadMissingIconsAsync();
                 }
             }
