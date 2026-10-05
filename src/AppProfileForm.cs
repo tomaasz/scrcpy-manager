@@ -311,8 +311,8 @@ namespace ScrcpyManager
 
         private void ApplyPreset(int index)
         {
-            if (index == 1) SetQuality("2560x1440/160", 60, "16M", "h264", false, false, "uhid", "uhid", true);
-            else if (index == 2) SetQuality("3840x1080/140", 60, "16M", "h264", false, true, "uhid", "uhid", true);
+            if (index == 1) SetQuality("2560x1440/160", 60, "16M", "h264", false, false, "uhid", "sdk", true);
+            else if (index == 2) SetQuality("3840x1080/140", 60, "16M", "h264", false, true, "uhid", "sdk", true);
             else if (index == 3) SetQuality("1920x1080/160", 90, "16M", "h264", false, false, "sdk", "sdk", false);
             else if (index == 4) SetQuality("1920x1080/160", 30, "4M", "h264", false, false, "sdk", "sdk", false);
             else if (index == 5) SetQuality("2560x1440/160", 60, "8M", "h264", true, true, "sdk", "sdk", false);

@@ -664,11 +664,16 @@ namespace ScrcpyManager
             bool isRdc = string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase);
             if (isRdc)
             {
-                if (string.IsNullOrEmpty(profile.mouseMode) || profile.mouseMode == "sdk")
-                    profile.mouseMode = "uhid";
-                if (string.IsNullOrEmpty(profile.keyboardMode) || profile.keyboardMode == "sdk")
+                if (string.IsNullOrEmpty(profile.mouseMode))
+                    profile.mouseMode = "sdk";
+                if (string.IsNullOrEmpty(profile.keyboardMode))
                     profile.keyboardMode = "uhid";
                 profile.forwardAllClicks = true;
+            }
+
+            if (isDualMonitor)
+            {
+                profile.mouseMode = "sdk";
             }
 
             int fps = Math.Max(15, Math.Min(240, profile.maxFps > 0 ? profile.maxFps : 60));

@@ -937,6 +937,7 @@ namespace ScrcpyManager
                     rdcApp.profile.borderless = true;
                     rdcApp.profile.fullscreen = false;
                     rdcApp.profile.videoBitRate = "16M";
+                    rdcApp.profile.mouseMode = "sdk";
                 }
                 SaveAppsConfigFile();
                 UpdateAppButtonGrid();
@@ -2043,9 +2044,9 @@ namespace ScrcpyManager
                         profile.displaySize = "2560x1440/160";
                     }
                 }
-                if (string.IsNullOrEmpty(profile.mouseMode) || profile.mouseMode == "sdk")
-                    profile.mouseMode = "uhid";
-                if (string.IsNullOrEmpty(profile.keyboardMode) || profile.keyboardMode == "sdk")
+                if (string.IsNullOrEmpty(profile.mouseMode))
+                    profile.mouseMode = "sdk";
+                if (string.IsNullOrEmpty(profile.keyboardMode))
                     profile.keyboardMode = "uhid";
                 profile.forwardAllClicks = true;
                 if (profile.displaySize.StartsWith("3840x1080", StringComparison.OrdinalIgnoreCase) ||
@@ -2055,6 +2056,7 @@ namespace ScrcpyManager
                         profile.videoBitRate = "16M";
                     profile.fullscreen = false;
                     profile.borderless = true;
+                    profile.mouseMode = "sdk";
                 }
             }
 
