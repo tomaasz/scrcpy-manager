@@ -31,6 +31,7 @@ namespace ScrcpyManager
     {
         public const string CurrentVersion = "0.7.0";
         public GitHubRelease LatestRelease { get; private set; }
+        public string LastUpdateError { get; private set; }
 
         public async Task<bool> CheckForUpdateAsync()
         {
@@ -196,7 +197,7 @@ namespace ScrcpyManager
                         btnInstall.Enabled = true;
                         btnLater.Enabled = true;
                         btnInstall.Text = t.UpdateBtnInstall;
-                        string msg = string.Format(t.UpdateFailed, "Download failed.");
+                        string msg = string.Format(t.UpdateFailed, string.IsNullOrEmpty(LastUpdateError) ? "Download failed." : LastUpdateError);
                         if (MessageBox.Show(dlg, msg, t.UpdateDialogTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
                             string url = !string.IsNullOrEmpty(LatestRelease.html_url) ? LatestRelease.html_url : "https://github.com/tomaasz/scrcpy-manager/releases/latest";
@@ -212,7 +213,8 @@ namespace ScrcpyManager
 
         private bool PerformAutoUpdate(GitHubRelease release)
         {
-            if (release == null || release.assets == null || release.assets.Count == 0) return false;
+            LastUpdateError = null;
+            if (release == null || release.assets == null || release.assets.Count == 0) { LastUpdateError = "The release has no downloadable files."; return false; }
 
             GitHubAsset targetAsset = null;
             GitHubAsset checksumAsset = null;
@@ -225,10 +227,12 @@ namespace ScrcpyManager
 
             if (targetAsset == null || !IsTrustedReleaseUrl(targetAsset.browser_download_url))
             {
+                LastUpdateError = "ScrcpyManager-Portable.exe was not found among the release files.";
                 return false;
             }
             if (checksumAsset != null && !IsTrustedReleaseUrl(checksumAsset.browser_download_url))
             {
+                LastUpdateError = "The checksum file URL is not trusted.";
                 return false;
             }
 
@@ -247,6 +251,7 @@ namespace ScrcpyManager
 
                 if (!File.Exists(tempFile) || new FileInfo(tempFile).Length < 1000000)
                 {
+                    LastUpdateError = "The downloaded file is missing or too small.";
                     return false;
                 }
 
@@ -255,6 +260,7 @@ namespace ScrcpyManager
                     string expectedHash = ExtractSha256(File.ReadAllText(checksumFile, Encoding.UTF8));
                     if (expectedHash == null || !string.Equals(expectedHash, ComputeSha256(tempFile), StringComparison.OrdinalIgnoreCase))
                     {
+                        LastUpdateError = "SHA-256 verification of the downloaded file failed.";
                         return false;
                     }
                 }
@@ -277,6 +283,7 @@ while ($count -lt 60) {{
 if ($updated) {{
     Start-Process -FilePath '{1}'
 }} else {{
+    Set-Content -LiteralPath (Join-Path $env:TEMP 'scrcpy_manager_update.log') -Value ('Update failed: could not replace {1} at ' + (Get-Date)) -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath '{0}' -Force -ErrorAction SilentlyContinue
 }}
 ", tempFile.Replace("'", "''"), currentExe.Replace("'", "''"), Process.GetCurrentProcess().Id);
@@ -296,8 +303,9 @@ if ($updated) {{
                 handedOff = true;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                LastUpdateError = ex.GetType().Name + ": " + ex.Message;
                 return false;
             }
             finally
