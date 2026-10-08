@@ -29,7 +29,7 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.6.3";
+        public const string CurrentVersion = "0.6.4";
         public GitHubRelease LatestRelease { get; private set; }
 
         public async Task<bool> CheckForUpdateAsync()
@@ -194,7 +194,15 @@ namespace ScrcpyManager
                     dlg.Update();
 
                     bool success = await Task.Run(() => PerformAutoUpdate(LatestRelease));
-                    if (!success)
+                    if (success)
+                    {
+                        // Shut down on the UI thread; the updater script waits for this process to exit.
+                        Application.Exit();
+                        Timer killTimer = new Timer { Interval = 3000 };
+                        killTimer.Tick += (ts, te) => Environment.Exit(0);
+                        killTimer.Start();
+                    }
+                    else
                     {
                         btnInstall.Enabled = true;
                         btnLater.Enabled = true;
@@ -268,10 +276,11 @@ namespace ScrcpyManager
                 }
 
                 string script = string.Format(@"
-Start-Sleep -Milliseconds 800
+try {{ Wait-Process -Id {2} -Timeout 30 -ErrorAction SilentlyContinue }} catch {{ }}
+Start-Sleep -Milliseconds 500
 $count = 0
 $updated = $false
-while ($count -lt 30) {{
+while ($count -lt 60) {{
     try {{
         Move-Item -LiteralPath '{0}' -Destination '{1}' -Force -ErrorAction Stop
         $updated = $true
@@ -286,7 +295,7 @@ if ($updated) {{
 }} else {{
     Remove-Item -LiteralPath '{0}' -Force -ErrorAction SilentlyContinue
 }}
-", tempFile.Replace("'", "''"), currentExe.Replace("'", "''"));
+", tempFile.Replace("'", "''"), currentExe.Replace("'", "''"), Process.GetCurrentProcess().Id);
 
                 byte[] bytes = Encoding.Unicode.GetBytes(script);
                 string b64 = Convert.ToBase64String(bytes);
@@ -301,7 +310,6 @@ if ($updated) {{
                 Process.Start(psi);
 
                 handedOff = true;
-                Application.Exit();
                 return true;
             }
             catch
