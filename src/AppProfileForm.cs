@@ -20,6 +20,9 @@ namespace ScrcpyManager
         private readonly ComboBox _mouse;
         private readonly ComboBox _audio;
         private readonly ComboBox _taskbar;
+        private readonly ComboBox _audioCodec;
+        private readonly ComboBox _audioBitRate;
+        private readonly CheckBox _powerOffOnClose;
         private readonly ComboBox _hwdec;
         private readonly NumericUpDown _videoBuffer;
         private readonly CheckBox _alwaysOnTop;
@@ -36,7 +39,7 @@ namespace ScrcpyManager
             AppLaunchProfile profile = app.profile ?? new AppLaunchProfile();
 
             Text = _polish ? "Profil uruchamiania aplikacji" : "Application launch profile";
-            ClientSize = new Size(510, 698);
+            ClientSize = new Size(510, 766);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = false;
@@ -59,14 +62,14 @@ namespace ScrcpyManager
             TableLayoutPanel table = new TableLayoutPanel
             {
                 Location = new Point(16, 14),
-                Size = new Size(478, 604),
+                Size = new Size(478, 672),
                 ColumnCount = 2,
-                RowCount = 15,
+                RowCount = 17,
                 BackColor = Color.Transparent
             };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 175));
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            for (int i = 0; i < 15; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 13 ? 96 : 34));
+            for (int i = 0; i < 17; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 15 ? 96 : 34));
             Controls.Add(table);
 
             _name = AddText(table, 0, _polish ? "Nazwa kafelka" : "Tile name", app.name, colors,
@@ -137,7 +140,15 @@ namespace ScrcpyManager
                 _polish ? "Przesyłanie dźwięku z Androida:\n• Ustawienie główne: zgodnie z przełącznikiem 'Przesyłaj dźwięk' w oknie głównym,\n• Zawsze włączony: dźwięk z tej aplikacji zawsze trafia do głośników PC,\n• Zawsze wyłączony: całkowite wyciszenie dźwięku scrcpy."
                         : "Audio playback forwarding:\n• Global setting: follows main window audio toggle,\n• Always enabled: sound from this app always streams to PC speakers,\n• Always disabled: audio muted.");
 
-            _taskbar = AddCombo(table, 12, _polish ? "Dolny pasek (Taskbar)" : "Bottom taskbar", new[]
+            _audioCodec = AddCombo(table, 12, _polish ? "Kodek dźwięku" : "Audio codec", new[] { "default", "opus", "aac", "flac" }, colors, editable: false, tooltip:
+                _polish ? "Format kompresji dźwięku z telefonu:\n• default: opus (zalecany, najmniejsze opóźnienie),\n• aac: większa zgodność,\n• flac: bezstratny (duży transfer)."
+                        : "Audio compression format:\n• default: opus (recommended, lowest latency),\n• aac: wider compatibility,\n• flac: lossless (high bandwidth).");
+
+            _audioBitRate = AddCombo(table, 13, _polish ? "Bitrate dźwięku" : "Audio bitrate", new[] { "default", "64K", "96K", "128K", "192K", "256K" }, colors, editable: false, tooltip:
+                _polish ? "Przepustowość kodowania dźwięku (domyślnie 128K). Niższa wartość oszczędza pasmo Wi-Fi, wyższa poprawia jakość muzyki."
+                        : "Audio encoding bitrate (default 128K). Lower saves Wi-Fi bandwidth, higher improves music quality.");
+
+            _taskbar = AddCombo(table, 14, _polish ? "Dolny pasek (Taskbar)" : "Bottom taskbar", new[]
             {
                 _polish ? "Ustawienie główne" : "Global setting",
                 _polish ? "Zawsze ukryty (zalecane)" : "Always hidden (recommended)",
@@ -148,7 +159,7 @@ namespace ScrcpyManager
 
             FlowLayoutPanel toggles = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = false, WrapContents = true };
             table.SetColumnSpan(toggles, 2);
-            table.Controls.Add(toggles, 0, 13);
+            table.Controls.Add(toggles, 0, 15);
             _alwaysOnTop = AddCheck(toggles, _polish ? "Zawsze na wierzchu" : "Always on top", colors,
                 _polish ? "Utrzymuje okno aplikacji nad wszystkimi innymi otwartymi oknami w systemie Windows."
                         : "Keeps this application window floating above all other desktop windows.");
@@ -173,10 +184,14 @@ namespace ScrcpyManager
                 _polish ? "Przesyła prawy przycisk myszy i kółko bezpośrednio do aplikacji Androida zamiast wykonywać akcje systemowe scrcpy (np. cofanie)."
                         : "Passes right-click and middle-click directly into the app instead of triggering scrcpy shortcuts.");
 
+            _powerOffOnClose = AddCheck(toggles, _polish ? "Wyłącz ekran po zamknięciu" : "Screen off on close", colors,
+                _polish ? "Po zamknięciu okna wyłącza fizyczny ekran telefonu (--power-off-on-close)."
+                        : "Turns the phone screen off when the window is closed (--power-off-on-close).");
+
             Label packageLabel = new Label
             {
                 Text = (_polish ? "Pakiet: " : "Package: ") + app.package,
-                Location = new Point(18, 626),
+                Location = new Point(18, 694),
                 Size = new Size(475, 18),
                 ForeColor = colors.TextMuted,
                 AutoEllipsis = true
@@ -187,7 +202,7 @@ namespace ScrcpyManager
             Button save = new Button
             {
                 Text = _polish ? "Zapisz profil" : "Save profile",
-                Location = new Point(276, 656),
+                Location = new Point(276, 724),
                 Size = new Size(126, 30),
                 BackColor = colors.BtnHero,
                 ForeColor = colors.BtnHeroText
@@ -203,7 +218,7 @@ namespace ScrcpyManager
             Button cancel = new Button
             {
                 Text = _polish ? "Anuluj" : "Cancel",
-                Location = new Point(410, 656),
+                Location = new Point(410, 724),
                 Size = new Size(84, 30),
                 BackColor = colors.BtnApp,
                 ForeColor = colors.BtnAppText,
@@ -283,6 +298,9 @@ namespace ScrcpyManager
             _videoBuffer.Value = Math.Max(_videoBuffer.Minimum, Math.Min(_videoBuffer.Maximum, p.videoBuffer));
             _audio.SelectedIndex = p.audioMode == "on" ? 1 : (p.audioMode == "off" ? 2 : 0);
             _taskbar.SelectedIndex = p.taskbarMode == "hidden" ? 1 : (p.taskbarMode == "shown" ? 2 : 0);
+            Select(_audioCodec, p.audioCodec, "default");
+            Select(_audioBitRate, p.audioBitRate, "default");
+            _powerOffOnClose.Checked = p.powerOffOnClose;
             _alwaysOnTop.Checked = p.alwaysOnTop;
             _borderless.Checked = p.borderless;
             _fullscreen.Checked = p.fullscreen;
@@ -370,6 +388,9 @@ namespace ScrcpyManager
             p.videoBuffer = (int)_videoBuffer.Value;
             p.audioMode = _audio.SelectedIndex == 1 ? "on" : (_audio.SelectedIndex == 2 ? "off" : "global");
             p.taskbarMode = _taskbar.SelectedIndex == 1 ? "hidden" : (_taskbar.SelectedIndex == 2 ? "shown" : "global");
+            p.audioCodec = _audioCodec.Text == "default" ? null : _audioCodec.Text;
+            p.audioBitRate = _audioBitRate.Text == "default" ? null : _audioBitRate.Text;
+            p.powerOffOnClose = _powerOffOnClose.Checked;
             p.alwaysOnTop = _alwaysOnTop.Checked;
             p.borderless = _borderless.Checked;
             p.fullscreen = _fullscreen.Checked;

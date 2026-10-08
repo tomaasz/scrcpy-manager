@@ -62,6 +62,9 @@ namespace ScrcpyManager
         public bool recordSession { get; set; }
         public string hwdec { get; set; }
         public int videoBuffer { get; set; }
+        public string audioCodec { get; set; }
+        public string audioBitRate { get; set; }
+        public bool powerOffOnClose { get; set; }
         public bool forwardAllClicks { get; set; }
         public string taskbarMode { get; set; }
 

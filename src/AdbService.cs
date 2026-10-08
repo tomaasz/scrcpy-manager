@@ -718,6 +718,7 @@ namespace ScrcpyManager
             if (profile.borderless && !argsList.Contains("--window-borderless")) argsList.Add("--window-borderless");
             if (profile.fullscreen && !isDualMonitor) argsList.Add("--fullscreen");
             if (profile.turnScreenOff) argsList.Add("--turn-screen-off");
+            if (profile.powerOffOnClose) argsList.Add("--power-off-on-close");
             if (profile.recordSession)
             {
                 string videos = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
@@ -735,6 +736,13 @@ namespace ScrcpyManager
 
             bool effectiveAudio = profile.audioMode == "on" || (profile.audioMode != "off" && audio);
             if (!effectiveAudio) argsList.Add("--no-audio");
+            else
+            {
+                if (Regex.IsMatch(profile.audioCodec ?? string.Empty, @"^(opus|aac|flac)$"))
+                    argsList.Add("--audio-codec=" + profile.audioCodec);
+                if (Regex.IsMatch(profile.audioBitRate ?? string.Empty, @"^\d{1,3}K$", RegexOptions.IgnoreCase))
+                    argsList.Add("--audio-bit-rate=" + profile.audioBitRate.ToUpperInvariant());
+            }
 
             if (isRdc)
             {
