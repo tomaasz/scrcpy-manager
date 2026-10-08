@@ -20,6 +20,8 @@ namespace ScrcpyManager
         private readonly ComboBox _mouse;
         private readonly ComboBox _audio;
         private readonly ComboBox _taskbar;
+        private readonly ComboBox _hwdec;
+        private readonly NumericUpDown _videoBuffer;
         private readonly CheckBox _alwaysOnTop;
         private readonly CheckBox _borderless;
         private readonly CheckBox _turnScreenOff;
@@ -34,7 +36,7 @@ namespace ScrcpyManager
             AppLaunchProfile profile = app.profile ?? new AppLaunchProfile();
 
             Text = _polish ? "Profil uruchamiania aplikacji" : "Application launch profile";
-            ClientSize = new Size(510, 630);
+            ClientSize = new Size(510, 698);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = false;
@@ -57,14 +59,14 @@ namespace ScrcpyManager
             TableLayoutPanel table = new TableLayoutPanel
             {
                 Location = new Point(16, 14),
-                Size = new Size(478, 536),
+                Size = new Size(478, 604),
                 ColumnCount = 2,
-                RowCount = 13,
+                RowCount = 15,
                 BackColor = Color.Transparent
             };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 175));
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            for (int i = 0; i < 13; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 11 ? 96 : 34));
+            for (int i = 0; i < 15; i++) table.RowStyles.Add(new RowStyle(SizeType.Absolute, i == 13 ? 96 : 34));
             Controls.Add(table);
 
             _name = AddText(table, 0, _polish ? "Nazwa kafelka" : "Tile name", app.name, colors,
@@ -118,7 +120,15 @@ namespace ScrcpyManager
                 _polish ? "Sposób obsługi myszy:\n• sdk: kliknięcia są traktowane jak dotyk palcem na ekranie telefonu,\n• uhid: komputerowa mysz fizyczna podłączona do telefonu,\n• disabled: kursor wyłączony."
                         : "Mouse simulation mode:\n• sdk: clicks simulate touchscreen taps,\n• uhid: raw physical USB mouse simulation,\n• disabled: mouse input disabled.");
 
-            _audio = AddCombo(table, 9, _polish ? "Dźwięk" : "Audio", new[]
+            _hwdec = AddCombo(table, 9, _polish ? "Dekodowanie sprzętowe" : "Hardware decoding", new[] { "default", "auto", "disabled", "d3d11va" }, colors, editable: false, tooltip:
+                _polish ? "Dekodowanie obrazu na komputerze (scrcpy 5.0+):\n• default: zachowanie domyślne scrcpy (sprzętowe, jeśli możliwe),\n• auto: sprzętowe z automatycznym powrotem do programowego,\n• disabled: tylko programowe (wolniejsze, ale najbardziej kompatybilne),\n• d3d11va: wymuszony dekoder Direct3D 11 (Windows)."
+                        : "Video decoding on the PC (scrcpy 5.0+):\n• default: scrcpy default (hardware when possible),\n• auto: hardware with automatic software fallback,\n• disabled: software only (slower, most compatible),\n• d3d11va: force the Direct3D 11 decoder (Windows).");
+
+            _videoBuffer = AddNumber(table, 10, _polish ? "Bufor obrazu (ms)" : "Video buffer (ms)", 0, 500, colors,
+                _polish ? "Dodatkowe buforowanie obrazu przed wyświetleniem (0 = domyślne, bez bufora).\n• Większa wartość (np. 50–100 ms) wygładza obraz przy niestabilnym Wi-Fi kosztem opóźnienia,\n• 0 daje najmniejsze opóźnienie."
+                        : "Extra video buffering before display (0 = default, no buffer).\n• Higher values (e.g. 50-100 ms) smooth playback on unstable Wi-Fi at the cost of latency,\n• 0 gives the lowest latency.");
+
+            _audio = AddCombo(table, 11, _polish ? "Dźwięk" : "Audio", new[]
             {
                 _polish ? "Ustawienie główne" : "Global setting",
                 _polish ? "Zawsze włączony" : "Always enabled",
@@ -127,7 +137,7 @@ namespace ScrcpyManager
                 _polish ? "Przesyłanie dźwięku z Androida:\n• Ustawienie główne: zgodnie z przełącznikiem 'Przesyłaj dźwięk' w oknie głównym,\n• Zawsze włączony: dźwięk z tej aplikacji zawsze trafia do głośników PC,\n• Zawsze wyłączony: całkowite wyciszenie dźwięku scrcpy."
                         : "Audio playback forwarding:\n• Global setting: follows main window audio toggle,\n• Always enabled: sound from this app always streams to PC speakers,\n• Always disabled: audio muted.");
 
-            _taskbar = AddCombo(table, 10, _polish ? "Dolny pasek (Taskbar)" : "Bottom taskbar", new[]
+            _taskbar = AddCombo(table, 12, _polish ? "Dolny pasek (Taskbar)" : "Bottom taskbar", new[]
             {
                 _polish ? "Ustawienie główne" : "Global setting",
                 _polish ? "Zawsze ukryty (zalecane)" : "Always hidden (recommended)",
@@ -138,7 +148,7 @@ namespace ScrcpyManager
 
             FlowLayoutPanel toggles = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = false, WrapContents = true };
             table.SetColumnSpan(toggles, 2);
-            table.Controls.Add(toggles, 0, 11);
+            table.Controls.Add(toggles, 0, 13);
             _alwaysOnTop = AddCheck(toggles, _polish ? "Zawsze na wierzchu" : "Always on top", colors,
                 _polish ? "Utrzymuje okno aplikacji nad wszystkimi innymi otwartymi oknami w systemie Windows."
                         : "Keeps this application window floating above all other desktop windows.");
@@ -166,7 +176,7 @@ namespace ScrcpyManager
             Label packageLabel = new Label
             {
                 Text = (_polish ? "Pakiet: " : "Package: ") + app.package,
-                Location = new Point(18, 558),
+                Location = new Point(18, 626),
                 Size = new Size(475, 18),
                 ForeColor = colors.TextMuted,
                 AutoEllipsis = true
@@ -177,7 +187,7 @@ namespace ScrcpyManager
             Button save = new Button
             {
                 Text = _polish ? "Zapisz profil" : "Save profile",
-                Location = new Point(276, 588),
+                Location = new Point(276, 656),
                 Size = new Size(126, 30),
                 BackColor = colors.BtnHero,
                 ForeColor = colors.BtnHeroText
@@ -193,7 +203,7 @@ namespace ScrcpyManager
             Button cancel = new Button
             {
                 Text = _polish ? "Anuluj" : "Cancel",
-                Location = new Point(410, 588),
+                Location = new Point(410, 656),
                 Size = new Size(84, 30),
                 BackColor = colors.BtnApp,
                 ForeColor = colors.BtnAppText,
@@ -269,6 +279,8 @@ namespace ScrcpyManager
             Select(_orientation, p.orientation, "auto");
             Select(_keyboard, p.keyboardMode, "sdk");
             Select(_mouse, p.mouseMode, "sdk");
+            Select(_hwdec, p.hwdec, "default");
+            _videoBuffer.Value = Math.Max(_videoBuffer.Minimum, Math.Min(_videoBuffer.Maximum, p.videoBuffer));
             _audio.SelectedIndex = p.audioMode == "on" ? 1 : (p.audioMode == "off" ? 2 : 0);
             _taskbar.SelectedIndex = p.taskbarMode == "hidden" ? 1 : (p.taskbarMode == "shown" ? 2 : 0);
             _alwaysOnTop.Checked = p.alwaysOnTop;
@@ -354,6 +366,8 @@ namespace ScrcpyManager
             p.orientation = _orientation.Text;
             p.keyboardMode = _keyboard.Text;
             p.mouseMode = _mouse.Text;
+            p.hwdec = _hwdec.Text == "default" ? null : _hwdec.Text;
+            p.videoBuffer = (int)_videoBuffer.Value;
             p.audioMode = _audio.SelectedIndex == 1 ? "on" : (_audio.SelectedIndex == 2 ? "off" : "global");
             p.taskbarMode = _taskbar.SelectedIndex == 1 ? "hidden" : (_taskbar.SelectedIndex == 2 ? "shown" : "global");
             p.alwaysOnTop = _alwaysOnTop.Checked;

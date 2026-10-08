@@ -704,6 +704,10 @@ namespace ScrcpyManager
                 argsList.Add("--video-bit-rate=" + profile.videoBitRate.ToUpperInvariant());
             if (Regex.IsMatch(profile.videoCodec ?? string.Empty, @"^(h264|h265|av1|vp8|vp9)$", RegexOptions.IgnoreCase))
                 argsList.Add("--video-codec=" + profile.videoCodec.ToLowerInvariant());
+            if (Regex.IsMatch(profile.hwdec ?? string.Empty, @"^(auto|disabled|d3d11va)$"))
+                argsList.Add("--hwdec=" + profile.hwdec);
+            if (profile.videoBuffer > 0 && profile.videoBuffer <= 500)
+                argsList.Add("--video-buffer=" + profile.videoBuffer);
             if (Regex.IsMatch(profile.orientation ?? string.Empty, @"^(0|90|180|270)$"))
                 argsList.Add("--orientation=" + profile.orientation);
             if (Regex.IsMatch(profile.keyboardMode ?? string.Empty, @"^(sdk|uhid|disabled)$"))

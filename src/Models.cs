@@ -60,6 +60,8 @@ namespace ScrcpyManager
         public bool fullscreen { get; set; }
         public bool turnScreenOff { get; set; }
         public bool recordSession { get; set; }
+        public string hwdec { get; set; }
+        public int videoBuffer { get; set; }
         public bool forwardAllClicks { get; set; }
         public string taskbarMode { get; set; }
 
