@@ -45,8 +45,8 @@ namespace ScrcpyManager
             {
                 if (_appIcon != value)
                 {
-                    _appIcon = value;
-                    _iconIsLight = IsMostlyLight(value);
+                    _appIcon = RemoveWhiteBackground(value);
+                    _iconIsLight = IsMostlyLight(_appIcon);
                     Invalidate();
                 }
             }
@@ -198,6 +198,66 @@ namespace ScrcpyManager
                 Size sz = TextRenderer.MeasureText(Text, Font, new Size(int.MaxValue, Height), TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
                 return sz.Width > textW;
             }
+        }
+
+        private static bool IsNearWhite(Color c)
+        {
+            return c.A >= 128 && c.R >= 235 && c.G >= 235 && c.B >= 235;
+        }
+
+        // Icons that ship on a white square (e.g. Messages, Messenger, Windows App) look like a white
+        // box on the dark theme. Flood-fill the near-white area connected to the icon border and make
+        // it transparent; white parts enclosed by the glyph are left alone.
+        private static Image RemoveWhiteBackground(Image image)
+        {
+            Bitmap source = image as Bitmap;
+            if (source == null || source.Width < 8 || source.Height < 8 || source.Width > 512 || source.Height > 512) return image;
+            try
+            {
+                int w = source.Width, h = source.Height;
+                Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(bmp)) g.DrawImage(source, 0, 0, w, h);
+
+                bool[] remove = new bool[w * h];
+                System.Collections.Generic.Stack<int> stack = new System.Collections.Generic.Stack<int>();
+                Action<int, int> seed = (x, y) =>
+                {
+                    int i = y * w + x;
+                    if (!remove[i] && IsNearWhite(bmp.GetPixel(x, y))) { remove[i] = true; stack.Push(i); }
+                };
+                for (int x = 0; x < w; x++) { seed(x, 0); seed(x, h - 1); }
+                for (int y = 0; y < h; y++) { seed(0, y); seed(w - 1, y); }
+                if (stack.Count == 0) { bmp.Dispose(); return image; }
+
+                int removed = 0;
+                while (stack.Count > 0)
+                {
+                    int i = stack.Pop();
+                    removed++;
+                    int x = i % w, y = i / w;
+                    if (x > 0) seed(x - 1, y);
+                    if (x < w - 1) seed(x + 1, y);
+                    if (y > 0) seed(x, y - 1);
+                    if (y < h - 1) seed(x, y + 1);
+                }
+
+                // Mostly-white icons (glyph on transparent) are handled by the dark tint instead.
+                if (removed > w * h * 0.6) { bmp.Dispose(); return image; }
+
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        int i = y * w + x;
+                        if (remove[i]) { bmp.SetPixel(x, y, Color.FromArgb(0, 255, 255, 255)); continue; }
+                        // Soften the light anti-aliased halo next to the removed area.
+                        bool nextToRemoved = (x > 0 && remove[i - 1]) || (x < w - 1 && remove[i + 1]) || (y > 0 && remove[i - w]) || (y < h - 1 && remove[i + w]);
+                        if (!nextToRemoved) continue;
+                        Color c = bmp.GetPixel(x, y);
+                        if (GetLuminance(c) > 0.85) bmp.SetPixel(x, y, Color.FromArgb(c.A / 3, c.R, c.G, c.B));
+                    }
+                return bmp;
+            }
+            catch { return image; }
         }
 
         private static double GetLuminance(Color c)
