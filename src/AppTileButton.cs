@@ -241,8 +241,8 @@ namespace ScrcpyManager
                     if (y < h - 1) seed(x, y + 1);
                 }
 
-                // Mostly-white icons (glyph on transparent) are handled by the dark tint instead.
-                if (removed > w * h * 0.6) { bmp.Dispose(); return image; }
+                // Never blank the icon: if (almost) nothing would remain, keep the original.
+                if (w * h - removed < w * h * 0.02) { bmp.Dispose(); return image; }
 
                 for (int y = 0; y < h; y++)
                     for (int x = 0; x < w; x++)
