@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 using System.Windows.Forms;
 
 namespace ScrcpyManager
@@ -29,36 +29,25 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.6.9";
+        public const string CurrentVersion = "0.7.0";
         public GitHubRelease LatestRelease { get; private set; }
 
         public async Task<bool> CheckForUpdateAsync()
         {
             try
             {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/tomaasz/scrcpy-manager/releases/latest");
-                req.UserAgent = "scrcpy-manager-desktop";
-                req.Timeout = 6000;
+                string json = await Http.GetStringAsync("https://api.github.com/repos/tomaasz/scrcpy-manager/releases/latest", "scrcpy-manager-desktop", 6000).ConfigureAwait(false);
+                GitHubRelease release = JsonSerializer.Deserialize<GitHubRelease>(json, ConfigStore.JsonOptions);
 
-                using (WebResponse resp = await req.GetResponseAsync())
-                using (Stream stream = resp.GetResponseStream())
-                using (StreamReader sr = new StreamReader(stream))
+                if (release != null && !string.IsNullOrEmpty(release.tag_name))
                 {
-                    string json = await sr.ReadToEndAsync();
-                    JavaScriptSerializer serializer = new JavaScriptSerializer();
-                    GitHubRelease release = serializer.Deserialize<GitHubRelease>(json);
+                    Version vLatest = ParseNormalizedVersion(release.tag_name);
+                    Version vCur = ParseNormalizedVersion(CurrentVersion);
 
-                    if (release != null && !string.IsNullOrEmpty(release.tag_name))
+                    if (vLatest > vCur)
                     {
-                        Version vLatest = ParseNormalizedVersion(release.tag_name);
-                        Version vCur = ParseNormalizedVersion(CurrentVersion);
-
-                        if (vLatest > vCur)
-                        {
-                            LatestRelease = release;
-                            return true;
-                        }
+                        LatestRelease = release;
+                        return true;
                     }
                 }
             }
@@ -250,15 +239,10 @@ namespace ScrcpyManager
 
             try
             {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                using (WebClient wc = new WebClient())
+                Http.DownloadFile(targetAsset.browser_download_url, tempFile, "scrcpy-manager-desktop");
+                if (checksumAsset != null)
                 {
-                    wc.Headers.Add("User-Agent", "scrcpy-manager-desktop");
-                    wc.DownloadFile(targetAsset.browser_download_url, tempFile);
-                    if (checksumAsset != null)
-                    {
-                        wc.DownloadFile(checksumAsset.browser_download_url, checksumFile);
-                    }
+                    Http.DownloadFile(checksumAsset.browser_download_url, checksumFile, "scrcpy-manager-desktop");
                 }
 
                 if (!File.Exists(tempFile) || new FileInfo(tempFile).Length < 1000000)

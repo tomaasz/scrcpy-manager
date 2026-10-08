@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -34,6 +35,7 @@ namespace ScrcpyManager
             UiThemeHelper.ApplyRoundedCorners(this, _borderRadius);
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Image AppIcon
         {
             get { return _appIcon; }
@@ -47,6 +49,7 @@ namespace ScrcpyManager
             }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int IconSize
         {
             get { return _iconSize; }
@@ -60,6 +63,7 @@ namespace ScrcpyManager
             }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int IconGap
         {
             get { return _iconGap; }
@@ -73,6 +77,7 @@ namespace ScrcpyManager
             }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int PaddingLeft
         {
             get { return _paddingLeft; }
@@ -86,6 +91,7 @@ namespace ScrcpyManager
             }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int BorderRadius
         {
             get { return _borderRadius; }
@@ -100,6 +106,7 @@ namespace ScrcpyManager
             }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<Color> BorderColorProvider
         {
             get { return _borderColorProvider; }

@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 using System.Windows.Forms;
 
 namespace ScrcpyManager
@@ -1813,18 +1813,13 @@ namespace ScrcpyManager
             bool shouldOpenStore = false;
             try
             {
-                System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
                 string tempDir = Path.GetTempPath();
                 string apkPath = Path.Combine(tempDir, "Taskbar-6.2.2.apk");
 
                 if (!File.Exists(apkPath) || new FileInfo(apkPath).Length < 1000000)
                 {
                     string downloadUrl = "https://github.com/farmerbb/Taskbar/releases/download/207/Taskbar-6.2.2.apk";
-                    using (var client = new System.Net.WebClient())
-                    {
-                        client.Headers.Add("User-Agent", "scrcpy-manager/" + UpdateService.CurrentVersion);
-                        await client.DownloadFileTaskAsync(new Uri(downloadUrl), apkPath);
-                    }
+                    await Http.DownloadFileAsync(downloadUrl, apkPath, "scrcpy-manager/" + UpdateService.CurrentVersion);
                 }
 
                 bool ok = await _adb.InstallPackageAsync(apkPath);

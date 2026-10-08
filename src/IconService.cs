@@ -241,30 +241,16 @@ namespace ScrcpyManager
             // Metoda 2: Google Play Store fallback dla ikon wektorowych/adaptacyjnych
             try
             {
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://play.google.com/store/apps/details?id=" + Uri.EscapeDataString(package));
-                req.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
-                req.Timeout = 3000;
-
-                using (WebResponse resp = await req.GetResponseAsync())
-                using (Stream stream = resp.GetResponseStream())
-                using (StreamReader sr = new StreamReader(stream))
+                string html = await Http.GetStringAsync("https://play.google.com/store/apps/details?id=" + Uri.EscapeDataString(package), "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", 3000).ConfigureAwait(false);
+                Match m = Regex.Match(html, @"(https://play-lh\.googleusercontent\.com/[^""'>\s=]+)");
+                if (m.Success)
                 {
-                    string html = await sr.ReadToEndAsync();
-                    Match m = Regex.Match(html, @"(https://play-lh\.googleusercontent\.com/[^""'>\s=]+)");
-                    if (m.Success)
+                    string imgUrl = m.Groups[1].Value + "=s64";
+                    string localTemp = cachedFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                    await Http.DownloadFileAsync(imgUrl, localTemp, "Mozilla/5.0").ConfigureAwait(false);
+                    if (CommitDownloadedIcon(localTemp, cachedFile))
                     {
-                        string imgUrl = m.Groups[1].Value + "=s64";
-                        using (WebClient wc = new WebClient())
-                        {
-                            wc.Headers.Add("User-Agent", "Mozilla/5.0");
-                            string localTemp = cachedFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
-                            await wc.DownloadFileTaskAsync(new Uri(imgUrl), localTemp);
-                            if (CommitDownloadedIcon(localTemp, cachedFile))
-                            {
-                                return true;
-                            }
-                        }
+                        return true;
                     }
                 }
             }

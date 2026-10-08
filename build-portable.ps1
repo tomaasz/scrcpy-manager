@@ -106,21 +106,30 @@ try {
     $zipSizeMb = (Get-Item $bundleZip).Length / 1MB
     Write-Host ("Rozmiar archiwum bundle.zip: {0:N2} MB" -f $zipSizeMb) -ForegroundColor Green
 
-    # 6. Kompilacja C# (Natywny Dashboard WinForms w C#)
-    $csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-    $csFiles = Get-ChildItem -Path (Join-Path $repoDir "src") -Filter "*.cs" | Select-Object -ExpandProperty FullName
-
-    $refs = "System.dll,System.Core.dll,System.Drawing.dll,System.Windows.Forms.dll,System.IO.Compression.dll,System.IO.Compression.FileSystem.dll,System.Web.Extensions.dll,Microsoft.CSharp.dll"
-
-    Write-Host "Kompilacja natywnego programu C# przez csc.exe..." -ForegroundColor Cyan
-
-    $iconArg = if (Test-Path $appIco) { "/win32icon:$appIco" } else { "" }
-    & $csc /nologo /target:winexe /optimize+ /platform:x64 $iconArg "/out:$outputExe" "/resource:$bundleZip,bundle.zip" "/r:$refs" $csFiles
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Błąd kompilacji csc.exe! Kod wyjścia: $LASTEXITCODE"
+    # 6. Kompilacja i publikacja (.NET 10, self-contained, pojedynczy plik)
+    $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+    if (-not $dotnet) {
+        Write-Error "Nie znaleziono polecenia dotnet! Zainstaluj .NET 10 SDK."
         exit 1
     }
+
+    $publishDir = Join-Path $repoDir "temp_portable_publish"
+    if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
+
+    Write-Host "Publikacja aplikacji (.NET 10 self-contained, single-file)..." -ForegroundColor Cyan
+    & dotnet publish (Join-Path $repoDir "ScrcpyManager.csproj") -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o $publishDir --nologo -v:q
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Błąd publikacji dotnet! Kod wyjścia: $LASTEXITCODE"
+        exit 1
+    }
+
+    $publishedExe = Join-Path $publishDir "ScrcpyManager.exe"
+    if (-not (Test-Path $publishedExe)) {
+        Write-Error "Nie znaleziono opublikowanego pliku ScrcpyManager.exe."
+        exit 1
+    }
+    Copy-Item -LiteralPath $publishedExe -Destination $outputExe -Force
 
     $exeSizeMb = (Get-Item $outputExe).Length / 1MB
     Write-Host ("
@@ -130,4 +139,5 @@ finally {
     # 7. Czyszczenie plików tymczasowych
     if (Test-Path $tempStage) { Remove-Item $tempStage -Recurse -Force -ErrorAction SilentlyContinue }
     if (Test-Path $bundleZip) { Remove-Item $bundleZip -Force -ErrorAction SilentlyContinue }
+    if ($publishDir -and (Test-Path $publishDir)) { Remove-Item $publishDir -Recurse -Force -ErrorAction SilentlyContinue }
 }

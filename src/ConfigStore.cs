@@ -1,12 +1,20 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 
 namespace ScrcpyManager
 {
     internal static class ConfigStore
     {
+        internal static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        };
+
         public static bool TryLoad<T>(string path, out T value, bool quarantineInvalid = false)
         {
             value = default(T);
@@ -19,7 +27,7 @@ namespace ScrcpyManager
                     if (quarantineInvalid) QuarantineInvalidFile(path);
                     return false;
                 }
-                value = new JavaScriptSerializer().Deserialize<T>(json);
+                value = JsonSerializer.Deserialize<T>(json, JsonOptions);
                 if (value != null) return true;
                 if (quarantineInvalid) QuarantineInvalidFile(path);
                 return false;
@@ -49,7 +57,7 @@ namespace ScrcpyManager
             if (string.IsNullOrEmpty(directory)) throw new ArgumentException("Nieprawidłowa ścieżka konfiguracji.", "path");
             Directory.CreateDirectory(directory);
 
-            string json = new JavaScriptSerializer().Serialize(value);
+            string json = JsonSerializer.Serialize(value, JsonOptions);
             string temp = Path.Combine(directory, Path.GetFileName(path) + "." + Guid.NewGuid().ToString("N") + ".tmp");
             try
             {

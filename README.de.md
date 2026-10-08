@@ -29,7 +29,7 @@
 
 👉 **[ScrcpyManager-Portable.exe herunterladen (Neuestes Release)](https://github.com/tomaasz/scrcpy-manager/releases)**
 
-* **Keine Installation & keine Abhängigkeiten**: Enthält `scrcpy v5.0.1`, Android Debug Bridge (`adb`) und alle erforderlichen Bibliotheken in einer einzigen Datei.
+* **Keine Installation & keine Abhängigkeiten**: Enthält `scrcpy v5.0.1`, Android Debug Bridge (`adb`) und alle erforderlichen Bibliotheken in einer einzigen Datei (basiert auf .NET 10, Laufzeit enthalten).
 * **Sofort einsatzbereit**: Läuft auf jedem Windows 10/11 PC ohne vorherige Installation von `scrcpy` oder Anpassung von `PATH`.
 * **Kein Konsolenfenster**: Saubere native Benutzeroberfläche ohne störende schwarze Konsolenfenster.
 * **Blitzschneller Start**: Die versionierte, mit SHA-256 verifizierte Runtime startet in unter 0,2 Sekunden.

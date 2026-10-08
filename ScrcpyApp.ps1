@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "0.6.9"
+    $script:appVersion = "0.7.0"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
