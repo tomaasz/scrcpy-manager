@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -262,9 +263,28 @@ namespace ScrcpyManager
             }
         }
 
+        // Repairs names that were saved double-encoded (UTF-8 bytes read as Windows-1250,
+        // e.g. "WiadomoĹ›ci" instead of "Wiadomości"). Returns the input unchanged if it is not such a string.
+        private static string RepairMojibake(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            bool hasNonAscii = false;
+            foreach (char ch in text) { if (ch > 0x7F) { hasNonAscii = true; break; } }
+            if (!hasNonAscii) return text;
+            try
+            {
+                Encoding strictUtf8 = new UTF8Encoding(false, true);
+                Encoding cp1250 = Encoding.GetEncoding(1250, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+                string fixedText = strictUtf8.GetString(cp1250.GetBytes(text));
+                return fixedText.IndexOf('�') >= 0 ? text : fixedText;
+            }
+            catch { return text; }
+        }
+
         private void AddValidApps(IEnumerable<AppEntry> apps)
         {
             if (apps == null) return;
+            foreach (AppEntry a in apps) { if (a != null) a.name = RepairMojibake(a.name); }
             int accepted = 0;
             foreach (AppEntry app in apps)
             {
