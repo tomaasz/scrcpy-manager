@@ -2058,7 +2058,6 @@ namespace ScrcpyManager
                     if (string.IsNullOrEmpty(profile.videoCodec) || profile.videoCodec == "h264")
                         profile.videoCodec = "h265";
                     profile.fullscreen = false;
-                    profile.borderless = true;
                     profile.mouseMode = "sdk";
                 }
             }
