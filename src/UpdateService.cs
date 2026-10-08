@@ -29,7 +29,7 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.7.1";
+        public const string CurrentVersion = "0.7.2";
         public GitHubRelease LatestRelease { get; private set; }
         public string LastUpdateError { get; private set; }
 
@@ -116,9 +116,11 @@ namespace ScrcpyManager
                     ForeColor = c.Text,
                     BorderStyle = BorderStyle.FixedSingle,
                     Font = new Font("Segoe UI", 9f, FontStyle.Regular),
-                    Text = !string.IsNullOrEmpty(LatestRelease.body) ? LatestRelease.body : ("scrcpy Manager " + LatestRelease.tag_name)
+                    Text = FormatReleaseNotes(!string.IsNullOrEmpty(LatestRelease.body) ? LatestRelease.body : ("scrcpy Manager " + LatestRelease.tag_name)),
+                    TabStop = false
                 };
                 dlg.Controls.Add(txtNotes);
+                dlg.Shown += (s0, e0) => txtNotes.Select(0, 0);
 
                 Panel pnlButtons = new Panel
                 {
@@ -209,6 +211,32 @@ namespace ScrcpyManager
 
                 dlg.ShowDialog(parent);
             }
+        }
+
+        // GitHub release notes are Markdown with LF line breaks; a TextBox needs CRLF and shows
+        // the markup literally, so convert the common constructs to plain text.
+        private static string FormatReleaseNotes(string body)
+        {
+            string[] lines = (body ?? string.Empty).Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+            StringBuilder sb = new StringBuilder();
+            int blank = 0;
+            foreach (string raw in lines)
+            {
+                string line = raw.TrimEnd();
+                if (Regex.IsMatch(line, @"^\s*(-{3,}|\*{3,}|_{3,})\s*$")) line = string.Empty;
+                line = Regex.Replace(line, @"^\s*#{1,6}\s*", string.Empty);
+                line = Regex.Replace(line, @"^(\s*)[*+-]\s+", "$1" + "\u2022 ");
+                line = Regex.Replace(line, @"\[([^\]]+)\]\([^)]*\)", "$1");
+                line = Regex.Replace(line, @"(\*\*|__)(.+?)\1", "$2");
+                line = line.Replace("`", string.Empty);
+                if (line.Length == 0)
+                {
+                    if (++blank > 1 || sb.Length == 0) continue;
+                }
+                else blank = 0;
+                sb.Append(line).Append("\r\n");
+            }
+            return sb.ToString().Trim();
         }
 
         private bool PerformAutoUpdate(GitHubRelease release)

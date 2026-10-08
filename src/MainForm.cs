@@ -512,7 +512,7 @@ namespace ScrcpyManager
             _btnScrcpy.Click += (s, e) => LaunchFullScrcpy();
             Controls.Add(_btnScrcpy);
 
-            _chkFullScreen = new CheckBox
+            _chkFullScreen = new ThemedCheckBox
             {
                 Location = new Point(18, 128),
                 AutoSize = true,
@@ -520,7 +520,7 @@ namespace ScrcpyManager
             };
             Controls.Add(_chkFullScreen);
 
-            _chkNavBar = new CheckBox
+            _chkNavBar = new ThemedCheckBox
             {
                 Location = new Point(215, 128),
                 AutoSize = true,
@@ -566,7 +566,7 @@ namespace ScrcpyManager
             UiThemeHelper.ApplyRoundedCorners(_cmbRes, 5);
             Controls.Add(_cmbRes);
 
-            _chkAudio = new CheckBox
+            _chkAudio = new ThemedCheckBox
             {
                 Location = new Point(18, 224),
                 AutoSize = true,
@@ -575,7 +575,7 @@ namespace ScrcpyManager
             };
             Controls.Add(_chkAudio);
 
-            _chkAutoTaskbar = new CheckBox
+            _chkAutoTaskbar = new ThemedCheckBox
             {
                 Location = new Point(205, 224),
                 AutoSize = true,
@@ -1634,6 +1634,12 @@ namespace ScrcpyManager
                 _pnlStatus.Cursor = Cursors.Hand;
                 _tipMain.SetToolTip(_pnlStatus, t.StatusGuideTooltip);
             }
+
+            // Labels are ellipsized when the text is long, so show the full text on hover.
+            string fullStatus = _lblDeviceTitle.Text + "\n" + _lblStatusDetail.Text + "\n\n" +
+                (_currentDevice.IsOnline ? t.DeviceStatusTooltip : t.StatusGuideTooltip);
+            _tipMain.SetToolTip(_lblDeviceTitle, fullStatus);
+            _tipMain.SetToolTip(_lblStatusDetail, fullStatus);
         }
 
         private async void OnFormShown(object sender, EventArgs e)

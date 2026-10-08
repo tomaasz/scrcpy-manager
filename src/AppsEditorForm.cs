@@ -254,7 +254,7 @@ namespace ScrcpyManager
             {
                 Name = "UseUhid",
                 HeaderText = _t.AppsEditorUhid,
-                Width = 105,
+                Width = 135,
                 FlatStyle = FlatStyle.Flat
             };
             _grid.Columns.Add(colUhid);
@@ -268,6 +268,24 @@ namespace ScrcpyManager
             };
             _grid.Columns.Add(colClicks);
 
+            // The system-drawn check boxes are almost invisible on the dark grid, so paint them manually.
+            _grid.CellPainting += (s0, e0) =>
+            {
+                if (e0.RowIndex < 0 || e0.ColumnIndex < 0) return;
+                string col = _grid.Columns[e0.ColumnIndex].Name;
+                if (col != "UseUhid" && col != "ForwardClicks") return;
+
+                e0.PaintBackground(e0.ClipBounds, true);
+                bool selected = (e0.State & DataGridViewElementStates.Selected) != 0;
+                Color back = selected ? e0.CellStyle.SelectionBackColor : e0.CellStyle.BackColor;
+                Color fore = selected ? e0.CellStyle.SelectionForeColor : e0.CellStyle.ForeColor;
+                bool isChecked = e0.Value is bool && (bool)e0.Value;
+                Rectangle box = new Rectangle(
+                    e0.CellBounds.X + (e0.CellBounds.Width - 16) / 2,
+                    e0.CellBounds.Y + (e0.CellBounds.Height - 16) / 2, 16, 16);
+                ThemedCheckBox.DrawGlyph(e0.Graphics, box, isChecked, true, fore, back, false);
+                e0.Handled = true;
+            };
             Controls.Add(_grid);
 
             // Dolne przyciski

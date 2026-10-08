@@ -172,10 +172,13 @@ namespace ScrcpyManager
 
         private int AddStepCard(Panel parent, int top, string number, string title, string description)
         {
+            Font descFont = new Font("Segoe UI", 8f, FontStyle.Regular);
+            int descHeight = TextRenderer.MeasureText(description ?? string.Empty, descFont, new Size(420, int.MaxValue), TextFormatFlags.WordBreak | TextFormatFlags.NoPadding).Height + 6;
+            int cardHeight = Math.Max(66, 28 + descHeight + 8);
             Panel card = new Panel
             {
                 Location = new Point(16, top),
-                Size = new Size(468, 66),
+                Size = new Size(468, cardHeight),
                 BackColor = _c.Card
             };
             UiThemeHelper.SetupModernCard(card, 6, () => _c.CardBorder);
@@ -207,15 +210,15 @@ namespace ScrcpyManager
             Label lblDesc = new Label
             {
                 Text = description,
-                Font = new Font("Segoe UI", 8f, FontStyle.Regular),
-                Location = new Point(38, 24),
-                Size = new Size(420, 36),
+                Font = descFont,
+                Location = new Point(38, 26),
+                Size = new Size(420, descHeight),
                 ForeColor = _c.TextMuted,
                 BackColor = Color.Transparent
             };
             card.Controls.Add(lblDesc);
 
-            return top + 72;
+            return top + cardHeight + 6;
         }
 
         private async Task RestartAdbAsync()

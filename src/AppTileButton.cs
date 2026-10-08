@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Windows.Forms;
 
@@ -12,6 +13,7 @@ namespace ScrcpyManager
         private bool _isHovered;
         private bool _isPressed;
         private Image _appIcon;
+        private bool _iconIsLight;
         private int _iconSize = 20;
         private int _iconGap = 6;
         private int _paddingLeft = 7;
@@ -44,6 +46,7 @@ namespace ScrcpyManager
                 if (_appIcon != value)
                 {
                     _appIcon = value;
+                    _iconIsLight = IsMostlyLight(value);
                     Invalidate();
                 }
             }
@@ -197,6 +200,35 @@ namespace ScrcpyManager
             }
         }
 
+        private static double GetLuminance(Color c)
+        {
+            return (0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B) / 255.0;
+        }
+
+        // True when the opaque pixels of the icon are (almost) white, i.e. unreadable on a light background.
+        private static bool IsMostlyLight(Image image)
+        {
+            Bitmap bmp = image as Bitmap;
+            if (bmp == null) return false;
+            try
+            {
+                int step = Math.Max(1, Math.Min(bmp.Width, bmp.Height) / 24);
+                double sum = 0, sat = 0; int count = 0;
+                for (int y = 0; y < bmp.Height; y += step)
+                    for (int x = 0; x < bmp.Width; x += step)
+                    {
+                        Color p = bmp.GetPixel(x, y);
+                        if (p.A < 128) continue;
+                        sum += GetLuminance(p);
+                        sat += (Math.Max(p.R, Math.Max(p.G, p.B)) - Math.Min(p.R, Math.Min(p.G, p.B))) / 255.0;
+                        count++;
+                    }
+                // Only plain white/grey glyphs qualify; colourful icons keep their original look.
+                return count > 0 && sum / count > 0.9 && sat / count < 0.05;
+            }
+            catch { return false; }
+        }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             Graphics g = pevent.Graphics;
@@ -247,7 +279,23 @@ namespace ScrcpyManager
             if (_appIcon != null)
             {
                 int iconY = (Height - _iconSize) / 2;
-                if (Enabled)
+                if (Enabled && _iconIsLight && GetLuminance(bg) > 0.6)
+                {
+                    // White/very light glyph icons (e.g. system Settings) vanish on light tiles - draw them dark.
+                    using (ImageAttributes attrs = new ImageAttributes())
+                    {
+                        attrs.SetColorMatrix(new ColorMatrix(new float[][]
+                        {
+                            new float[] { 0.25f, 0, 0, 0, 0 },
+                            new float[] { 0, 0.25f, 0, 0, 0 },
+                            new float[] { 0, 0, 0.25f, 0, 0 },
+                            new float[] { 0, 0, 0, 1, 0 },
+                            new float[] { 0, 0, 0, 0, 1 }
+                        }));
+                        g.DrawImage(_appIcon, new Rectangle(contentX, iconY, _iconSize, _iconSize), 0, 0, _appIcon.Width, _appIcon.Height, GraphicsUnit.Pixel, attrs);
+                    }
+                }
+                else if (Enabled)
                 {
                     g.DrawImage(_appIcon, contentX, iconY, _iconSize, _iconSize);
                 }

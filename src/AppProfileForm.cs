@@ -278,7 +278,7 @@ namespace ScrcpyManager
 
         private CheckBox AddCheck(FlowLayoutPanel panel, string text, ThemeColors c, string tooltip = null)
         {
-            CheckBox check = new CheckBox { Text = text, AutoSize = true, ForeColor = c.Text, Margin = new Padding(3, 5, 12, 3) };
+            CheckBox check = new ThemedCheckBox { Text = text, AutoSize = true, ForeColor = c.Text, Margin = new Padding(3, 5, 12, 3) };
             if (!string.IsNullOrEmpty(tooltip)) _toolTip.SetToolTip(check, tooltip);
             panel.Controls.Add(check);
             return check;

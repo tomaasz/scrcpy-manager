@@ -40,7 +40,7 @@ namespace ScrcpyManager
         {
             try
             {
-                SendMessage(hWnd, EM_SETCUEBANNER, IntPtr.Zero, placeholder);
+                SendMessage(hWnd, EM_SETCUEBANNER, (IntPtr)1, placeholder); // 1 = keep the hint visible while the box has focus
             }
             catch { }
         }
