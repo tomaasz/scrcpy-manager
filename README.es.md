@@ -13,7 +13,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/C%23-Native%20WinForms-239120.svg" alt="C# Native" />
-  <a href="https://github.com/Genymobile/scrcpy"><img src="https://img.shields.io/badge/scrcpy-v4.1%2B-brightgreen.svg" alt="scrcpy" /></a>
+  <a href="https://github.com/Genymobile/scrcpy"><img src="https://img.shields.io/badge/scrcpy-v5.0.1-brightgreen.svg" alt="scrcpy" /></a>
   <a href="https://github.com/tomaasz/scrcpy-manager/releases"><img src="https://img.shields.io/badge/Versi%C3%B3n-Edici%C3%B3n%20Portable-orange.svg" alt="Edición Portable" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-yellow.svg" alt="Licencia: MIT" /></a>
   <img src="https://img.shields.io/badge/Idiomas-PL%20%7C%20EN%20%7C%20DE%20%7C%20ES-lightgrey.svg" alt="Idiomas" />
@@ -29,7 +29,7 @@
 
 👉 **[Descargar ScrcpyManager-Portable.exe (Última versión)](https://github.com/tomaasz/scrcpy-manager/releases)**
 
-* **Cero instalación y sin dependencias**: Incluye `scrcpy v4.1`, Android Debug Bridge (`adb`) y todas las librerías necesarias en un único archivo ejecutable.
+* **Cero instalación y sin dependencias**: Incluye `scrcpy v5.0.1`, Android Debug Bridge (`adb`) y todas las librerías necesarias en un único archivo ejecutable.
 * **Listo para usar**: Funciona en cualquier equipo con Windows 10/11 sin necesidad de instalar previamente `scrcpy` ni configurar `PATH`.
 * **Sin ventana de comandos**: Experiencia visual limpia sin ventanas de consola parpadeantes.
 * **Inicio ultrarrápido**: El entorno de ejecución en caché verificado con SHA-256 se inicia en menos de 0,2 segundos.
@@ -42,6 +42,8 @@
 * 🎨 **Iconos nativos en Windows**: Cada ventana abierta recibe su icono oficial en la barra de tareas de Windows y en Alt+Tab en lugar del icono genérico de `scrcpy`.
 * 🖥️ **Diseño moderno y renovado**: Elegante tema grafito con bordes redondeados, suavizado anti-aliasing y efectos visuales al pasar el cursor.
 * ⚙️ **Perfiles de inicio por aplicación**: Personalice resolución/DPI, FPS, tasa de bits, códec, orientación, teclado, ratón, audio, pantalla completa y visibilidad de la barra de tareas.
+* 🚀 **Motor scrcpy 5.0.1 actualizado**: Decodificación de vídeo por hardware (D3D11VA) por defecto, con control por aplicación del decodificador (`--hwdec`) y búfer de vídeo adicional (`--video-buffer`) para redes Wi‑Fi inestables.
+* 🔊 **Audio y energía por aplicación**: Elija el códec de audio (opus/aac/flac) y la tasa de bits, y opcionalmente apague la pantalla del teléfono al cerrar la ventana (`--power-off-on-close`).
 * 🎛️ **Preajustes listos para usar**: Predeterminado, Trabajo/RDP, Terminal (DPI alto para máxima legibilidad), Juegos, Ahorro de Wi-Fi y Presentación.
 * 🛡️ **Control de Taskbar e instalador**: Ocultación de la barra de tareas del sistema (`--no-vd-system-decorations`) para que las ventanas no queden tapadas, además de detección e instalación automática en 1 clic de la app Taskbar vía ADB.
 * 🎥 **Grabación de sesiones**: Grabe sesiones de apps específicas en formato MP4 con fecha en la carpeta `Videos\scrcpy-manager`.
@@ -80,6 +82,8 @@ Si prefiere ejecutar el script directamente en lugar de descargar el `.exe` port
 1. **Windows 10 / 11** (PowerShell 5.1 o PowerShell 7+)
 2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 o posterior) y **adb** configurados en el `PATH`
 3. Dispositivo Android con **Depuración USB** activada
+
+> ℹ️ El script de PowerShell es la edición anterior y no incluye las opciones más recientes (decodificación por hardware, búfer de vídeo, códec/tasa de bits de audio, apagar pantalla al cerrar). Están disponibles en el `.exe` portable.
 
 ### Instrucciones
 1. Clone el repositorio:
