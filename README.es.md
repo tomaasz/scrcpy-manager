@@ -80,7 +80,7 @@ Si prefiere ejecutar el script directamente en lugar de descargar el `.exe` port
 
 ### Requisitos
 1. **Windows 10 / 11** (PowerShell 5.1 o PowerShell 7+)
-2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 o posterior) y **adb** configurados en el `PATH`
+2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v3.0 o posterior; se recomienda v5.0.1) y **adb** configurados en el `PATH`
 3. Dispositivo Android con **Depuración USB** activada
 
 > ℹ️ El script de PowerShell es la edición anterior y no incluye las opciones más recientes (decodificación por hardware, búfer de vídeo, códec/tasa de bits de audio, apagar pantalla al cerrar). Están disponibles en el `.exe` portable.

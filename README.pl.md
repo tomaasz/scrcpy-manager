@@ -75,7 +75,7 @@ Jeśli wolisz uruchamiać skrypt bezpośrednio zamiast pobierać gotowy plik `.e
 
 ### Wymagania
 1. **Windows 10 / 11** (PowerShell 5.1 lub PowerShell 7+)
-2. Zainstalowane narzędzia **[scrcpy](https://github.com/Genymobile/scrcpy)** oraz **adb** w systemowej zmiennej `PATH`
+2. Zainstalowane narzędzia **[scrcpy](https://github.com/Genymobile/scrcpy)** (v3.0 lub nowszy; zalecany v5.0.1) oraz **adb** w systemowej zmiennej `PATH`
 3. Telefon z Androidem z włączonym **debugowaniem USB**
 
 > ℹ️ Skrypt PowerShell to starsza edycja i nie zawiera najnowszych opcji (dekodowanie sprzętowe, bufor obrazu, kodek/bitrate dźwięku, wyłączanie ekranu po zamknięciu). Są dostępne w wersji Portable `.exe`.

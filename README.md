@@ -75,7 +75,7 @@ If you prefer running the script directly instead of downloading the portable `.
 
 ### Requirements
 1. **Windows 10 / 11** (PowerShell 5.1 or PowerShell 7+)
-2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 or newer) & **adb** available in system `PATH`
+2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v3.0 or newer; v5.0.1 recommended) & **adb** available in system `PATH`
 3. Android device with **USB Debugging** enabled
 
 > ℹ️ The PowerShell script is the legacy edition and does not include the newest options (hardware decoding, video buffer, audio codec/bitrate, screen off on close). They are available in the Portable `.exe`.

@@ -80,7 +80,7 @@ Wenn Sie das Skript direkt ausführen möchten, anstatt die portable `.exe` zu v
 
 ### Voraussetzungen
 1. **Windows 10 / 11** (PowerShell 5.1 oder PowerShell 7+)
-2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v2.0 oder neuer) & **adb** im System-`PATH` verfügbar
+2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (ab v3.0; empfohlen v5.0.1) & **adb** im System-`PATH` verfügbar
 3. Android-Gerät mit aktiviertem **USB-Debugging**
 
 > ℹ️ Das PowerShell-Skript ist die ältere Edition und enthält die neuesten Optionen nicht (Hardware-Dekodierung, Video-Puffer, Audio-Codec/Bitrate, Bildschirm beim Schließen aus). Diese stehen in der portablen `.exe` zur Verfügung.
