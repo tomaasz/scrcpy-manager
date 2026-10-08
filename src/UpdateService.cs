@@ -29,7 +29,7 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.7.0";
+        public const string CurrentVersion = "0.7.1";
         public GitHubRelease LatestRelease { get; private set; }
         public string LastUpdateError { get; private set; }
 

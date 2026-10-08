@@ -1728,6 +1728,9 @@ namespace ScrcpyManager
             _statusTimer.Start();
         }
 
+        private string _taskbarCheckSerial;
+        private DateTime _taskbarCheckedAt = DateTime.MinValue;
+
         private async Task RefreshDeviceStatusAsync()
         {
             if (!await _statusRefreshGate.WaitAsync(0)) return;
@@ -1745,13 +1748,22 @@ namespace ScrcpyManager
 
                 if (_currentDevice.IsOnline)
                 {
-                    bool taskbarInstalled = await _adb.IsPackageInstalledAsync("com.farmerbb.taskbar");
-                    _isTaskbarInstalled = taskbarInstalled;
-                    UpdateTaskbarControlState(true, taskbarInstalled);
+                    // The Taskbar install state rarely changes, so it is re-checked at most every 30 s
+                    // (or immediately when the device changes) instead of on every 3 s status refresh.
+                    bool recheck = !string.Equals(_taskbarCheckSerial, _currentDevice.Serial, StringComparison.OrdinalIgnoreCase) ||
+                                   (DateTime.UtcNow - _taskbarCheckedAt).TotalSeconds > 30;
+                    if (recheck)
+                    {
+                        _isTaskbarInstalled = await _adb.IsPackageInstalledAsync("com.farmerbb.taskbar");
+                        _taskbarCheckSerial = _currentDevice.Serial;
+                        _taskbarCheckedAt = DateTime.UtcNow;
+                    }
+                    UpdateTaskbarControlState(true, _isTaskbarInstalled);
                 }
                 else
                 {
                     _isTaskbarInstalled = false;
+                    _taskbarCheckSerial = null;
                     UpdateTaskbarControlState(false, false);
                 }
 

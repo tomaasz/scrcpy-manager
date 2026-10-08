@@ -335,6 +335,11 @@ namespace ScrcpyManager
             return detected.ConnectionState == DeviceConnectionState.Online;
         }
 
+        // Model and manufacturer never change for a given device, so they are cached per serial
+        // and only the battery state is queried on each status refresh.
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Tuple<string, string>> _deviceIdentityCache =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, Tuple<string, string>>(StringComparer.OrdinalIgnoreCase);
+
         public static async Task<DeviceInfo> FetchDeviceInfoAsync()
         {
             DeviceInfo info = await DetectDeviceAsync();
@@ -346,14 +351,24 @@ namespace ScrcpyManager
             info.IsWifiConnected = Regex.IsMatch(info.Serial ?? string.Empty, @"^\d{1,3}(\.\d{1,3}){3}:\d+$");
 
             // Model & Manufacturer & Battery
-            Task<string> modelTask = ExecuteAdbAsync("shell getprop ro.product.model", 3000);
-            Task<string> mfgTask = ExecuteAdbAsync("shell getprop ro.product.manufacturer", 3000);
+            Tuple<string, string> identity;
+            Task<string> modelTask = null;
+            Task<string> mfgTask = null;
+            bool identityCached = _deviceIdentityCache.TryGetValue(info.Serial ?? string.Empty, out identity);
+            if (!identityCached)
+            {
+                modelTask = ExecuteAdbAsync("shell getprop ro.product.model", 3000);
+                mfgTask = ExecuteAdbAsync("shell getprop ro.product.manufacturer", 3000);
+            }
             Task<string> batteryTask = ExecuteAdbAsync("shell dumpsys battery", 3000);
 
-            await Task.WhenAll(modelTask, mfgTask, batteryTask);
+            if (identityCached) await batteryTask;
+            else await Task.WhenAll(modelTask, mfgTask, batteryTask);
 
-            string model = (modelTask.Result ?? string.Empty).Trim();
-            string mfg = (mfgTask.Result ?? string.Empty).Trim();
+            string model = identityCached ? identity.Item1 : (modelTask.Result ?? string.Empty).Trim();
+            string mfg = identityCached ? identity.Item2 : (mfgTask.Result ?? string.Empty).Trim();
+            if (!identityCached && !string.IsNullOrEmpty(model) && !string.IsNullOrEmpty(info.Serial))
+                _deviceIdentityCache[info.Serial] = Tuple.Create(model, mfg);
 
             if (!string.IsNullOrEmpty(model)) info.Model = model;
             if (!string.IsNullOrEmpty(mfg)) info.Manufacturer = mfg;
