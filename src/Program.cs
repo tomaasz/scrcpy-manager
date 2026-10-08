@@ -119,10 +119,51 @@ namespace ScrcpyManager
                     if (string.Equals(dir, currentRuntimeDir, StringComparison.OrdinalIgnoreCase)) continue;
                     string name = Path.GetFileName(dir);
                     if (string.IsNullOrEmpty(name) || name.StartsWith(".extracting-", StringComparison.OrdinalIgnoreCase)) continue;
-                    try { Directory.Delete(dir, true); } catch { }
+                    DeleteRuntimeDir(dir, false);
                 }
             }
             catch { }
+        }
+
+        // A leftover adb server started from an old/partial runtime folder keeps adb.exe
+        // locked, which made both cleanup and re-extraction fail with "access denied".
+        // On the first failure stop only adb.exe processes running from that folder, then retry.
+        private static void DeleteRuntimeDir(string dir, bool throwOnFailure)
+        {
+            try { Directory.Delete(dir, true); return; }
+            catch (Exception) { }
+
+            StopAdbRunningFrom(dir);
+            try
+            {
+                for (int i = 0; i < 5 && Directory.Exists(dir); i++)
+                {
+                    try { Directory.Delete(dir, true); }
+                    catch (Exception) { System.Threading.Thread.Sleep(300); }
+                }
+            }
+            catch { }
+
+            if (throwOnFailure && Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
+
+        private static void StopAdbRunningFrom(string dir)
+        {
+            string prefix = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            foreach (Process p in Process.GetProcessesByName("adb"))
+            {
+                try
+                {
+                    string path = p.MainModule.FileName;
+                    if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        p.Kill();
+                        p.WaitForExit(2000);
+                    }
+                }
+                catch { }
+                finally { p.Dispose(); }
+            }
         }
 
         private static bool IsCompleteRuntime(string runtimeDir)
@@ -161,7 +202,7 @@ namespace ScrcpyManager
                     throw new InvalidDataException("Pakiet portable nie zawiera wymaganego scrcpy.exe lub adb.exe.");
 
                 File.WriteAllText(Path.Combine(stagingDir, ".complete"), hash, new UTF8Encoding(false));
-                if (Directory.Exists(runtimeDir)) Directory.Delete(runtimeDir, true);
+                if (Directory.Exists(runtimeDir)) DeleteRuntimeDir(runtimeDir, true);
                 Directory.Move(stagingDir, runtimeDir);
                 stagingDir = null;
             }
