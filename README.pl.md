@@ -78,7 +78,7 @@ Jeśli wolisz uruchamiać skrypt bezpośrednio zamiast pobierać gotowy plik `.e
 2. Zainstalowane narzędzia **[scrcpy](https://github.com/Genymobile/scrcpy)** (v3.0 lub nowszy; zalecany v5.0.1) oraz **adb** w systemowej zmiennej `PATH`
 3. Telefon z Androidem z włączonym **debugowaniem USB**
 
-> ℹ️ Skrypt PowerShell to starsza edycja i nie zawiera najnowszych opcji (dekodowanie sprzętowe, bufor obrazu, kodek/bitrate dźwięku, wyłączanie ekranu po zamknięciu). Są dostępne w wersji Portable `.exe`.
+> ℹ️ Skrypt PowerShell to starsza edycja. Stosuje najnowsze opcje per aplikacja (dekodowanie sprzętowe, bufor obrazu, kodek/bitrate dźwięku, wyłączanie ekranu po zamknięciu), jeśli są zapisane w polu `profile` wpisu w `apps.json`, ale graficzny edytor profili ma tylko wersja Portable `.exe`.
 
 ### Instrukcja
 1. Sklonuj repozytorium:

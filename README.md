@@ -78,7 +78,7 @@ If you prefer running the script directly instead of downloading the portable `.
 2. **[scrcpy](https://github.com/Genymobile/scrcpy)** (v3.0 or newer; v5.0.1 recommended) & **adb** available in system `PATH`
 3. Android device with **USB Debugging** enabled
 
-> ℹ️ The PowerShell script is the legacy edition and does not include the newest options (hardware decoding, video buffer, audio codec/bitrate, screen off on close). They are available in the Portable `.exe`.
+> ℹ️ The PowerShell script is the legacy edition. It applies the newest per-app options (hardware decoding, video buffer, audio codec/bitrate, screen off on close) when they are present in the `profile` of an `apps.json` entry, but only the Portable `.exe` has the graphical profile editor.
 
 ### Instructions
 1. Clone the repository:

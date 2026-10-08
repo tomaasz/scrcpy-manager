@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$CaptureScreenshotLang = $null
 )
 
@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "0.6"
+    $script:appVersion = "0.6.9"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"
@@ -246,7 +246,6 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Uruchamiaj Taskbar"
             AutoTaskbarTooltip  = "Dolny pasek zadań Androida (Taskbar)`n• Włączone: wyświetla dolny pasek zadań na wirtualnym ekranie.`n• Wyłączone (zalecane): ukrywa pasek (--no-vd-system-decorations),`ndzięki czemu zmaksymalizowane okna nie są przesłaniane od dołu."
             InstallTaskbar      = "⬇ Zainstaluj Taskbar"
-            InstallTaskbarTooltip = "Aplikacja Taskbar nie jest zainstalowana na telefonie.`nKliknij, aby pobrać i zainstalować oficjalną wersję (farmerbb) przez ADB."
             InstallTaskbarTooltip = "Aplikacja Taskbar nie jest zainstalowana na telefonie.`nKliknij, aby pobrać oficjalną wersję (farmerbb)`ni zainstalować na urządzeniu przez ADB."
             InstallingTaskbar   = "Instalowanie Taskbar..."
             MsgTaskbarInstalled = "Aplikacja Taskbar została pomyślnie zainstalowana i skonfigurowana na telefonie!"
@@ -380,7 +379,6 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Start Taskbar"
             AutoTaskbarTooltip  = "Android bottom taskbar`n• Enabled: displays Android system taskbar on the virtual screen.`n• Disabled (recommended): hides taskbar (--no-vd-system-decorations)`nso maximized application windows are not obscured from below."
             InstallTaskbar      = "⬇ Install Taskbar"
-            InstallTaskbarTooltip = "Taskbar app is not installed on the phone.`nClick to download and install official version (farmerbb) via ADB."
             InstallTaskbarTooltip = "Taskbar app is not installed on your phone.`nClick to download official APK (farmerbb)`nand install on device via ADB."
             InstallingTaskbar   = "Installing Taskbar..."
             MsgTaskbarInstalled = "Taskbar app has been successfully installed and configured on your phone!"
@@ -513,7 +511,6 @@ public static class NativeDwmScreenshot {
             AutoTaskbar         = "Taskbar starten"
             AutoTaskbarTooltip  = "Android-Taskleiste`n• Aktiviert: zeigt die System-Taskleiste auf dem virtuellen Bildschirm an.`n• Deaktiviert (empfohlen): blendet die Leiste aus (--no-vd-system-decorations),`ndamit maximierte Fenster unten nicht verdeckt werden."
             InstallTaskbar      = "⬇ Taskbar installieren"
-            InstallTaskbarTooltip = "Die Taskbar-App ist nicht auf dem Telefon installiert.`nKlicken Sie hier, um die offizielle Version (farmerbb) über ADB herunterzuladen und zu installieren."
             InstallTaskbarTooltip = "Die Taskbar-App ist nicht auf dem Telefon installiert.`nKlicken Sie hier, um das offizielle APK (farmerbb)`nherunterzuladen und über ADB zu installieren."
             InstallingTaskbar   = "Taskbar wird installiert..."
             MsgTaskbarInstalled = "Die Taskbar-App wurde erfolgreich auf Ihrem Telefon installiert und eingerichtet!"
@@ -1072,6 +1069,44 @@ public static class NativeDwmScreenshot {
         }
     }
 
+    # Zwraca wpis apps.json z zachowaniem opcjonalnego profilu aplikacji
+    # (profil zapisuje wersja portable .exe, tutaj jest odczytywany i zachowywany).
+    function New-AppJsonEntry($app) {
+        $entry = [ordered]@{
+            name    = $app.Text
+            package = $app.Package
+            flags   = @($app.Flags)
+        }
+        if ($app.Profile) { $entry["profile"] = $app.Profile }
+        return [pscustomobject]$entry
+    }
+
+    # Buduje dodatkowe argumenty scrcpy z profilu aplikacji (apps.json -> "profile").
+    # Obsługiwane: hwdec, videoBuffer, audioCodec, audioBitRate, powerOffOnClose.
+    # Wartości są walidowane tak samo jak w wersji portable.
+    function Get-ProfileScrcpyArgs($appProfile, [bool]$audioEnabled) {
+        $extra = @()
+        if (-not $appProfile) { return $extra }
+
+        $hwdec = [string]$appProfile.hwdec
+        if ($hwdec -match '^(auto|disabled|d3d11va)$') { $extra += "--hwdec=$hwdec" }
+
+        $buffer = 0
+        if ([int]::TryParse([string]$appProfile.videoBuffer, [ref]$buffer) -and $buffer -gt 0 -and $buffer -le 500) {
+            $extra += "--video-buffer=$buffer"
+        }
+
+        if ($audioEnabled) {
+            $audioCodec = [string]$appProfile.audioCodec
+            if ($audioCodec -match '^(opus|aac|flac)$') { $extra += "--audio-codec=$audioCodec" }
+            $audioBitRate = [string]$appProfile.audioBitRate
+            if ($audioBitRate -match '^\d{1,3}[Kk]$') { $extra += "--audio-bit-rate=$($audioBitRate.ToUpperInvariant())" }
+        }
+
+        if ($appProfile.powerOffOnClose -eq $true) { $extra += "--power-off-on-close" }
+        return $extra
+    }
+
     function Start-ScrcpyApp {
         param(
             [string]$PackageName,
@@ -1079,7 +1114,8 @@ public static class NativeDwmScreenshot {
             [string]$DisplaySize = "1920x1080/160",
             [switch]$UseUhidKeyboard,
             [switch]$UseUhidMouse,
-            [switch]$ForwardAllClicks
+            [switch]$ForwardAllClicks,
+            $AppProfile = $null
         )
 
         if (-not (Test-AdbDevice)) { return }
@@ -1101,9 +1137,11 @@ public static class NativeDwmScreenshot {
             "-K"
         )
 
-        if ($chkAudio -and -not $chkAudio.Checked) {
+        $audioEnabled = -not ($chkAudio -and -not $chkAudio.Checked)
+        if (-not $audioEnabled) {
             $argListItems += "--no-audio"
         }
+        $argListItems += @(Get-ProfileScrcpyArgs $AppProfile $audioEnabled)
 
         if ($PackageName -ne "com.microsoft.rdc.androidx") {
             $argListItems += "-x"
@@ -1155,6 +1193,7 @@ public static class NativeDwmScreenshot {
                     Text    = [string]$item.name
                     Package = [string]$item.package
                     Flags   = $flagsArray
+                    Profile = $item.profile
                 }
             }
         }
@@ -1982,21 +2021,20 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
                 $flags = @($row.Tag)
                 if ([bool]$row.Cells["UseUhid"].Value) { $flags += "-UseUhidKeyboard" }
                 if ([bool]$row.Cells["ForwardClicks"].Value) { $flags += "-ForwardAllClicks" }
+                $existingProfile = $null
+                foreach ($prev in $appButtons) { if ($prev.Package -eq $package -and $prev.Profile) { $existingProfile = $prev.Profile; break } }
                 $updatedApps += @{
                     Text = $name
                     Package = $package
                     Flags = @($flags)
+                    Profile = $existingProfile
                 }
             }
 
             try {
                 $jsonApps = @(
                     foreach ($app in $updatedApps) {
-                        [pscustomobject]@{
-                            name = $app.Text
-                            package = $app.Package
-                            flags = @($app.Flags)
-                        }
+                        New-AppJsonEntry $app
                     }
                 )
                 $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
@@ -2791,7 +2829,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
                         $useUhid = $selectedApp.Flags -contains "-UseUhidKeyboard"
                         $useUhidMouse = $selectedApp.Flags -contains "-UseUhidMouse"
                         $forwardClicks = $selectedApp.Flags -contains "-ForwardAllClicks"
-                        Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -UseUhidMouse:$useUhidMouse -ForwardAllClicks:$forwardClicks -DisplaySize $disp
+                        Start-ScrcpyApp -PackageName $selectedApp.Package -WindowTitle $selectedApp.Text -UseUhidKeyboard:$useUhid -UseUhidMouse:$useUhidMouse -ForwardAllClicks:$forwardClicks -DisplaySize $disp -AppProfile $selectedApp.Profile
                     }.GetNewClosure())
 
                     # Mały przycisk zmiany nazwy kafelka (✎)
@@ -2833,11 +2871,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
                             try {
                                 $jsonApps = @(
                                     foreach ($a in $appButtons) {
-                                        [pscustomobject]@{
-                                            name = $a.Text
-                                            package = $a.Package
-                                            flags = @($a.Flags)
-                                        }
+                                        New-AppJsonEntry $a
                                     }
                                 )
                                 $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
@@ -2892,11 +2926,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
                             try {
                                 $jsonApps = @(
                                     foreach ($a in $appButtons) {
-                                        [pscustomobject]@{
-                                            name = $a.Text
-                                            package = $a.Package
-                                            flags = @($a.Flags)
-                                        }
+                                        New-AppJsonEntry $a
                                     }
                                 )
                                 $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
@@ -3206,11 +3236,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
             try {
                 $jsonApps = @(
                     foreach ($a in $appButtons) {
-                        [pscustomobject]@{
-                            name = $a.Text
-                            package = $a.Package
-                            flags = @($a.Flags)
-                        }
+                        New-AppJsonEntry $a
                     }
                 )
                 $json = ConvertTo-Json -InputObject $jsonApps -Depth 4
@@ -3507,6 +3533,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy', 'Bypa
             $tipLayout.SetToolTip($btnLayout1, $t.Layout1Tooltip)
             $tipLayout.SetToolTip($btnLayout2, $t.Layout2Tooltip)
             $tipLayout.SetToolTip($btnLayout3, $t.Layout3Tooltip)
+        }
         if ($script:tipMain) { $script:tipMain.SetToolTip($btnEditApps, $t.AppsEditTooltip) }
         if ($script:tipMain) {
             $script:tipMain.SetToolTip($btnLayout1, $t.Layout1Tooltip)
