@@ -43,7 +43,7 @@ Write-Host "Katalog źródłowy scrcpy: $scrcpyDir" -ForegroundColor Green
 # 2. Przygotuj staging
 $tempStage = Join-Path $repoDir "temp_portable_stage"
 $bundleZip = Join-Path $repoDir "bundle.zip"
-$outputExe = Join-Path $repoDir "ScrcpyManager-Portable.exe"
+$outputExe = if ($env:OUTPUT_EXE) { $env:OUTPUT_EXE } else { Join-Path $repoDir "ScrcpyManager-Portable.exe" }
 
 if (Test-Path $tempStage) { Remove-Item $tempStage -Recurse -Force }
 if (Test-Path $bundleZip) { Remove-Item $bundleZip -Force }
