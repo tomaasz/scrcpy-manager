@@ -1404,7 +1404,7 @@ namespace ScrcpyManager
                 {
                     int tileW = 180, btnW = 126, renX = 129, renW = 24, delX = 156, delW = 24;
                     Padding tileMargin = new Padding(3);
-                    int targetIconSize = 20, targetIconGap = 6, targetPaddingLeft = 7;
+                    int targetIconSize = 24, targetIconGap = 6, targetPaddingLeft = 6;
 
                     if (_appsLayout == 1)
                     {
@@ -1413,7 +1413,7 @@ namespace ScrcpyManager
                         btnW = 296;
                         renX = 300; renW = 28;
                         delX = 332; delW = 28;
-                        targetIconSize = 20; targetIconGap = 8; targetPaddingLeft = 8;
+                        targetIconSize = 24; targetIconGap = 8; targetPaddingLeft = 8;
                     }
                     else if (_appsLayout == 3)
                     {
@@ -1422,7 +1422,7 @@ namespace ScrcpyManager
                         btnW = 68;
                         renX = 71; renW = 22;
                         delX = 96; delW = 22;
-                        targetIconSize = 18; targetIconGap = 4; targetPaddingLeft = 4;
+                        targetIconSize = 20; targetIconGap = 4; targetPaddingLeft = 4;
                     }
 
                     foreach (AppEntry app in _appButtons)
@@ -1449,7 +1449,7 @@ namespace ScrcpyManager
                             BorderColorProvider = () => _isDarkMode ? ThemeColors.Dark.BtnAppBorder : ThemeColors.Light.BtnAppBorder,
                             BackColor = cTheme.BtnApp,
                             ForeColor = cTheme.BtnAppText,
-                            AppIcon = _icons.GetResizedIcon(currentApp.package, targetIconSize, 0)
+                            AppIcon = _icons.GetResizedIcon(currentApp.package, 96, 0)
                         };
                         btn.FlatAppearance.MouseOverBackColor = cTheme.BtnAppHover;
 

@@ -255,9 +255,38 @@ namespace ScrcpyManager
                         Color c = bmp.GetPixel(x, y);
                         if (GetLuminance(c) > 0.85) bmp.SetPixel(x, y, Color.FromArgb(c.A / 3, c.R, c.G, c.B));
                     }
-                return bmp;
+                return CropToContent(bmp);
             }
             catch { return image; }
+        }
+
+        // After the white box is gone the glyph is often small inside a transparent margin; crop to the
+        // visible content (as a square) so DrawImage fills the whole icon slot.
+        private static Bitmap CropToContent(Bitmap bmp)
+        {
+            int w = bmp.Width, h = bmp.Height;
+            int minX = w, minY = h, maxX = -1, maxY = -1;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    if (bmp.GetPixel(x, y).A > 40)
+                    {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+            if (maxX < 0) return bmp;
+            int cw = maxX - minX + 1, ch = maxY - minY + 1;
+            if (cw >= w - 1 && ch >= h - 1) return bmp;
+            int side = Math.Max(cw, ch);
+            Bitmap dest = new Bitmap(side, side, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(dest))
+            {
+                g.DrawImage(bmp, new Rectangle((side - cw) / 2, (side - ch) / 2, cw, ch),
+                    new Rectangle(minX, minY, cw, ch), GraphicsUnit.Pixel);
+            }
+            bmp.Dispose();
+            return dest;
         }
 
         private static double GetLuminance(Color c)
