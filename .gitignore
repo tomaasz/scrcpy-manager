@@ -8,13 +8,18 @@ local.env
 *.user.ps1
 .vscode/
 .idea/
-# Local user preferences
+# Local user preferences and backups
 preferences.json
+*.bak
+*.corrupt-*
 
 # Build and release artifacts
 *.exe
+*.sha256
 temp_portable_stage/
 temp_portable_publish/
+scrcpy_extracted/
+release_notes.md
 bundle.zip
 bin/
 obj/
