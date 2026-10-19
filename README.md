@@ -139,3 +139,30 @@ This project is built with gratitude upon the following incredible open-source p
 ## 📜 License
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+<!-- VERIFIED-PROJECT-OVERVIEW:BEGIN -->
+## Opis projektu i technologii
+
+**Cel:** Aplikacja dla Windows do obsługi scrcpy i Androida: okna aplikacji, wirtualne ekrany oraz połączenie ADB przez Wi-Fi.
+
+**Sprawdzono:** 2026-10-11, na podstawie plików repozytorium z [commitu `ee2353ea8c`](https://github.com/tomaasz/scrcpy-manager/commit/ee2353ea8c6d6a0c17503273b2e6808498702244).
+Opis plików nie potwierdza, że aplikacja jest wdrożona, działa bez błędów ani że wszystkie zadeklarowane narzędzia są używane.
+
+### Technologie i narzędzia
+
+- Główny język według GitHuba: **C#**.
+- Rozpoznane technologie w wybranych manifestach: nie ustalono w ograniczonym przeglądzie.
+- Narzędzia zadeklarowane w wybranych plikach: GitHub Actions.
+
+Projekt aplikacji Windows i zależności .NET opisuje [ScrcpyManager.csproj](ScrcpyManager.csproj). Dodatkowy opis po polsku: [README.pl.md](README.pl.md).
+
+### Skąd pochodzą informacje
+
+- [`README.md`](README.md).
+- [`.github/workflows/auto-update-scrcpy.yml`](.github/workflows/auto-update-scrcpy.yml).
+- [`.github/workflows/build.yml`](.github/workflows/build.yml).
+
+### Zakres sprawdzenia
+
+Przegląd obejmuje wybrane pliki gałęzi domyślnej. Nie uruchamiano aplikacji ani nie zmieniano wdrożeń. Limity przeglądu mogą pomijać część modułów; brak pozycji w tym opisie nie dowodzi braku funkcji lub narzędzia.
+<!-- VERIFIED-PROJECT-OVERVIEW:END -->
