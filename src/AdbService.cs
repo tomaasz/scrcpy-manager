@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -805,6 +807,18 @@ namespace ScrcpyManager
                     }
                 }
 
+                bool useDesktopMouseServer =
+                    string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase) ||
+                    (args ?? string.Empty).IndexOf("--mouse-bind=++++", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (useDesktopMouseServer)
+                {
+                    string mouseServer = EnsureDesktopMouseServerFile(psi.FileName);
+                    if (!string.IsNullOrEmpty(mouseServer))
+                    {
+                        psi.EnvironmentVariables["SCRCPY_SERVER_PATH"] = mouseServer;
+                    }
+                }
+
                 Process proc = Process.Start(psi);
                 if (proc != null)
                 {
@@ -823,6 +837,179 @@ namespace ScrcpyManager
             {
                 return null;
             }
+        }
+
+        private static readonly object _mouseServerLock = new object();
+
+        /// <summary>
+        /// Tworzy zmodyfikowaną kopię scrcpy-server (scrcpy-server-mouse), w której Controller.injectTouch
+        /// traktuje lewy przycisk myszy (BUTTON_PRIMARY) w trybie --mouse=sdk jako prawdziwe zdarzenie
+        /// myszy (InputDevice.SOURCE_MOUSE + TOOL_TYPE_MOUSE + ACTION_BUTTON_PRESS/RELEASE) zamiast
+        /// dotyku palcem (SOURCE_TOUCHSCREEN). Umożliwia to zaznaczanie tekstu przeciąganiem myszy
+        /// w sesjach RDP (Windows App) przy zachowaniu bezwzględnych współrzędnych kursora 1:1.
+        /// </summary>
+        private static string EnsureDesktopMouseServerFile(string scrcpyExePath)
+        {
+            lock (_mouseServerLock)
+            {
+                try
+                {
+                    string baseDir = !string.IsNullOrEmpty(RuntimeDirectory) && Directory.Exists(RuntimeDirectory)
+                        ? RuntimeDirectory
+                        : (!string.IsNullOrEmpty(scrcpyExePath) && Path.IsPathRooted(scrcpyExePath)
+                            ? Path.GetDirectoryName(scrcpyExePath)
+                            : AppDomain.CurrentDomain.BaseDirectory);
+
+                    string sourceServer = !string.IsNullOrEmpty(baseDir) ? Path.Combine(baseDir, "scrcpy-server") : null;
+                    if (string.IsNullOrEmpty(sourceServer) || !File.Exists(sourceServer))
+                    {
+                        return null;
+                    }
+
+                    FileInfo srcInfo = new FileInfo(sourceServer);
+                    string targetServer = Path.Combine(baseDir, "scrcpy-server-mouse");
+                    try
+                    {
+                        if (File.Exists(targetServer))
+                        {
+                            FileInfo dstInfo = new FileInfo(targetServer);
+                            if (dstInfo.Length > 0 && dstInfo.LastWriteTimeUtc >= srcInfo.LastWriteTimeUtc)
+                            {
+                                return targetServer;
+                            }
+                        }
+                    }
+                    catch { }
+
+                    byte[] patchedZipBytes = BuildPatchedMouseServerZip(sourceServer);
+                    if (patchedZipBytes == null || patchedZipBytes.Length == 0)
+                    {
+                        return null;
+                    }
+
+                    try
+                    {
+                        File.WriteAllBytes(targetServer, patchedZipBytes);
+                        return targetServer;
+                    }
+                    catch
+                    {
+                        string tempTarget = Path.Combine(Path.GetTempPath(), "scrcpy-server-mouse-" + srcInfo.Length + ".jar");
+                        File.WriteAllBytes(tempTarget, patchedZipBytes);
+                        return tempTarget;
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+        private static byte[] BuildPatchedMouseServerZip(string sourceServerPath)
+        {
+            // Wzorzec Dalvik w Controller.injectTouch:
+            //   or-int v9, v4, v28          (96 09 04 1C)
+            //   and-int/lit8 v9, v9, -2     (DD 09 09 FE)  <-- zamiana FE (-2 = ~BUTTON_PRIMARY) na FF (-1)
+            //   const/4 v12, 1              (12 1C)
+            //   if-eqz v9, +4               (38 09 04 00)
+            byte[] pattern = new byte[] { 0x96, 0x09, 0x04, 0x1C, 0xDD, 0x09, 0x09, 0xFE, 0x12, 0x1C, 0x38, 0x09, 0x04, 0x00 };
+
+            using (FileStream fs = new FileStream(sourceServerPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (ZipArchive srcArchive = new ZipArchive(fs, ZipArchiveMode.Read))
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                bool patched = false;
+                using (ZipArchive dstArchive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
+                {
+                    foreach (ZipArchiveEntry entry in srcArchive.Entries)
+                    {
+                        ZipArchiveEntry outEntry = dstArchive.CreateEntry(entry.FullName, CompressionLevel.Optimal);
+                        using (Stream inEntryStream = entry.Open())
+                        using (Stream outEntryStream = outEntry.Open())
+                        {
+                            if (string.Equals(entry.FullName, "classes.dex", StringComparison.Ordinal))
+                            {
+                                using (MemoryStream dexMs = new MemoryStream())
+                                {
+                                    inEntryStream.CopyTo(dexMs);
+                                    byte[] dex = dexMs.ToArray();
+                                    int matchIdx = FindBytePattern(dex, pattern);
+                                    if (matchIdx >= 0 && dex.Length > 32)
+                                    {
+                                        dex[matchIdx + 7] = 0xFF;
+                                        UpdateDexChecksums(dex);
+                                        patched = true;
+                                    }
+                                    outEntryStream.Write(dex, 0, dex.Length);
+                                }
+                            }
+                            else
+                            {
+                                inEntryStream.CopyTo(outEntryStream);
+                            }
+                        }
+                    }
+                }
+
+                return patched ? outStream.ToArray() : null;
+            }
+        }
+
+        private static int FindBytePattern(byte[] buffer, byte[] pattern)
+        {
+            if (buffer == null || pattern == null || buffer.Length < pattern.Length) return -1;
+            int limit = buffer.Length - pattern.Length;
+            for (int i = 0; i <= limit; i++)
+            {
+                if (buffer[i] == pattern[0])
+                {
+                    bool match = true;
+                    for (int j = 1; j < pattern.Length; j++)
+                    {
+                        if (buffer[i + j] != pattern[j])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) return i;
+                }
+            }
+            return -1;
+        }
+
+        private static void UpdateDexChecksums(byte[] dex)
+        {
+            // 1. SHA-1 signature (bytes 12..31) liczona z bajtów 32..end
+            using (SHA1 sha1 = SHA1.Create())
+            {
+                byte[] hash = sha1.ComputeHash(dex, 32, dex.Length - 32);
+                Buffer.BlockCopy(hash, 0, dex, 12, 20);
+            }
+
+            // 2. Adler-32 checksum (bytes 8..11, little-endian) liczona z bajtów 12..end
+            const uint ModAdler = 65521;
+            uint a = 1;
+            uint b = 0;
+            int i = 12;
+            int len = dex.Length;
+            while (i < len)
+            {
+                int chunkEnd = Math.Min(i + 5552, len);
+                while (i < chunkEnd)
+                {
+                    a += dex[i++];
+                    b += a;
+                }
+                a %= ModAdler;
+                b %= ModAdler;
+            }
+            uint adler = (b << 16) | a;
+            dex[8] = (byte)(adler & 0xFF);
+            dex[9] = (byte)((adler >> 8) & 0xFF);
+            dex[10] = (byte)((adler >> 16) & 0xFF);
+            dex[11] = (byte)((adler >> 24) & 0xFF);
         }
     }
 }

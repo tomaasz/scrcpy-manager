@@ -162,7 +162,14 @@ try {
         Write-Error "Nie znaleziono opublikowanego pliku ScrcpyManager.exe."
         exit 1
     }
-    Copy-Item -LiteralPath $publishedExe -Destination $outputExe -Force
+    try {
+        Copy-Item -LiteralPath $publishedExe -Destination $outputExe -Force -ErrorAction Stop
+    }
+    catch {
+        $lockedBackup = Join-Path $env:TEMP ("ScrcpyManager-Portable.locked." + [guid]::NewGuid().ToString("N") + ".exe")
+        Move-Item -LiteralPath $outputExe -Destination $lockedBackup -Force -ErrorAction SilentlyContinue
+        Copy-Item -LiteralPath $publishedExe -Destination $outputExe -Force
+    }
 
     $exeSizeMb = (Get-Item $outputExe).Length / 1MB
     Write-Host ("
