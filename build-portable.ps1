@@ -15,20 +15,53 @@ $scrcpyDir = $null
 if ($env:SCRCPY_DIR -and (Test-Path (Join-Path $env:SCRCPY_DIR "scrcpy.exe"))) {
     $scrcpyDir = $env:SCRCPY_DIR
 } else {
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $runtimeRoot = Join-Path $env:LOCALAPPDATA "scrcpy-manager\runtime"
+    if (Test-Path $runtimeRoot -ErrorAction SilentlyContinue) {
+        if (Test-Path (Join-Path $runtimeRoot "scrcpy.exe") -ErrorAction SilentlyContinue) {
+            $candidates.Add($runtimeRoot)
+        }
+        Get-ChildItem -LiteralPath $runtimeRoot -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path (Join-Path $_.FullName "scrcpy.exe")) {
+                $candidates.Add($_.FullName)
+            }
+        }
+    }
     $scrcpyCmd = Get-Command scrcpy.exe -ErrorAction SilentlyContinue
     if ($scrcpyCmd) {
-        $scrcpyDir = Split-Path -Parent $scrcpyCmd.Source
-    } else {
-        $wingetPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Genymobile.scrcpy_Microsoft.Winget.Source_8wekyb3d8bbwe"
-        if (Test-Path $wingetPath) {
-            $sub = Get-ChildItem $wingetPath -Directory | Where-Object { $_.Name -like "scrcpy*" } | Select-Object -First 1
-            if ($sub) { $scrcpyDir = $sub.FullName }
-        }
-        if (-not $scrcpyDir) {
-            $runtimePath = Join-Path $env:LOCALAPPDATA "scrcpy-manager\runtime"
-            if (Test-Path (Join-Path $runtimePath "scrcpy.exe")) {
-                $scrcpyDir = $runtimePath
+        $candidates.Add((Split-Path -Parent $scrcpyCmd.Source))
+    }
+    $wingetPath = "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Genymobile.scrcpy_Microsoft.Winget.Source_8wekyb3d8bbwe"
+    if (Test-Path $wingetPath) {
+        Get-ChildItem $wingetPath -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "scrcpy*" } | ForEach-Object {
+            if (Test-Path (Join-Path $_.FullName "scrcpy.exe")) {
+                $candidates.Add($_.FullName)
             }
+        }
+    }
+    Get-ChildItem $env:TEMP -Directory -Filter "scrcpy*" -ErrorAction SilentlyContinue | ForEach-Object {
+        Get-ChildItem $_.FullName -Recurse -Filter "scrcpy.exe" -File -ErrorAction SilentlyContinue | ForEach-Object {
+            $candidates.Add($_.DirectoryName)
+        }
+    }
+
+    $bestVer = [version]"0.0.0"
+    foreach ($cand in ($candidates | Select-Object -Unique)) {
+        $exe = Join-Path $cand "scrcpy.exe"
+        $ver = [version]"0.0.0"
+        try {
+            $ErrorActionPreference = "Continue"
+            $out = (& $exe --version 2>&1) -join "`n"
+            $ErrorActionPreference = "Stop"
+            if ($out -match 'scrcpy\s+(\d+(?:\.\d+)+)') {
+                $ver = [version]$Matches[1]
+            }
+        } catch {
+            $ErrorActionPreference = "Stop"
+        }
+        if (-not $scrcpyDir -or $ver -gt $bestVer) {
+            $bestVer = $ver
+            $scrcpyDir = $cand
         }
     }
 }
@@ -38,7 +71,7 @@ if (-not $scrcpyDir -or -not (Test-Path (Join-Path $scrcpyDir "scrcpy.exe"))) {
     exit 1
 }
 
-Write-Host "Katalog źródłowy scrcpy: $scrcpyDir" -ForegroundColor Green
+Write-Host "Katalog źródłowy scrcpy: $scrcpyDir (v$bestVer)" -ForegroundColor Green
 
 # 2. Przygotuj staging
 $tempStage = Join-Path $repoDir "temp_portable_stage"

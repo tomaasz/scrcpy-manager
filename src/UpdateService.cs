@@ -29,9 +29,18 @@ namespace ScrcpyManager
 
     public class UpdateService
     {
-        public const string CurrentVersion = "0.7.5";
+        public const string CurrentVersion = "0.7.7";
         public GitHubRelease LatestRelease { get; private set; }
         public string LastUpdateError { get; private set; }
+
+        public static void OpenUrl(string url)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
 
         public async Task<bool> CheckForUpdateAsync()
         {
@@ -145,7 +154,11 @@ namespace ScrcpyManager
                 btnDownload.Click += (s, e) =>
                 {
                     string url = !string.IsNullOrEmpty(LatestRelease.html_url) ? LatestRelease.html_url : "https://github.com/tomaasz/scrcpy-manager/releases/latest";
-                    try { Process.Start(url); } catch {}
+                    try { OpenUrl(url); }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(dlg, string.Format(t.OpenLinkFailed, ex.Message), t.UpdateDialogTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                     dlg.Close();
                 };
                 pnlButtons.Controls.Add(btnDownload);
@@ -203,7 +216,11 @@ namespace ScrcpyManager
                         if (MessageBox.Show(dlg, msg, t.UpdateDialogTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                         {
                             string url = !string.IsNullOrEmpty(LatestRelease.html_url) ? LatestRelease.html_url : "https://github.com/tomaasz/scrcpy-manager/releases/latest";
-                            try { Process.Start(url); } catch {}
+                            try { OpenUrl(url); }
+                            catch (Exception openEx)
+                            {
+                                MessageBox.Show(dlg, string.Format(t.OpenLinkFailed, openEx.Message), t.UpdateDialogTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
                     }
                 };

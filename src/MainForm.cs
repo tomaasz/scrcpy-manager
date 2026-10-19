@@ -439,7 +439,12 @@ namespace ScrcpyManager
             UiThemeHelper.SetupModernButton(_btnGitHub, 12, () => _isDarkMode ? ThemeColors.Dark.CardBorder : ThemeColors.Light.CardBorder);
             _btnGitHub.Click += (s, e) =>
             {
-                try { Process.Start("https://github.com/tomaasz/scrcpy-manager"); } catch { }
+                try { UpdateService.OpenUrl("https://github.com/tomaasz/scrcpy-manager"); }
+                catch (Exception ex)
+                {
+                    Localization.Strings t = Localization.Get(_currentLang);
+                    MessageBox.Show(this, string.Format(t.OpenLinkFailed, ex.Message), t.UpdateUpToDateTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             };
             _pnlStatus.Controls.Add(_btnGitHub);
 
@@ -494,7 +499,11 @@ namespace ScrcpyManager
                         string msg = string.Format(t.UpdateUpToDate, UpdateService.CurrentVersion);
                         if (MessageBox.Show(this, msg, t.UpdateUpToDateTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         {
-                            try { Process.Start("https://github.com/tomaasz/scrcpy-manager/releases"); } catch { }
+                            try { UpdateService.OpenUrl("https://github.com/tomaasz/scrcpy-manager/releases"); }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(this, string.Format(t.OpenLinkFailed, ex.Message), t.UpdateUpToDateTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
                     }
                 }
@@ -640,6 +649,7 @@ namespace ScrcpyManager
             {
                 if (await _adb.IsDeviceConnectedAsync())
                 {
+                    await _adb.RunAdbAsync("shell settings put system clipboard_format_priority 1");
                     await _adb.RunAdbAsync("shell am broadcast -a clipper.get");
                 }
                 string remoteFixCmd = "taskkill /f /im rdpclip.exe & start rdpclip.exe";
@@ -958,7 +968,8 @@ namespace ScrcpyManager
                     rdcApp.profile.fullscreen = false;
                     rdcApp.profile.videoBitRate = "32M";
                     rdcApp.profile.videoCodec = "h265";
-                    rdcApp.profile.mouseMode = "sdk";
+                    if (string.IsNullOrEmpty(rdcApp.profile.mouseMode))
+                        rdcApp.profile.mouseMode = "sdk";
                 }
                 SaveAppsConfigFile();
                 UpdateAppButtonGrid();
@@ -2091,7 +2102,6 @@ namespace ScrcpyManager
                     if (string.IsNullOrEmpty(profile.videoCodec) || profile.videoCodec == "h264")
                         profile.videoCodec = "h265";
                     profile.fullscreen = false;
-                    profile.mouseMode = "sdk";
                 }
             }
 

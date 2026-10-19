@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$CaptureScreenshotLang = $null
 )
 
@@ -52,7 +52,7 @@ public static class NativeDwmScreenshot {
     $defaultPrefFile = Join-Path $scriptDir "preferences.json"
     $prefFile = if (Test-Path $userPrefFile) { $userPrefFile } else { $defaultPrefFile }
 
-    $script:appVersion = "0.7.5"
+    $script:appVersion = "0.7.7"
     $script:latestReleaseInfo = $null
     $script:isDarkMode = $true
     $script:currentLang = "PL"

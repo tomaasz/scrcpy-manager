@@ -689,6 +689,7 @@ namespace ScrcpyManager
             bool isRdc = string.Equals(package, "com.microsoft.rdc.androidx", StringComparison.OrdinalIgnoreCase);
             if (isRdc)
             {
+                await ExecuteAdbAsync("shell settings put system clipboard_format_priority 1", 2000).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(profile.mouseMode))
                     profile.mouseMode = "sdk";
                 if (string.IsNullOrEmpty(profile.keyboardMode))
@@ -698,7 +699,8 @@ namespace ScrcpyManager
 
             if (isDualMonitor)
             {
-                profile.mouseMode = "sdk";
+                if (string.IsNullOrEmpty(profile.mouseMode))
+                    profile.mouseMode = "sdk";
                 if (string.IsNullOrEmpty(profile.videoBitRate) || profile.videoBitRate == "8M" || profile.videoBitRate == "16M")
                     profile.videoBitRate = "32M";
                 if (string.IsNullOrEmpty(profile.videoCodec) || profile.videoCodec == "h264")
@@ -709,7 +711,7 @@ namespace ScrcpyManager
             {
                 if (!argsList.Exists(a => a.StartsWith("--shortcut-mod=")))
                 {
-                    argsList.Add("--shortcut-mod=rctrl");
+                    argsList.Add("--shortcut-mod=lalt,rctrl");
                 }
             }
 
